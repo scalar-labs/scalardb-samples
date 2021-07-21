@@ -1,4 +1,3 @@
 rootProject.name = 'scalardb-samples'
-include 'grpc'
 include 'src'
 
