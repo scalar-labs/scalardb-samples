@@ -1,0 +1,32 @@
+version: "3.5"
+services:
+  cassandra:
+    image: cassandra:3.11
+    container_name: "cassandradb-1"
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+    ports:
+      - "9042:9042"
+    networks:
+      - scalar-network
+
+  scalardb-server:
+    image: ghcr.io/scalar-labs/scalardb-server:3.0.0
+    container_name: "scalardb-server-1"
+    depends_on:
+      - cassandra
+    restart: "always"
+    volumes:
+      - ./database.properties:/scalardb/server/database.properties
+      - ./wait-for-it.sh:/scalardb/server/wait-for-it.sh
+    ports:
+      - "60051:60051" # scalardb-server port
+    entrypoint: /bin/bash
+    command: ./wait-for-it.sh -t 60 tcp://cassandra:9042 -- ./bin/scalardb-server --config database.properties
+    networks:
+      - scalar-network
+networks:
+  scalar-network:
+    name: scalar-network
+volumes:
+  cassandra-data:
