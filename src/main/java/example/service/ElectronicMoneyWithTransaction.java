@@ -35,7 +35,14 @@ public class ElectronicMoneyWithTransaction extends ElectronicMoney {
 
     // Retrieve the current balance for id
     Get get = new Get(new Key(new TextValue(ID, id))).forNamespace(NAMESPACE).forTable(TABLENAME);
-    Optional<Result> result = tx.get(get);
+    Optional<Result> result;
+    try {
+     result = tx.get(get);
+    } catch (CrudException e) {
+      tx.abort();
+      throw new TransactionException("read data from database failed.", e);
+    }
+
 
     // Calculate the balance
     int balance = amount;
@@ -47,10 +54,20 @@ public class ElectronicMoneyWithTransaction extends ElectronicMoney {
     // Update the balance
     Put put = new Put(new Key(new TextValue(ID, id))).withValue(new IntValue(BALANCE, balance))
         .forNamespace(NAMESPACE).forTable(TABLENAME);
-    tx.put(put);
+    try {
+      tx.put(put);
+    } catch (CrudException e) {
+      tx.abort();
+      throw new TransactionException("put data to database failed.", e);
+    }
 
-    // Commit the transaction (records are automatically recovered in case of failure)
-    tx.commit();
+    try {
+      // Commit the transaction (records are automatically recovered in case of failure)
+      tx.commit();
+    } catch (CommitConflictException | UnknownTransactionStatusException e) {
+      tx.abort();
+      throw new TransactionException("commit transaction failed.", e);
+    }
   }
 
   @Override
@@ -67,6 +84,7 @@ public class ElectronicMoneyWithTransaction extends ElectronicMoney {
       fromResult = tx.get(fromGet);
       toResult = tx.get(toGet);
     } catch (CrudException e) {
+      tx.abort();
       throw new TransactionException("read data from database failed.", e);
     }
 
