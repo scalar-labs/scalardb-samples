@@ -9,7 +9,6 @@ services:
       - "9042:9042"
     networks:
       - scalar-network
-
   scalardb-server:
     image: ghcr.io/scalar-labs/scalardb-server:3.1.0
     container_name: "scalardb-server-1"
