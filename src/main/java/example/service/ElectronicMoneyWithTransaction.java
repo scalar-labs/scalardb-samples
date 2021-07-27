@@ -42,7 +42,6 @@ public class ElectronicMoneyWithTransaction extends ElectronicMoney {
       throw new TransactionException("read data from database failed.", e);
     }
 
-
     // Calculate the balance
     int balance = amount;
     if (result.isPresent()) {
@@ -51,8 +50,11 @@ public class ElectronicMoneyWithTransaction extends ElectronicMoney {
     }
 
     // Update the balance
-    Put put = new Put(new Key(new TextValue(ID, id))).withValue(BALANCE, balance)
-        .forNamespace(NAMESPACE).forTable(TABLENAME);
+    Put put =
+        new Put(new Key(new TextValue(ID, id)))
+            .withValue(BALANCE, balance)
+            .forNamespace(NAMESPACE)
+            .forTable(TABLENAME);
     try {
       tx.put(put);
     } catch (CrudException e) {
@@ -75,8 +77,10 @@ public class ElectronicMoneyWithTransaction extends ElectronicMoney {
     DistributedTransaction tx = service.start();
 
     // Retrieve the current balances for ids
-    Get fromGet = new Get(new Key(new TextValue(ID, fromId))).forNamespace(NAMESPACE).forTable(TABLENAME);
-    Get toGet = new Get(new Key(new TextValue(ID, toId))).forNamespace(NAMESPACE).forTable(TABLENAME);
+    Get fromGet =
+        new Get(new Key(new TextValue(ID, fromId))).forNamespace(NAMESPACE).forTable(TABLENAME);
+    Get toGet =
+        new Get(new Key(new TextValue(ID, toId))).forNamespace(NAMESPACE).forTable(TABLENAME);
     Optional<Result> fromResult;
     Optional<Result> toResult;
     try {
@@ -97,11 +101,15 @@ public class ElectronicMoneyWithTransaction extends ElectronicMoney {
 
     // Update the balances
     Put fromPut =
-        new Put(new Key(new TextValue(ID, fromId))).withValue(BALANCE, newFromBalance)
-            .forNamespace(NAMESPACE).forTable(TABLENAME);
+        new Put(new Key(new TextValue(ID, fromId)))
+            .withValue(BALANCE, newFromBalance)
+            .forNamespace(NAMESPACE)
+            .forTable(TABLENAME);
     Put toPut =
-        new Put(new Key(new TextValue(ID, toId))).withValue(BALANCE, newToBalance)
-            .forNamespace(NAMESPACE).forTable(TABLENAME);
+        new Put(new Key(new TextValue(ID, toId)))
+            .withValue(BALANCE, newToBalance)
+            .forNamespace(NAMESPACE)
+            .forTable(TABLENAME);
     try {
       tx.put(fromPut);
       tx.put(toPut);
@@ -117,7 +125,6 @@ public class ElectronicMoneyWithTransaction extends ElectronicMoney {
       tx.abort();
       throw new TransactionException("commit transaction failed.", e);
     }
-
   }
 
   @Override

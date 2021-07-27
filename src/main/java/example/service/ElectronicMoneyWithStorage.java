@@ -42,8 +42,11 @@ public class ElectronicMoneyWithStorage extends ElectronicMoney {
     }
 
     // Update the balance
-    Put put = new Put(new Key(new TextValue(ID, id))).withValue(BALANCE, balance)
-        .forNamespace(NAMESPACE).forTable(TABLENAME);
+    Put put =
+        new Put(new Key(new TextValue(ID, id)))
+            .withValue(BALANCE, balance)
+            .forNamespace(NAMESPACE)
+            .forTable(TABLENAME);
     try {
       service.put(put);
     } catch (ExecutionException e) {
@@ -54,8 +57,10 @@ public class ElectronicMoneyWithStorage extends ElectronicMoney {
   @Override
   public void pay(String fromId, String toId, int amount) throws ExecutionException {
     // Retrieve the current balances for ids
-    Get fromGet = new Get(new Key(new TextValue(ID, fromId))).forNamespace(NAMESPACE).forTable(TABLENAME);
-    Get toGet = new Get(new Key(new TextValue(ID, toId))).forNamespace(NAMESPACE).forTable(TABLENAME);
+    Get fromGet =
+        new Get(new Key(new TextValue(ID, fromId))).forNamespace(NAMESPACE).forTable(TABLENAME);
+    Get toGet =
+        new Get(new Key(new TextValue(ID, toId))).forNamespace(NAMESPACE).forTable(TABLENAME);
     Optional<Result> fromResult;
     Optional<Result> toResult;
     fromResult = service.get(fromGet);
@@ -71,10 +76,14 @@ public class ElectronicMoneyWithStorage extends ElectronicMoney {
     // Update the balances
     Put fromPut =
         new Put(new Key(new TextValue(ID, fromId)))
-            .withValue(BALANCE, newFromBalance).forNamespace(NAMESPACE).forTable(TABLENAME);
+            .withValue(BALANCE, newFromBalance)
+            .forNamespace(NAMESPACE)
+            .forTable(TABLENAME);
     Put toPut =
         new Put(new Key(new TextValue(ID, toId)))
-            .withValue(BALANCE, newToBalance).forNamespace(NAMESPACE).forTable(TABLENAME);
+            .withValue(BALANCE, newToBalance)
+            .forNamespace(NAMESPACE)
+            .forTable(TABLENAME);
     service.put(fromPut);
     service.put(toPut);
   }

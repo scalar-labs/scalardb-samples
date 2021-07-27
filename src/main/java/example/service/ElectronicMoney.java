@@ -1,6 +1,5 @@
 package example.service;
 
-
 import com.scalar.db.config.DatabaseConfig;
 
 import java.io.File;
