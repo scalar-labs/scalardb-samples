@@ -27,13 +27,24 @@ public class ElectronicMoneyCommand implements Callable<Integer> {
       description = "Action for an account, either charge or pay")
   String action;
 
-  @CommandLine.Option(names = {"-a", "--amount"}, description = "Amount of money")
+  @CommandLine.Option(
+      names = {"-a", "--amount"},
+      description = "Amount of money")
   Integer amount;
-  @CommandLine.Option(names = {"-u", "--user_account"}, description = "User account")
+
+  @CommandLine.Option(
+      names = {"-u", "--user_account"},
+      description = "User account")
   String userAcc;
-  @CommandLine.Option(names = {"-f", "--from"}, description = "From account")
+
+  @CommandLine.Option(
+      names = {"-f", "--from"},
+      description = "From account")
   String from;
-  @CommandLine.Option(names = {"-t", "--to"}, description = "To account")
+
+  @CommandLine.Option(
+      names = {"-t", "--to"},
+      description = "To account")
   String to;
 
   @Override
