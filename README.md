@@ -1,4 +1,4 @@
-# Scalar DB Samples
+# Scalar DB Server Samples
 - This repository contains the sample application that will connect to `ScalarDB Server` as backend. For using native `ScalarDB` library to connect to `ScalarDB` directly please refer to this document [`Getting Started`](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started.md).
 - `ScalarDB Server` is `gRPC` server that implements ScalarDB interface. More information about `ScalarDB Server` can be found [`here`](https://github.com/scalar-labs/scalardb/tree/master/docs/scalardb-server.md)
 
