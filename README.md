@@ -74,7 +74,7 @@ scalar.db.transaction_manager=grpc
     ```
     java -jar tools/scalar-schema-standalone-3.0.0.jar --cassandra -h localhost -u cassandra -p cassandra -f src/main/resources/emoney-storage-schema.json
     ```
-    Please note that `scalar-schema-standalone-3.0.0.jar` is schema registration tool that can be found in [`release`](https://github.com/scalar-labs/scalardb/releases) of `Scalar DB`
+    Please note that `scalar-schema-standalone-3.1.0.jar` is schema registration tool that can be found in [`release`](https://github.com/scalar-labs/scalardb/releases) of `Scalar DB`
 
     - In case using transaction, our schema looks like [`emoney-transaction-schema.json`](src/main/resources/emoney-transaction-schema.json)
     ```
