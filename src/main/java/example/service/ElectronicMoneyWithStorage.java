@@ -38,12 +38,12 @@ public class ElectronicMoneyWithStorage extends ElectronicMoney {
     // Calculate the balance
     int balance = amount;
     if (result.isPresent()) {
-      int current = ((IntValue) result.get().getValue(BALANCE).get()).get();
+      int current = result.get().getValue(BALANCE).get().getAsInt();
       balance += current;
     }
 
     // Update the balance
-    Put put = new Put(new Key(new TextValue(ID, id))).withValue(new IntValue(BALANCE, balance))
+    Put put = new Put(new Key(new TextValue(ID, id))).withValue(BALANCE, balance)
         .forNamespace(NAMESPACE).forTable(TABLENAME);
     try {
       service.put(put);
@@ -63,8 +63,8 @@ public class ElectronicMoneyWithStorage extends ElectronicMoney {
     toResult = service.get(toGet);
 
     // Calculate the balances (it assumes that both accounts exist)
-    int newFromBalance = ((IntValue) (fromResult.get().getValue(BALANCE).get())).get() - amount;
-    int newToBalance = ((IntValue) (toResult.get().getValue(BALANCE).get())).get() + amount;
+    int newFromBalance = fromResult.get().getValue(BALANCE).get().getAsInt() - amount;
+    int newToBalance = toResult.get().getValue(BALANCE).get().getAsInt() + amount;
     if (newFromBalance < 0) {
       throw new RuntimeException(fromId + " doesn't have enough balance.");
     }
@@ -72,10 +72,10 @@ public class ElectronicMoneyWithStorage extends ElectronicMoney {
     // Update the balances
     Put fromPut =
         new Put(new Key(new TextValue(ID, fromId)))
-            .withValue(new IntValue(BALANCE, newFromBalance)).forNamespace(NAMESPACE).forTable(TABLENAME);
+            .withValue(BALANCE, newFromBalance).forNamespace(NAMESPACE).forTable(TABLENAME);
     Put toPut =
         new Put(new Key(new TextValue(ID, toId)))
-            .withValue(new IntValue(BALANCE, newToBalance)).forNamespace(NAMESPACE).forTable(TABLENAME);
+            .withValue(BALANCE, newToBalance).forNamespace(NAMESPACE).forTable(TABLENAME);
     service.put(fromPut);
     service.put(toPut);
   }

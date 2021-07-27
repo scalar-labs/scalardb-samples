@@ -37,7 +37,7 @@ public class ElectronicMoneyWithTransaction extends ElectronicMoney {
     Get get = new Get(new Key(new TextValue(ID, id))).forNamespace(NAMESPACE).forTable(TABLENAME);
     Optional<Result> result;
     try {
-     result = tx.get(get);
+      result = tx.get(get);
     } catch (CrudException e) {
       tx.abort();
       throw new TransactionException("read data from database failed.", e);
@@ -47,12 +47,12 @@ public class ElectronicMoneyWithTransaction extends ElectronicMoney {
     // Calculate the balance
     int balance = amount;
     if (result.isPresent()) {
-      int current = ((IntValue) result.get().getValue(BALANCE).get()).get();
+      int current = result.get().getValue(BALANCE).get().getAsInt();
       balance += current;
     }
 
     // Update the balance
-    Put put = new Put(new Key(new TextValue(ID, id))).withValue(new IntValue(BALANCE, balance))
+    Put put = new Put(new Key(new TextValue(ID, id))).withValue(BALANCE, balance)
         .forNamespace(NAMESPACE).forTable(TABLENAME);
     try {
       tx.put(put);
@@ -89,8 +89,8 @@ public class ElectronicMoneyWithTransaction extends ElectronicMoney {
     }
 
     // Calculate the balances (it assumes that both accounts exist)
-    int newFromBalance = ((IntValue) (fromResult.get().getValue(BALANCE).get())).get() - amount;
-    int newToBalance = ((IntValue) (toResult.get().getValue(BALANCE).get())).get() + amount;
+    int newFromBalance = fromResult.get().getValue(BALANCE).get().getAsInt() - amount;
+    int newToBalance = toResult.get().getValue(BALANCE).get().getAsInt() + amount;
     if (newFromBalance < 0) {
       tx.abort();
       throw new RuntimeException(fromId + " doesn't have enough balance.");
@@ -98,10 +98,10 @@ public class ElectronicMoneyWithTransaction extends ElectronicMoney {
 
     // Update the balances
     Put fromPut =
-        new Put(new Key(new TextValue(ID, fromId))).withValue(new IntValue(BALANCE, newFromBalance))
+        new Put(new Key(new TextValue(ID, fromId))).withValue(BALANCE, newFromBalance)
             .forNamespace(NAMESPACE).forTable(TABLENAME);
     Put toPut =
-        new Put(new Key(new TextValue(ID, toId))).withValue(new IntValue(BALANCE, newToBalance))
+        new Put(new Key(new TextValue(ID, toId))).withValue(BALANCE, newToBalance)
             .forNamespace(NAMESPACE).forTable(TABLENAME);
     try {
       tx.put(fromPut);
