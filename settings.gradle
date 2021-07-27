@@ -1,3 +1,2 @@
 rootProject.name = 'scalardb-samples'
 include 'src'
-
