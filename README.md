@@ -72,7 +72,7 @@ scalar.db.transaction_manager=grpc
     ```
     to register schema to our Cassandra instance we run following command:
     ```
-    java -jar tools/scalar-schema-standalone-3.0.0.jar --cassandra -h localhost -u cassandra -p cassandra -f src/main/resources/emoney-storage-schema.json
+    java -jar tools/scalar-schema-standalone-3.1.0.jar --cassandra -h localhost -u cassandra -p cassandra -f src/main/resources/emoney-storage-schema.json
     ```
     Please note that `scalar-schema-standalone-3.1.0.jar` is schema registration tool that can be found in [`release`](https://github.com/scalar-labs/scalardb/releases) of `Scalar DB`
 
