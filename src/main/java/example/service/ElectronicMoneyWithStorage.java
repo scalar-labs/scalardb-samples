@@ -6,7 +6,6 @@ import com.scalar.db.api.Get;
 import com.scalar.db.api.Put;
 import com.scalar.db.api.Result;
 import com.scalar.db.exception.storage.ExecutionException;
-import com.scalar.db.io.IntValue;
 import com.scalar.db.io.Key;
 import com.scalar.db.io.TextValue;
 import com.scalar.db.service.StorageModule;
