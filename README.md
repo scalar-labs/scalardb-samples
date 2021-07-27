@@ -94,7 +94,7 @@ scalar.db.transaction_manager=grpc
     ```
     and the registering command is
     ```
-    java -jar tools/scalar-schema-standalone-3.0.0.jar --cassandra -h localhost -u cassandra -p cassandra -f src/main/resources/emoney-transaction-schema.json
+    java -jar tools/scalar-schema-standalone-3.1.0.jar --cassandra -h localhost -u cassandra -p cassandra -f src/main/resources/emoney-transaction-schema.json
     ```
 
 ## Run our sample
