@@ -35,7 +35,7 @@ docker-compose -f docker-compose-cassandra.yml up -d
 ```
 - *For using other databases as backend for Scalar DB server we can change the configuration in [`database.properties`](database.properties) according to [`Getting Started`](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started.md). After that we can start our `Scalar DB server` using this [`docker-compose.yml`](docker-compose.yml) instead.*
 ### Scalar DB Client
-- Our sample application will connect to `Scalar DB server` via gRPC, the configuration basically is same format with our server configuration, the different is we have to change storage to gRPC and transaction manager to gRPC as well. The configuration is [`scalardb-client.properties`](scalardb-client.properties).
+- Our sample application will connect to `Scalar DB server` via gRPC, the configuration basically has the same format as our server configuration, the difference is we have to change storage to gRPC and transaction manager to gRPC as well. The configuration is [`scalardb-client.properties`](scalardb-client.properties).
 ```
 # Comma separated contact points
 scalar.db.contact_points=127.0.0.1
