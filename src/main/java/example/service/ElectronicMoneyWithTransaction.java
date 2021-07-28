@@ -14,7 +14,6 @@ import com.scalar.db.io.Key;
 import com.scalar.db.io.TextValue;
 import com.scalar.db.service.TransactionModule;
 import com.scalar.db.service.TransactionService;
-
 import java.io.IOException;
 import java.util.Optional;
 

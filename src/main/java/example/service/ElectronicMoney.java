@@ -1,7 +1,6 @@
 package example.service;
 
 import com.scalar.db.config.DatabaseConfig;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

@@ -10,7 +10,6 @@ import com.scalar.db.io.Key;
 import com.scalar.db.io.TextValue;
 import com.scalar.db.service.StorageModule;
 import com.scalar.db.service.StorageService;
-
 import java.io.IOException;
 import java.util.Optional;
 
