@@ -29,13 +29,13 @@ scalar.db.password=cassandra
 # Storage implementation. Either cassandra or cosmos or dynamo or jdbc can be set. Default storage is cassandra.
 scalar.db.storage=cassandra
 ```
-- To start our Scalar DB server, we use the below command (please note that we should wait around a bit more one minute to make sure every container is already up, because Scalar DB container has to wait for Cassandra container to be fully started)
+- To start our Scalar DB server, we use the below command (please note that we should wait around a bit more than one minute to make sure every container is already up, because Scalar DB container has to wait for Cassandra container to be fully started)
 ```
 docker-compose -f docker-compose-cassandra.yml up -d
 ```
 - *For using other databases as backend for Scalar DB server we can change the configuration in [`database.properties`](database.properties) according to [`Getting Started`](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started.md). After that we can start our `Scalar DB server` using this [`docker-compose.yml`](docker-compose.yml) instead.*
 ### Scalar DB Client
-- Our sample application will connect to `Scalar DB server` via gRPC, the configuration basically is same format with our server configuration, the different is we have to change storage to gRPC and transaction manager to gRPC as well. The configuration is [`scalardb-client.properties`](scalardb-client.properties).
+- Our sample application will connect to `Scalar DB server` via gRPC, the configuration basically has the same format as our server configuration, the difference is we have to change storage to gRPC and transaction manager to gRPC as well. The configuration is [`scalardb-client.properties`](scalardb-client.properties).
 ```
 # Comma separated contact points
 scalar.db.contact_points=127.0.0.1
@@ -53,7 +53,7 @@ scalar.db.storage=grpc
 # The type of the transaction manager
 scalar.db.transaction_manager=grpc
 ```
-- Setting up Scalar DB schema: As mentioned in [`Getting started with Scalar DB`](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started-with-scalardb.md) storing and retrieving data in `Scalar DB` can be `storage` or `transaction`.
+- Setting up Scalar DB schema: As mentioned in [`Getting started with Scalar DB`](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started-with-scalardb.md) storing and retrieving data in `Scalar DB` can be done using either the `storage` or the `transaction` mode.
     - Our storage schema is  [`emoney-storage-schema.json`](./src/main/resources/emoney-storage-schema.json)
     ```
     {
@@ -70,11 +70,11 @@ scalar.db.transaction_manager=grpc
       }
     }
     ```
-    to register schema to our Cassandra instance we run following command:
+    to register schema to our Cassandra instance we run the following command:
     ```
     java -jar tools/scalar-schema-standalone-3.1.0.jar --cassandra -h localhost -u cassandra -p cassandra -f src/main/resources/emoney-storage-schema.json
     ```
-    Please note that `scalar-schema-standalone-3.1.0.jar` is schema registration tool that can be found in [`release`](https://github.com/scalar-labs/scalardb/releases) of `Scalar DB`
+    Please note that `scalar-schema-standalone-3.1.0.jar` is the schema registration tool that can be found in [`release`](https://github.com/scalar-labs/scalardb/releases) of `Scalar DB`
 
     - In case using transaction, our schema looks like [`emoney-transaction-schema.json`](src/main/resources/emoney-transaction-schema.json)
     ```
