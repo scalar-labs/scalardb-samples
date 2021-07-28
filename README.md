@@ -53,7 +53,7 @@ scalar.db.storage=grpc
 # The type of the transaction manager
 scalar.db.transaction_manager=grpc
 ```
-- Setting up Scalar DB schema: As mentioned in [`Getting started with Scalar DB`](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started-with-scalardb.md) storing and retrieving data in `Scalar DB` can be `storage` or `transaction`.
+- Setting up Scalar DB schema: As mentioned in [`Getting started with Scalar DB`](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started-with-scalardb.md) storing and retrieving data in `Scalar DB` can be done using either the `storage` or the `transaction` mode.
     - Our storage schema is  [`emoney-storage-schema.json`](./src/main/resources/emoney-storage-schema.json)
     ```
     {
