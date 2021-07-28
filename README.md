@@ -29,7 +29,7 @@ scalar.db.password=cassandra
 # Storage implementation. Either cassandra or cosmos or dynamo or jdbc can be set. Default storage is cassandra.
 scalar.db.storage=cassandra
 ```
-- To start our Scalar DB server, we use the below command (please note that we should wait around a bit more one minute to make sure every container is already up, because Scalar DB container has to wait for Cassandra container to be fully started)
+- To start our Scalar DB server, we use the below command (please note that we should wait around a bit more than one minute to make sure every container is already up, because Scalar DB container has to wait for Cassandra container to be fully started)
 ```
 docker-compose -f docker-compose-cassandra.yml up -d
 ```
