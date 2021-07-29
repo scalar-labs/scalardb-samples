@@ -74,7 +74,7 @@ Note that this case uses non-transactional mode (storage mode) since `transactio
   }
 }
 ```
-You then apply the schema with the following command. Please note that `scalar-schema-standalone-<version>.jar` is the schema registration tool that can be found in [release](https://github.com/scalar-labs/scalardb/releases) of Scalar DB. Please select 3.1.0 or higher since Scalar DB server support is added in 3.1.0.
+You then apply the schema with the following command. Please note that `scalar-schema-standalone-<version>.jar` is the schema tool that can be found in [releases](https://github.com/scalar-labs/scalardb/releases) of Scalar DB. Please select 3.1.0 or higher since Scalar DB server support is added in 3.1.0.
 
 ```
 java -jar tools/scalar-schema-standalone-<version>.jar --cassandra -h localhost -u cassandra -p cassandra -f src/main/resources/emoney-storage-schema.json
