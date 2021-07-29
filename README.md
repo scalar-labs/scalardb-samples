@@ -80,7 +80,7 @@ You then apply the schema with the following command. Please note that `scalar-s
 java -jar tools/scalar-schema-standalone-<version>.jar --cassandra -h localhost -u cassandra -p cassandra -f src/main/resources/emoney-storage-schema.json
 ```
 
-You can create a transactional schema by setting `trasaction` to true. (The updated schema is stored in [emoney-transaction-schema.json](src/main/resources/emoney-transaction-schema.json))
+You can create a transaction-enabled schema by setting `transaction` to true. (The updated schema is stored in [emoney-transaction-schema.json](src/main/resources/emoney-transaction-schema.json))
 
 ```
 {
