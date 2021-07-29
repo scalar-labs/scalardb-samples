@@ -57,7 +57,7 @@ scalar.db.transaction_manager=grpc
 Setting up Scalar DB schema: As mentioned in [Getting started with Scalar DB](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started-with-scalardb.md) storing and retrieving data in `Scalar DB` can be done using either the `storage` or the `transaction` mode.
 
 Now you apply the database schema of the sample application as shown below. (It is stored in [emoney-storage-schema.json](./src/main/resources/emoney-storage-schema.json)).
-Note that this case uses non-transactional mode (storage mode) since `transaction` key is set to false.
+Note that you use non-transactional schema (storage mode) since `transaction` key is set to false.
       
 ```
 {
