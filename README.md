@@ -1,5 +1,5 @@
 # Scalar DB Server Samples
-This repository contains a sample application that uses Scalar DB server, a gRPC server that implements Scalar DB interface, as a backend. For using the native `Scalar DB` library, please refer to [Getting Started](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started.md).
+This repository contains a sample application that uses Scalar DB server, a gRPC server that implements Scalar DB interface, as a backend. For using the native Scalar DB library, please refer to [Getting Started](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started.md).
 More information about Scalar DB server can be found [here](https://github.com/scalar-labs/scalardb/tree/master/docs/scalardb-server.md).
 
 ## Sample application
