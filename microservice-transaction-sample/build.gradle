@@ -1,0 +1,17 @@
+subprojects {
+    group = "example"
+    project.version = '1.0'
+
+    ext {
+        grpcVersion = '1.38.0'
+        protocVersion = '3.17.2'
+        scalarDbVersion = '3.2.0'
+        picoCliVersion = '4.1.4'
+        protobufJavaFormatVersion = '1.4'
+        log4jVersion = '2.14.1'
+    }
+
+    repositories {
+        mavenCentral()
+    }
+}

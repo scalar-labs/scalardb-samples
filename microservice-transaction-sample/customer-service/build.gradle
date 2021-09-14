@@ -1,0 +1,34 @@
+plugins {
+    id 'java'
+    id 'java-library-distribution'
+    id 'application'
+    id 'com.palantir.docker' version '0.25.0'
+}
+
+dependencies {
+    implementation project(':rpc')
+    implementation "com.scalar-labs:scalardb:${scalarDbVersion}"
+    implementation "info.picocli:picocli:${picoCliVersion}"
+    implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+    implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+}
+
+application {
+    mainClassName = 'example.customer.CustomerServiceServer'
+}
+
+docker {
+    name "example-customer-service:${project.version}"
+    files tasks.distTar.outputs, 'customer-service.properties'
+}
+
+distTar {
+    archiveFileName = "${project.name}.tar"
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+}
+
+archivesBaseName = "example-customer-service"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8

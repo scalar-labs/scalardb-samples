@@ -1,0 +1,76 @@
+version: "3.5"
+services:
+  mysql:
+    image: mysql:8.0.26
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+    container_name: "mysql-1"
+    ports:
+      - "3306:3306"
+    networks:
+      - example-network
+  cassandra:
+    image: cassandra:3.11
+    container_name: "cassandra-1"
+    ports:
+      - "9042:9042"
+    networks:
+      - example-network
+  customer-service-schema-loader:
+    image: example-customer-service-schema-loader:1.0
+    container_name: "customer-service-schema-loader-1"
+    depends_on:
+      - mysql
+    volumes:
+      - ./wait-for-it.sh:/wait-for-it.sh
+    entrypoint: /bin/bash
+    command: ./wait-for-it.sh -t 60 mysql:3306 -- java -jar app.jar -f schema.json --jdbc -j jdbc:mysql://mysql:3306/ -u root -p mysql
+    networks:
+      - example-network
+    restart: on-failure
+  customer-service:
+    image: example-customer-service:1.0
+    container_name: "customer-service-1"
+    depends_on:
+      - mysql
+      - cassandra
+      - customer-service-schema-loader
+    volumes:
+      - ./wait-for-it.sh:/customer-service/wait-for-it.sh
+    entrypoint: /bin/bash
+    command: ./wait-for-it.sh -t 60 mysql:3306 -- /bin/bash -c './wait-for-it.sh -t 60 cassandra:9042 -- /bin/bash -c "sleep 10 && ./bin/customer-service --config database.properties"'
+    restart: "always"
+    ports:
+      - "10010:10010"
+    networks:
+      - example-network
+  order-service-schema-loader:
+    image: example-order-service-schema-loader:1.0
+    container_name: "order-service-schema-loader-1"
+    depends_on:
+      - cassandra
+    volumes:
+      - ./wait-for-it.sh:/wait-for-it.sh
+    entrypoint: /bin/bash
+    command: ./wait-for-it.sh -t 60 cassandra:9042 -- java -jar app.jar -f schema.json --cassandra -h cassandra -R 1
+    networks:
+      - example-network
+    restart: on-failure
+  order-service:
+    image: example-order-service:1.0
+    container_name: "order-service-1"
+    depends_on:
+      - cassandra
+      - order-service-schema-loader
+    volumes:
+      - ./wait-for-it.sh:/order-service/wait-for-it.sh
+    entrypoint: /bin/bash
+    command: ./wait-for-it.sh -t 60 cassandra:9042 -- /bin/bash -c "sleep 10 && ./bin/order-service --config database.properties"
+    restart: "always"
+    ports:
+      - "10020:10020"
+    networks:
+      - example-network
+networks:
+  example-network:
+    name: example-network
