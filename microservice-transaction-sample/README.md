@@ -25,7 +25,7 @@ Note that both services access a small coordinator database used for the Consens
 The database is service-independent and exists for managing transaction metadata for Consensus Commit in a highly available manner, so we don't think it is violating the database-per-service pattern. 
 *NOTE: We also plan to create a microservice container for the coordinator database to truly achieve the database-per-service pattern.*
 
-In this sample application, for ease of setup and explanation, we colocate the coordinator database in the same Cassandra instance of the Order Service, but of course, the coordinator database can be managed as a separate database.
+In this sample application, for ease of setup and explanation, we co-locate the coordinator database in the same Cassandra instance of the Order Service, but of course, the coordinator database can be managed as a separate database.
 
 ### Schemas
 
@@ -237,4 +237,118 @@ After repayment, the customer will be able to place an order again!
 ...
 {"order_id": "dd53dd9d-aaf4-41db-84b2-56951fed6425"}
 ...
+```
+
+## How the microservice transaction is achieved
+
+So far, we have run the sample application, but we haven't seen how it is implemented, especially for the transaction that spans the services.
+Let's look at the code to see how it is implemented.
+
+When a client sends `Place an order` request to Order Service, [OrderService.placeOrder()](order-service/src/main/java/example/order/OrderService.java#L103-L104) is called, and the microservice transaction starts.
+
+At first, Order Service starts a transaction with [start()](microservice-transaction-sample/order-service/src/main/java/example/order/OrderService.java#L109-L110):
+```java
+transaction = twoPhaseCommitTransactionManager.start();
+```
+
+Then, Order Service calls the `join` gRPC endpoint of Customer Service along with the transaction ID, and Customer Service joins the transaction with [join()](customer-service/src/main/java/example/customer/CustomerService.java#L161):
+```java
+twoPhaseCommitTransactionManager.join(request.getTransactionId());
+```
+
+After that, CRUD operations happen.
+
+Order Service puts the order information to the `order_service.orders` table also the detailed information to `order_service.statements` (the code is [here](order-service/src/main/java/example/order/OrderService.java#L116-L129)):
+```java
+Order.put(transaction, orderId, request.getCustomerId(), System.currentTimeMillis());
+
+int amount = 0;
+for (ItemOrder itemOrder : request.getItemOrderList()) {
+  Statement.put(transaction, orderId, itemOrder.getItemId(), itemOrder.getCount());
+
+  Optional<Item> item = Item.get(transaction, itemOrder.getItemId());
+  if (!item.isPresent()) {
+    responseObserver.onError(
+        Status.NOT_FOUND.withDescription("Item not found").asRuntimeException());
+    return;
+  }
+  amount += item.get().price * itemOrder.getCount();
+}
+```
+
+And, Order Service calls the `payment` gRPC endpoint of Customer Service along with the transaction ID.
+This endpoint first resumes the transaction and gets the customer information.
+It then checks if the customer's credit total exceeds the credit limit after the payment.
+And if the check is okay, it updates the customer's credit total (the code is [here](microservice-transaction-sample/customer-service/src/main/java/example/customer/CustomerService.java#L175-L197)):
+```java
+TwoPhaseCommitTransaction transaction =
+    twoPhaseCommitTransactionManager.resume(request.getTransactionId());
+
+Optional<Customer> result = Customer.get(transaction, request.getCustomerId());
+
+if (!result.isPresent()) {
+  responseObserver.onError(
+      Status.NOT_FOUND.withDescription("Customer not found").asRuntimeException());
+  return;
+}
+
+int updatedCreditTotal = result.get().creditTotal + request.getAmount();
+
+// Check if the credit total exceeds the credit limit after payment
+if (updatedCreditTotal > result.get().creditLimit) {
+  responseObserver.onError(
+      Status.FAILED_PRECONDITION
+          .withDescription("Credit limit exceeded")
+          .asRuntimeException());
+  return;
+}
+
+Customer.updateCreditTotal(transaction, request.getCustomerId(), updatedCreditTotal);
+```
+
+Once Order Service receives that the payment succeeded, Order Service tries to commit the transaction.
+
+To do that, Order Service starts with [preparing the transaction](order-service/src/main/java/example/order/OrderService.java#L134).
+Order Service calls `prepare()` of its transaction object and calls the `prepare` gRPC endpoint of Customer Service (the code is [here](order-service/src/main/java/example/order/OrderService.java#L189-L190)):
+```java
+transaction.prepare();
+stub.prepare(PrepareRequest.newBuilder().setTransactionId(transaction.getId()).build());
+```
+
+In this endpoint, Customer Service calls `prepare()` of its transaction object, as well (the code is [here](customer-service/src/main/java/example/customer/CustomerService.java#L214)):
+```java
+TwoPhaseCommitTransaction transaction =
+    twoPhaseCommitTransactionManager.resume(request.getTransactionId());
+transaction.prepare();
+```
+
+Similarly, Order Service and Customer Service call `validate()` of their transaction objects (the codes are [here](order-service/src/main/java/example/order/OrderService.java#L194) and [here](customer-service/src/main/java/example/customer/CustomerService.java#L228-L230)).
+For the details of `validate()`, see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#validate-the-transaction).
+
+When preparing the transaction succeeds in both Order Service and Customer Service, we can [commit the transaction](order-service/src/main/java/example/order/OrderService.java#L143).
+Order Service calls `commit()` of its transaction object, and then calls the `commit` gRPC endpoint of Customer Service (the code is [here](order-service/src/main/java/example/order/OrderService.java#L200-L201)):
+```java
+transaction.commit();
+stub.commit(CommitRequest.newBuilder().setTransactionId(transaction.getId()).build());
+```
+
+In this endpoint, Customer Service calls `commit()` of its transaction object, as well (the code is [here](customer-service/src/main/java/example/customer/CustomerService.java#L244-L246)):
+```java
+TwoPhaseCommitTransaction transaction =
+    twoPhaseCommitTransactionManager.resume(request.getTransactionId());
+transaction.commit();
+```
+
+When some error happens during the transaction, we need to [rollback the transaction](order-service/src/main/java/example/order/OrderService.java#L153).
+In this case, Order Service calls `rollback()` of its transaction object, and then calls the `rollback` gRPC endpoint of Customer Service (the code is [here](order-service/src/main/java/example/order/OrderService.java#L209-L210)):
+```java
+transaction.rollback();
+stub.rollback(RollbackRequest.newBuilder().setTransactionId(transaction.getId()).build());
+```
+
+In this endpoint, Customer Service calls `rollback()` of its transaction object, as well (the code is [here](customer-service/src/main/java/example/customer/CustomerService.java#L260-L262)):
+```java
+TwoPhaseCommitTransaction transaction =
+    twoPhaseCommitTransactionManager.resume(request.getTransactionId());
+transaction.rollback();
 ```

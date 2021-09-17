@@ -185,7 +185,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
 
       int updatedCreditTotal = result.get().creditTotal + request.getAmount();
 
-      // Check if the updated credit total exceeds the credit limit
+      // Check if the credit total exceeds the credit limit after payment
       if (updatedCreditTotal > result.get().creditLimit) {
         responseObserver.onError(
             Status.FAILED_PRECONDITION
