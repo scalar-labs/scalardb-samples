@@ -246,7 +246,7 @@ Let's look at the code to see how it is implemented.
 
 When a client sends `Place an order` request to Order Service, [OrderService.placeOrder()](order-service/src/main/java/example/order/OrderService.java#L103-L104) is called, and the microservice transaction starts.
 
-At first, Order Service starts a transaction with [start()](microservice-transaction-sample/order-service/src/main/java/example/order/OrderService.java#L109-L110):
+At first, Order Service starts a transaction with [start()](order-service/src/main/java/example/order/OrderService.java#L109-L110):
 ```java
 transaction = twoPhaseCommitTransactionManager.start();
 ```
@@ -279,7 +279,7 @@ for (ItemOrder itemOrder : request.getItemOrderList()) {
 And, Order Service calls the `payment` gRPC endpoint of Customer Service along with the transaction ID.
 This endpoint first resumes the transaction and gets the customer information.
 It then checks if the customer's credit total exceeds the credit limit after the payment.
-And if the check is okay, it updates the customer's credit total (the code is [here](microservice-transaction-sample/customer-service/src/main/java/example/customer/CustomerService.java#L175-L197)):
+And if the check is okay, it updates the customer's credit total (the code is [here](customer-service/src/main/java/example/customer/CustomerService.java#L175-L197)):
 ```java
 TwoPhaseCommitTransaction transaction =
     twoPhaseCommitTransactionManager.resume(request.getTransactionId());
