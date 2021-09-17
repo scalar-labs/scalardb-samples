@@ -22,11 +22,10 @@ Customer Service and Order Service uses MySQL and Cassandra through Scalar DB, r
 ![Overview](images/overview.png)
 
 Note that both services access a small coordinator database used for the Consensus Commit protocol.
-The database is service-independent and exists for managing transaction metadata for Consensus Commit in a highly available manner, so we don't think it is violating the database-per-service pattern. We also plan to create a microservice container for the coordinator database to truly achieve the database-per-service pattern.
-
+The database is service-independent and exists for managing transaction metadata for Consensus Commit in a highly available manner, so we don't think it is violating the database-per-service pattern. 
+*NOTE: We also plan to create a microservice container for the coordinator database to truly achieve the database-per-service pattern.*
 
 In this sample application, for ease of setup and explanation, we colocate the coordinator database in the same Cassandra instance of the Order Service, but of course, the coordinator database can be managed as a separate database.
-
 
 ### Schemas
 
