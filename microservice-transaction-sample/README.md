@@ -106,6 +106,10 @@ and the `credit_total` is the amount of money that the customer has already spen
 The `order_service.orders` table manages orders' information, and the `order_service.statements` table manages the states' information of the orders.
 The `order_service.items` table manages items' information to be ordered.
 
+The ER diagram for the schema is as follows:
+
+![ERD](images/ERD.png)
+
 ### Transactions
 
 The following five transactions are implemented in this sample application:
