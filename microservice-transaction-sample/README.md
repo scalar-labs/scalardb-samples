@@ -1,7 +1,7 @@
 # Microservice Transaction Sample
 
-This is a sample application for Microservice Transaction that uses Two-phase Commit transactions in Scalar DB.
-You can find more information about Two-phase Commit transactions in Scalar DB [here](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md).
+This is a sample application for Microservice Transaction that uses Two-phase Commit Transactions in Scalar DB.
+You can find more information about Two-phase Commit Transactions in Scalar DB [here](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md).
 
 ## Prerequisites
 - Java (OpenJDK 8 or higher)
@@ -12,19 +12,21 @@ You can find more information about Two-phase Commit transactions in Scalar DB [
 
 ### Overview
 
-There are two microservices called *Customer Service* and *Order Service* in this sample application.
+There are two microservices called *Customer Service* and *Order Service* based on the [*Database-per-service* pattern](https://microservices.io/patterns/data/database-per-service.html) in this sample application.
 
-Customer Service manages the customer's information, including credit card information like a credit limit and a credit total.
+Customer Service manages customers' information including credit card information like a credit limit and a credit total.
 Order Service is responsible for order operations like placing an order and getting order histories.
-Each service has gRPC endpoints, and clients and the services call them.
-Customer Service and Order Service uses MySQL and Cassandra, respectively.
+Each service has gRPC endpoints. Clients call the endpoints, and the services call the endpoints each other as well.
+Customer Service and Order Service uses MySQL and Cassandra through Scalar DB, respectively.
 
 ![Overview](images/overview.png)
 
-Also, both services commonly access the Coordinator database that's used in the Consensus Commit protocol.
-In this sample application, the Coordinator database uses Cassandra, also used in Order Service, but you can also use a dedicated database for it in your application.
+Note that both services access a small coordinator database used for the Consensus Commit protocol.
+The database is service-independent and exists for managing transaction metadata for Consensus Commit in a highly available manner, so we don't think it is violating the database-per-service pattern. We also plan to create a microservice container for the coordinator database to truly achieve the database-per-service pattern.
 
-All data accesses in the microservices are done through Scalar DB.
+
+In this sample application, for ease of setup and explanation, we colocate the coordinator database in the same Cassandra instance of the Order Service, but of course, the coordinator database can be managed as a separate database.
+
 
 ### Schemas
 
@@ -48,9 +50,9 @@ All data accesses in the microservices are done through Scalar DB.
 }
 ```
 
-The `customer_service.customers` table manages the customer information.
-The `credit_limit` column is the maximum amount of money a lender will allow a customer to spend using a credit card.
-And, the `credit_total` column is the amount of money that a customer has already spent by using a credit card.
+The `customer_service.customers` table manages customers' information.
+The `credit_limit` for a customer is the maximum amount of money a lender will allow the customer to spend using a credit card,
+and the `credit_total` is the amount of money that the customer has already spent by using the credit card.
 
 [The schema for Order Service](order-service-schema-loader/order-service-schema.json) is as follows:
 
@@ -102,8 +104,8 @@ And, the `credit_total` column is the amount of money that a customer has alread
 }
 ```
 
-The `order_service.orders` table manages the order data, and the `order_service.statements` table contains the statement data of the order.
-The `order_service.items` table maintains the item data.
+The `order_service.orders` table manages orders' information, and the `order_service.statements` table manages the states' information of the orders.
+The `order_service.items` table manages items' information to be ordered.
 
 ### Transactions
 
