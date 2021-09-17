@@ -108,12 +108,12 @@ The `order_service.items` table manages items' information to be ordered.
 
 ### Transactions
 
-There are the following five transactions implemented in this sample application:
+The following five transactions are implemented in this sample application:
 
 1. Getting customer information. It is a transaction in Customer Service
 2. Placing an order. It is a transaction that spans Order Service and Customer Service. It first checks if the amount of the money of the order exceeds the credit limit. And when the check is passed, it records order histories and updates the `credit_total`
 3. Getting order information by order ID. It is a transaction in Order Service
-4. Getting order information by customer ID. It is also a transaction in Order Service
+4. Getting order information by customer ID. It is a transaction in Order Service
 5. Repayment. It is a transaction in Customer Service. It reduces the amount of `credit_total`.
 
 ## Set up
