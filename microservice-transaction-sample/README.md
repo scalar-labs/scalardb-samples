@@ -141,21 +141,21 @@ When the microservices start, the initial data is loaded automatically as follow
 
 - For the `customer_service.customers` table:
 
-| id | name | credit_limit | credit_total |
-| ---- | ---- | ---- | ---- |
-| 1 | Yamada Taro | 10000 | 0 |
-| 2 | Yamada Hanako | 10000 | 0 |
-| 3 | Suzuki Ichiro | 10000 | 0 |
+| id  | name          | credit_limit | credit_total |
+| --- | ------------- | ------------ | ------------ |
+| 1   | Yamada Taro   | 10000        | 0            |
+| 2   | Yamada Hanako | 10000        | 0            |
+| 3   | Suzuki Ichiro | 10000        | 0            |
 
 - For the `order_service.items` table:
 
-| id | name | price | 
-| ---- | ---- | ---- | 
-| 1 | Apple | 1000 |
-| 2 | Orange | 2000 |
-| 3 | Grape | 2500 |
-| 4 | Mango | 5000 |
-| 5 | Melon | 3000 |
+| id  | name   | price |
+| --- | ------ | ----- |
+| 1   | Apple  | 1000  |
+| 2   | Orange | 2000  |
+| 3   | Grape  | 2500  |
+| 4   | Mango  | 5000  |
+| 5   | Melon  | 3000  |
 
 ## Run the sample application
 
@@ -245,8 +245,8 @@ After repayment, the customer will be able to place an order again!
 
 ## How the microservice transaction is achieved
 
-So far, we have run the sample application, but we haven't seen how it is implemented, especially for the transaction that spans the services.
-Let's look at the code to see how it is implemented.
+So far, we have run the sample application, but we haven't seen how it is implemented.
+Let's look at the code to see how the transaction that spans the services is implemented.
 
 When a client sends `Place an order` request to Order Service, [OrderService.placeOrder()](order-service/src/main/java/example/order/OrderService.java#L103-L104) is called, and the microservice transaction starts.
 
@@ -356,3 +356,5 @@ TwoPhaseCommitTransaction transaction =
     twoPhaseCommitTransactionManager.resume(request.getTransactionId());
 transaction.rollback();
 ```
+
+For more details about Two-phase Commit Transactions, please see [the guide](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md).
