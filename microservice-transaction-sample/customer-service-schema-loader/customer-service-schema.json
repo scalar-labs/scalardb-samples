@@ -1,0 +1,15 @@
+{
+  "customer_service.customers": {
+    "transaction": true,
+    "partition-key": [
+      "id"
+    ],
+    "clustering-key": [],
+    "columns": {
+      "id": "INT",
+      "name": "TEXT",
+      "credit_limit": "INT",
+      "credit_total": "INT"
+    }
+  }
+}

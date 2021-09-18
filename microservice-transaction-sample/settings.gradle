@@ -1,0 +1,8 @@
+rootProject.name = 'microservice-transaction-sample'
+include 'customer-service'
+include 'customer-service-schema-loader'
+include 'order-service'
+include 'order-service-schema-loader'
+include 'rpc'
+include 'client'
+
