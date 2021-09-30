@@ -21,7 +21,7 @@ services:
     ports:
       - "60051:60051" # scalardb-server port
     entrypoint: /bin/bash
-    command: ./wait-for-it.sh -t 60 tcp://cassandra:9042 -- ./bin/scalardb-server --config database.properties
+    command: ./wait-for-it.sh -t 60 cassandra:9042 -- ./bin/scalardb-server --config database.properties
     networks:
       - scalar-network
 networks:
