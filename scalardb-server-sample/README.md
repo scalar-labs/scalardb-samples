@@ -70,10 +70,10 @@ Note that you use non-transactional schema (storage mode) since `transaction` ke
   }
 }
 ```
-You then apply the schema with the following command. Please note that `scalar-schema-standalone-<version>.jar` is the schema tool that can be found in [releases](https://github.com/scalar-labs/scalardb/releases) of Scalar DB. Please select 3.1.0 or higher since Scalar DB server support is added in 3.1.0.
+You then apply the schema with the following command. Please note that `scalardb-schema-loader-<version>.jar` is the schema loader that can be found in [releases](https://github.com/scalar-labs/scalardb/releases) of Scalar DB.
 
 ```
-java -jar scalar-schema-standalone-<version>.jar --cassandra -h localhost -u cassandra -p cassandra -f src/main/resources/emoney-storage-schema.json
+java -jar scalardb-schema-loader-<version>.jar --config scalardb-client.properties --schema-file src/main/resources/emoney-storage-schema.json
 ```
 
 You can create a transaction-enabled schema by setting `transaction` to true. (The updated schema is stored in [emoney-transaction-schema.json](src/main/resources/emoney-transaction-schema.json))
@@ -94,10 +94,10 @@ You can create a transaction-enabled schema by setting `transaction` to true. (T
 }
 ```
 
-You can apply the schema in the same way as above.
+You can apply the schema in the same way as above. Note that `--coordinator` is specified to create the coordinator table needed for transactions.
 
 ```
-java -jar scalar-schema-standalone-<version>.jar --cassandra -h localhost -u cassandra -p cassandra -f src/main/resources/emoney-transaction-schema.json
+java -jar scalardb-schema-loader-<version>.jar --config scalardb-client.properties --schema-file src/main/resources/emoney-transaction-schema.json --coordinator
 ```
 
 ## Run the sample
