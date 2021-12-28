@@ -3,8 +3,8 @@ package example.command;
 import example.service.ElectronicMoney;
 import example.service.ElectronicMoneyWithStorage;
 import example.service.ElectronicMoneyWithTransaction;
-import picocli.CommandLine;
 import java.util.concurrent.Callable;
+import picocli.CommandLine;
 
 @CommandLine.Command(name = "cmd", description = "Commands for Electronic Money CLI App")
 public class ElectronicMoneyCommand implements Callable<Integer> {
@@ -19,33 +19,33 @@ public class ElectronicMoneyCommand implements Callable<Integer> {
       index = "0",
       paramLabel = "mode",
       description = "Mode of execution, either storage or transaction")
-  String mode;
+  private String mode;
 
   @CommandLine.Parameters(
       index = "1",
       paramLabel = "action",
       description = "Action for an account, either charge or pay")
-  String action;
+  private String action;
 
   @CommandLine.Option(
       names = {"-a", "--amount"},
       description = "Amount of money")
-  Integer amount;
+  private Integer amount;
 
   @CommandLine.Option(
       names = {"-u", "--user_account"},
       description = "User account")
-  String userAcc;
+  private String userAcc;
 
   @CommandLine.Option(
       names = {"-f", "--from"},
       description = "From account")
-  String from;
+  private String from;
 
   @CommandLine.Option(
       names = {"-t", "--to"},
       description = "To account")
-  String to;
+  private String to;
 
   @Override
   public Integer call() throws Exception {
