@@ -45,7 +45,7 @@ yargs(hideBin(process.argv))
   .help()
   .parse();
 
-async function show(id: string) {
+async function show(id: string): Promise<void> {
   // Retrieve the current balance for id
   const { data, errors } = await sdk.GetAccount({ id, commit: true });
   if (errors) {
@@ -60,7 +60,7 @@ async function show(id: string) {
   }
 }
 
-async function charge(id: string, amount: number) {
+async function charge(id: string, amount: number): Promise<void> {
   let dataGet: GetAccountQuery | undefined,
     dataPut: PutAccountMutation | undefined,
     errors: GraphQLError[] | undefined,
@@ -95,7 +95,11 @@ async function charge(id: string, amount: number) {
   }
 }
 
-async function pay(from_id: string, to_id: string, amount: number) {
+async function pay(
+  from_id: string,
+  to_id: string,
+  amount: number
+): Promise<void> {
   let dataGet: GetTwoAccountsQuery | undefined,
     dataPut: PutTwoAccountsMutation | undefined,
     errors: GraphQLError[] | undefined,
