@@ -12,8 +12,9 @@ Apart from them, we will build a client Node.js application that will communicat
 
 ## Prerequisites
 
-- Docker and Docker Compose
-- Node.js
+- Docker Engine 20.10+
+- Docker Compose 1.28+
+- Node.js 16+
 
 You need a Personal Access Token (PAT) to access the Docker image of Scalar DB GraphQL in GitHub Container registry since the image is private. Ask a person in charge to get your account ready. Please read [the official document](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) for more detail.
 
