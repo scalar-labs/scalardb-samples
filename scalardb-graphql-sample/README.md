@@ -8,7 +8,7 @@ This sample application is a simple CLI electronic money application that has th
 
 In this sample, we will use Cassandra as a storage for Scalar DB. The Cassandra server and the Scalar DB GraphQL server will run with Docker.
 
-Apart from them, we will build a client Node.js application that will communicate with the GraphQL server. Please note that this client app is just one example of the clients; since GraphQL is a communication pattern, there are many tools in various programming languages for bulding applications.
+Apart from them, we will build a client Node.js application that will communicate with the GraphQL server. Please note that this client app is just one example of the clients; since GraphQL is a communication pattern, there are many tools in various programming languages for building applications.
 
 ## Prerequisites
 
@@ -33,7 +33,7 @@ You need to wait for the Cassandra to start up. Checking the logs with the `dock
 
 ### Load schema
 
-In this step, you will load the databasae schema for the sample app (`emoney-schema.json`) to the Cassandra database.
+In this step, you will load the database schema for the sample app (`emoney-schema.json`) to the Cassandra database.
 
 Since the `schema-loader` service is defined in `docker-compose.yml` as a one-shot service (with `profiles`), you can load the schema to the database by the following command:
 
