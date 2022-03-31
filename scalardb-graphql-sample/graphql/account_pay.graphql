@@ -1,0 +1,21 @@
+query GetTwoAccounts($id1: String!, $id2: String!, $txId: String, $commit: Boolean)
+@transaction(id: $txId, commit: $commit) {
+  get1: account_get(get: { key: { id: $id1 } }) {
+    ...accountFields
+  }
+  get2: account_get(get: { key: { id: $id2 } }) {
+    ...accountFields
+  }
+}
+
+mutation PutTwoAccounts(
+  $id1: String!
+  $balance1: Int
+  $id2: String!
+  $balance2: Int
+  $txId: String
+  $commit: Boolean
+) @transaction(id: $txId, commit: $commit) {
+  put1: account_put(put: { key: { id: $id1 }, values: { balance: $balance1 } })
+  put2: account_put(put: { key: { id: $id2 }, values: { balance: $balance2 } })
+}

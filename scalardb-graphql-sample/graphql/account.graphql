@@ -1,0 +1,24 @@
+fragment accountFields on account_GetPayload {
+  account {
+    id
+    balance
+  }
+}
+
+query GetAccount($id: String!, $txId: String, $commit: Boolean)
+@transaction(id: $txId, commit: $commit) {
+  get1: account_get(get: { key: { id: $id } }) {
+    ...accountFields
+  }
+}
+
+mutation PutAccount(
+  $id: String!
+  $balance: Int
+  $txId: String
+  $commit: Boolean
+) @transaction(id: $txId, commit: $commit) {
+  put1: account_put(
+    put: { key: { id: $id }, values: { balance: $balance } }
+  )
+}
