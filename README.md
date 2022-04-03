@@ -3,3 +3,4 @@ This repository contains sample applications for [Scalar DB](https://github.com/
 
 - [Scalar DB Server Sample](scalardb-server-sample/)
 - [Microservice Transaction Sample](microservice-transaction-sample/)
+- [Scalar DB GraphQL Sample](scalardb-graphql-sample/)
