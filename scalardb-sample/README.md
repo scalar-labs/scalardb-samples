@@ -15,6 +15,7 @@ This is a simple EC application where you can order items and pay with a credit 
 In this article, you create the application on Cassandra.
 Even though Cassandra does not provide ACID transaction capability, you can achieve ACID transactions on Cassandra by accessing Cassandra through Scalar DB.
 Please note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use Scalar DB.
+Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions) for the details of how to handle exceptions in Scalar DB.
 
 ### Schema
 

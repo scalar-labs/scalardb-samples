@@ -236,7 +236,7 @@ public class Sample implements AutoCloseable {
             Get.newBuilder()
                 .namespace("order")
                 .table("orders")
-                .partitionKey(Key.ofText("order_id", orderId))
+                .indexKey(Key.ofText("order_id", orderId))
                 .build());
 
     if (!order.isPresent()) {
@@ -388,7 +388,7 @@ public class Sample implements AutoCloseable {
         throw new RuntimeException("Over repayment");
       }
 
-      // Reduce credit_total in the customer
+      // Reduce credit_total for the customer
       transaction.put(
           Put.newBuilder()
               .namespace("customer")

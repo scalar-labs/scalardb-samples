@@ -9,6 +9,6 @@ WORKDIR /order-service
 
 COPY order-service.properties database.properties
 
-ENTRYPOINT ["./bin/example-order-service", "--config", "database.properties"]
+ENTRYPOINT ["./bin/sample-order-service", "--config", "database.properties"]
 
 EXPOSE 10020

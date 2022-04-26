@@ -5,15 +5,15 @@ plugins {
 
 dependencies {
     implementation project(':rpc')
-    implementation group: 'info.picocli', name: 'picocli', version: "${picoCliVersion}"
+    implementation "info.picocli:picocli:${picoCliVersion}"
     implementation "com.googlecode.protobuf-java-format:protobuf-java-format:${protobufJavaFormatVersion}"
 }
 
 application {
-    mainClassName = 'example.client.Client'
+    mainClassName = 'sample.client.Client'
 }
 
-archivesBaseName = "example-order-service"
+archivesBaseName = "sample-order-service"
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
