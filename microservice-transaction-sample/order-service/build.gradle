@@ -15,11 +15,11 @@ dependencies {
 }
 
 application {
-    mainClassName = 'example.order.OrderServiceServer'
+    mainClassName = 'sample.order.OrderServiceServer'
 }
 
 docker {
-    name "example-order-service:${project.version}"
+    name "sample-order-service:${project.version}"
     files tasks.distTar.outputs, 'order-service.properties'
 }
 
@@ -28,7 +28,7 @@ distTar {
     duplicatesStrategy DuplicatesStrategy.EXCLUDE
 }
 
-archivesBaseName = "example-order-service"
+archivesBaseName = "sample-order-service"
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
