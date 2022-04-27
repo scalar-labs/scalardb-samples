@@ -11,9 +11,10 @@ This is a sample application for Scalar DB.
 
 ### Overview
 
-This is a simple EC site where you can order items and pay with a credit card. 
-Since Scalar DB can execute ACID transactions on NoSQL and other databases that do not have ACID transaction capability, we can create the sample application on Cassandra.
-Please note that error handling, authentication processing, etc., are omitted in the sample application since it is just a sample application to explain how to use Scalar DB.
+This is a simple EC application where you can order items and pay with a credit card using Scalar DB.
+In this article, you create the application on Cassandra.
+Even though Cassandra does not provide ACID transaction capability, you can achieve ACID transactions on Cassandra by accessing Cassandra through Scalar DB.
+Please note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use Scalar DB.
 
 ### Schema
 
