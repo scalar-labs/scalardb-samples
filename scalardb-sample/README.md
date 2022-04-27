@@ -11,9 +11,9 @@ This is a sample application for Scalar DB.
 
 ### Overview
 
-This is a simple EC site where you can order items and pay them with a credit card.
-This sample application is built on Cassandra since Scalar DB can execute ACID transactions on NoSQL and other databases that do not have ACID transaction capability.
-Please note that error handling, authentication processing, etc., are omitted in the sample application since it is just a sample application to illustrate Scalar DB.
+This is a simple EC site where you can order items and pay with a credit card. 
+Since Scalar DB can execute ACID transactions on NoSQL and other databases that do not have ACID transaction capability, we can create the sample application on Cassandra.
+Please note that error handling, authentication processing, etc., are omitted in the sample application since it is just a sample application to explain how to use Scalar DB.
 
 ### Schema
 
@@ -79,12 +79,11 @@ Please note that error handling, authentication processing, etc., are omitted in
 
 ```
 
-The `sample.customers` table manages customers' information. 
-The `credit_limit` for a customer is the maximum amount of money a lender will allow the customer to spend using a credit card, and the `credit_total` is the amount of money that the customer has already spent by using the credit card.
+The `sample.customers` table manages customers' information.
+The `credit_limit` is the maximum amount of money a lender will allow each customer to spend using a credit card, and the `credit_total` is the amount of money that each customer has already spent by using the credit card.
 
-The `sample.orders` table manages orders' information, and the `sample.statements` table manages the statements' information of the orders.
+The `sample.orders` table manages orders' information, and the statements table manages the statements' information of the orders. Finally, the `sample.items` table manages items' information to be ordered.
 
-The `sample.items` table manages items' information to be ordered.
 
 The ER diagram for the schema is as follows:
 
@@ -95,10 +94,10 @@ The ER diagram for the schema is as follows:
 The following five transactions are implemented in this sample application:
 
 1. Getting customer information
-2. Placing an order. An order is paid by a credit card. And it first checks if the amount of the money of the order exceeds the credit limit. And when the check is passed, it records order histories and updates the `credit_total`
-3. Getting order information by order ID
-4. Getting order information by customer ID
-5. Repayment. It reduces the amount of `credit_total`.
+3. Placing an order. An order is paid by a credit card. It first checks if the amount of the money of the order exceeds the credit limit. If the check passes, it records order histories and updates the `credit_total`
+4. Getting order information by order ID
+5. Getting order information by customer ID
+6. Repayment. It reduces the amount of `credit_total`.
 
 ## Set up
 
