@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'org.sample'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.scalar-labs:scalardb:3.5.1'
+    implementation 'info.picocli:picocli:4.1.4'
+}
+
+application {
+    mainClassName = 'sample.command.SampleCommand'
+}
+
+archivesBaseName = "sample"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
