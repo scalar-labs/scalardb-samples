@@ -125,8 +125,8 @@ scalar.db.multi_storage.default_storage=cassandra
 This configuration defines two storages, `cassandra` and `mysql`, in the `scalar.db.multi_storage.storages` property.
 And the storage settings of each of them is configured in the `scalar.db.multi_storage.storages.cassandra.*` properties and the `scalar.db.multi_storage.storages.mysql.*` properties respectively.
 The `scalar.db.multi_storage.namespace_mapping` property defines the mapping between namespaces and storages, in this case, operations for the tables in the `customer` namespace are mapped to the `mysql` storage, and operations for the tables in the `order` namespace are mapped to the `cassandra` storage.
-Note that it also defines operations for the tables in the `coordinator` namespace are mapped to the `cassandra` storage.
-The tables in the `coordinator` namespace are created automatically are used in the Scalar DB's transaction protocol called Consensus Commit. 
+Note that it also defines that operations for the tables in the `coordinator` namespace are mapped to the `cassandra` storage.
+The tables in the `coordinator` namespace are created automatically and used in the Scalar DB's transaction protocol called Consensus Commit. 
 And the `scalar.db.multi_storage.default_storage` property defines the default storage that’s used if a specified table doesn't have any table mapping.
 In this case, if a specified table doesn't have any table mapping, operations for the table are mapped to the `cassandra` storage.
 
