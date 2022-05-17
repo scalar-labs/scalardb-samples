@@ -152,7 +152,7 @@ You first need to load initial data with the following command:
 
 And the following data will be loaded:
 
-- For the `cusomer.customers` table:
+- For the `customer.customers` table:
 
 | customer_id  | name          | credit_limit | credit_total |
 | ------------ | ------------- | ------------ | ------------ |
