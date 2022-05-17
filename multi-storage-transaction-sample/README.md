@@ -1,6 +1,6 @@
-# Scalar DB Sample
+# Multi-storage Transaction Sample
 
-This is a sample application for Scalar DB.
+This is a sample application for Multi-storage Transaction in Scalar DB.
 
 ## Prerequisites
 - Java (OpenJDK 8 or higher)
@@ -12,9 +12,12 @@ This is a sample application for Scalar DB.
 ### Overview
 
 This is a simple EC application where you can order items and pay with a credit card using Scalar DB.
-In this article, you create the application on Cassandra.
-Even though Cassandra does not provide ACID transaction capability, you can achieve ACID transactions on Cassandra by accessing Cassandra through Scalar DB.
+
+In this article, you create the sample application on Cassandra and MySQL.
+With Multi-storage Transaction in Scalar DB, you can execute a transaction that spans Cassandra and MySQL.
 Please note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use Scalar DB.
+
+![Overview](images/overview.png)
 
 ### Schema
 
@@ -22,7 +25,7 @@ Please note that application-specific error handling, authentication processing,
 
 ```json
 {
-  "sample.customers": {
+  "customer.customers": {
     "transaction": true,
     "partition-key": [
       "customer_id"
@@ -34,7 +37,7 @@ Please note that application-specific error handling, authentication processing,
       "credit_total": "INT"
     }
   },
-  "sample.orders": {
+  "order.orders": {
     "transaction": true,
     "partition-key": [
       "customer_id"
@@ -51,7 +54,7 @@ Please note that application-specific error handling, authentication processing,
       "timestamp": "BIGINT"
     }
   },
-  "sample.statements": {
+  "order.statements": {
     "transaction": true,
     "partition-key": [
       "order_id"
@@ -65,7 +68,7 @@ Please note that application-specific error handling, authentication processing,
       "count": "INT"
     }
   },
-  "sample.items": {
+  "order.items": {
     "transaction": true,
     "partition-key": [
       "item_id"
@@ -77,16 +80,14 @@ Please note that application-specific error handling, authentication processing,
     }
   }
 }
-
 ```
 
-All the tables are created in the `sample` namespace.
+The `customers` table is created in the `customer` namespace. And the `orders`, `statements`, and `items` tables are created in the `order` namespace.
 
-The `sample.customers` table manages customers' information.
+The `customer.customers` table manages customers' information.
 The `credit_limit` is the maximum amount of money a lender will allow each customer to spend using a credit card, and the `credit_total` is the amount of money that each customer has already spent by using the credit card.
 
-The `sample.orders` table manages orders' information, and the `sample.statements` table manages the statements' information of the orders. Finally, the `sample.items` table manages items' information to be ordered.
-
+The `orders.orders` table manages orders' information, and the `orders.statements` table manages the statements' information of the orders. Finally, the `orders.items` table manages items' information to be ordered.
 
 The ER diagram for the schema is as follows:
 
@@ -107,13 +108,30 @@ The following five transactions are implemented in this sample application:
 The configurations for the sample application is as follows:
 
 ```properties
-scalar.db.storage=cassandra
-scalar.db.contact_points=localhost
-scalar.db.username=cassandra
-scalar.db.password=cassandra
+scalar.db.storage=multi-storage
+scalar.db.multi_storage.storages=cassandra,mysql
+scalar.db.multi_storage.storages.cassandra.storage=cassandra
+scalar.db.multi_storage.storages.cassandra.contact_points=localhost
+scalar.db.multi_storage.storages.cassandra.username=cassandra
+scalar.db.multi_storage.storages.cassandra.password=cassandra
+scalar.db.multi_storage.storages.mysql.storage=jdbc
+scalar.db.multi_storage.storages.mysql.contact_points=jdbc:mysql://localhost:3306/
+scalar.db.multi_storage.storages.mysql.username=root
+scalar.db.multi_storage.storages.mysql.password=mysql
+scalar.db.multi_storage.namespace_mapping=customer:mysql,order:cassandra,coordinator:cassandra
+scalar.db.multi_storage.default_storage=cassandra
 ```
 
-Since you use Cassandra in this sample application as mentioned above, you need to configure Cassandra settings in the configuration.
+This configuration defines two storages, `cassandra` and `mysql`, in the `scalar.db.multi_storage.storages` property.
+And the storage settings of each of them is configured in the `scalar.db.multi_storage.storages.cassandra.*` properties and the `scalar.db.multi_storage.storages.mysql.*` properties respectively.
+The `scalar.db.multi_storage.namespace_mapping` property defines the mapping between namespaces and storages, in this case, operations for the tables in the `customer` namespace are mapped to the `mysql` storage, and operations for the tables in the `order` namespace are mapped to the `cassandra` storage.
+Note that it also defines that operations for the tables in the `coordinator` namespace are mapped to the `cassandra` storage.
+The tables in the `coordinator` namespace are created automatically and used in the Scalar DB's transaction protocol called Consensus Commit. 
+And the `scalar.db.multi_storage.default_storage` property defines the default storage that’s used if a specified table doesn't have any table mapping.
+In this case, if a specified table doesn't have any table mapping, operations for the table are mapped to the `cassandra` storage.
+
+Please see below for the details of Multi-storage Transaction configurations:
+https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md
 
 ## Set up
 
@@ -122,7 +140,7 @@ You need to run the following `docker-compose` command:
 docker-compose up -d
 ```
 
-This command starts Cassandra and loads the schema.
+This command starts Cassandra and MySQL, and loads the schema.
 Please note that you need to wait around more than one minute for the containers to be fully started.
 
 ### Initial data
@@ -134,7 +152,7 @@ You first need to load initial data with the following command:
 
 And the following data will be loaded:
 
-- For the `sample.customers` table:
+- For the `customer.customers` table:
 
 | customer_id  | name          | credit_limit | credit_total |
 | ------------ | ------------- | ------------ | ------------ |
@@ -142,7 +160,7 @@ And the following data will be loaded:
 | 2            | Yamada Hanako | 10000        | 0            |
 | 3            | Suzuki Ichiro | 10000        | 0            |
 
-- For the `sample.items` table:
+- For the `order.items` table:
 
 | item_id  | name   | price |
 | -------- | ------ | ----- |
@@ -166,7 +184,7 @@ Then, place an order for three apples and two oranges with customer ID `1`. Note
 ```
 # ./gradlew run --args="PlaceOrder 1 1:3,2:2"
 ...
-{"order_id": "dea4964a-ff50-4ecf-9201-027981a1566e"}
+{"order_id": "9099eca6-98b8-4ef5-a803-3166dfe635ad"}
 ...
 ```
 
@@ -174,9 +192,9 @@ The command shows the order ID of the order.
 
 Let's check the details of the order with the order ID:
 ```
-# ./gradlew run --args="GetOrder dea4964a-ff50-4ecf-9201-027981a1566e"
+# ./gradlew run --args="GetOrder 9099eca6-98b8-4ef5-a803-3166dfe635ad"
 ...
-{"order": {"order_id": "dea4964a-ff50-4ecf-9201-027981a1566e","timestamp": 1650948340914,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 1,"item_name": "Apple","price": 1000,"count": 3,"total": 3000},{"item_id": 2,"item_name": "Orange","price": 2000,"count": 2,"total": 4000}],"total": 7000}}
+{"order": {"order_id": "9099eca6-98b8-4ef5-a803-3166dfe635ad","timestamp": 1652668907742,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 1,"item_name": "Apple","price": 1000,"count": 3,"total": 3000},{"item_id": 2,"item_name": "Orange","price": 2000,"count": 2,"total": 4000}],"total": 7000}}
 ...
 ```
 
@@ -184,11 +202,11 @@ So, let's place an order again and get the order histories by customer ID `1`:
 ```
 # ./gradlew run --args="PlaceOrder 1 5:1"
 ...
-{"order_id": "bcc34150-91fa-4bea-83db-d2dbe6f0f30d"}
+{"order_id": "cff41250-01aa-4a4e-ae1c-651b74bb1cff"}
 ...
 # ./gradlew run --args="GetOrders 1"
 ...
-{"order": [{"order_id": "dea4964a-ff50-4ecf-9201-027981a1566e","timestamp": 1650948340914,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 1,"item_name": "Apple","price": 1000,"count": 3,"total": 3000},{"item_id": 2,"item_name": "Orange","price": 2000,"count": 2,"total": 4000}],"total": 7000},{"order_id": "bcc34150-91fa-4bea-83db-d2dbe6f0f30d","timestamp": 1650948412766,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 5,"item_name": "Melon","price": 3000,"count": 1,"total": 3000}],"total": 3000}]}
+{"order": [{"order_id": "9099eca6-98b8-4ef5-a803-3166dfe635ad","timestamp": 1652668907742,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 1,"item_name": "Apple","price": 1000,"count": 3,"total": 3000},{"item_id": 2,"item_name": "Orange","price": 2000,"count": 2,"total": 4000}],"total": 7000},{"order_id": "cff41250-01aa-4a4e-ae1c-651b74bb1cff","timestamp": 1652668943114,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 5,"item_name": "Melon","price": 3000,"count": 1,"total": 3000}],"total": 3000}]}
 ...
 ```
 
@@ -229,13 +247,13 @@ After repayment, the customer will be able to place an order again!
 ...
 # ./gradlew run --args="PlaceOrder 1 3:1,4:1"
 ...
-{"order_id": "8911cab3-1c2b-4322-9386-adb1c024e078"}
+{"order_id": "4b1c5f53-e2fb-4489-be1f-cfc2aef29123"}
 ...
 ```
 
 ## Clean up
 
-To stop Cassandra, run the following command:
+To stop Cassandra and MySQL, run the following command:
 ```
 # docker-compose down
 ```
