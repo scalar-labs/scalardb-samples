@@ -6,11 +6,9 @@ import com.scalar.db.api.Get;
 import com.scalar.db.api.Put;
 import com.scalar.db.api.Result;
 import com.scalar.db.api.Scan;
-import com.scalar.db.config.DatabaseConfig;
 import com.scalar.db.exception.transaction.TransactionException;
 import com.scalar.db.io.Key;
 import com.scalar.db.service.TransactionFactory;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +21,7 @@ public class Sample implements AutoCloseable {
 
   public Sample() throws IOException {
     // Create a transaction manager object
-    TransactionFactory factory =
-        new TransactionFactory(new DatabaseConfig(new File("database.properties")));
+    TransactionFactory factory = TransactionFactory.create("database.properties");
     manager = factory.getTransactionManager();
   }
 
@@ -59,17 +56,21 @@ public class Sample implements AutoCloseable {
       throws TransactionException {
     Optional<Result> customer =
         transaction.get(
-            new Get(new Key("customer_id", customerId))
-                .forNamespace("customer")
-                .forTable("customers"));
+            Get.newBuilder()
+                .namespace("customer")
+                .table("customers")
+                .partitionKey(Key.ofInt("customer_id", customerId))
+                .build());
     if (!customer.isPresent()) {
       transaction.put(
-          new Put(new Key("customer_id", customerId))
-              .withValue("name", name)
-              .withValue("credit_limit", creditLimit)
-              .withValue("credit_total", creditTotal)
-              .forNamespace("customer")
-              .forTable("customers"));
+          Put.newBuilder()
+              .namespace("customer")
+              .table("customers")
+              .partitionKey(Key.ofInt("customer_id", customerId))
+              .textValue("name", name)
+              .intValue("credit_limit", creditLimit)
+              .intValue("credit_total", creditTotal)
+              .build());
     }
   }
 
@@ -78,14 +79,20 @@ public class Sample implements AutoCloseable {
       throws TransactionException {
     Optional<Result> item =
         transaction.get(
-            new Get(new Key("item_id", itemId)).forNamespace("order").forTable("items"));
+            Get.newBuilder()
+                .namespace("order")
+                .table("items")
+                .partitionKey(Key.ofInt("item_id", itemId))
+                .build());
     if (!item.isPresent()) {
       transaction.put(
-          new Put(new Key("item_id", itemId))
-              .withValue("name", name)
-              .withValue("price", price)
-              .forNamespace("order")
-              .forTable("items"));
+          Put.newBuilder()
+              .namespace("order")
+              .table("items")
+              .partitionKey(Key.ofInt("item_id", itemId))
+              .textValue("name", name)
+              .intValue("price", price)
+              .build());
     }
   }
 
@@ -98,9 +105,11 @@ public class Sample implements AutoCloseable {
       // Retrieve the customer info for the specified customer ID from the customers table
       Optional<Result> customer =
           transaction.get(
-              new Get(new Key("customer_id", customerId))
-                  .forNamespace("customer")
-                  .forTable("customers"));
+              Get.newBuilder()
+                  .namespace("customer")
+                  .table("customers")
+                  .partitionKey(Key.ofInt("customer_id", customerId))
+                  .build());
 
       if (!customer.isPresent()) {
         // If the customer info the specified customer ID doesn't exist, throw an exception
@@ -114,9 +123,9 @@ public class Sample implements AutoCloseable {
       return String.format(
           "{\"id\": %d, \"name\": \"%s\", \"credit_limit\": %d, \"credit_total\": %d}",
           customerId,
-          customer.get().getValue("name").get().getAsString().get(),
-          customer.get().getValue("credit_limit").get().getAsInt(),
-          customer.get().getValue("credit_total").get().getAsInt());
+          customer.get().getText("name"),
+          customer.get().getInt("credit_limit"),
+          customer.get().getInt("credit_total"));
     } catch (Exception e) {
       if (transaction != null) {
         // If an error occurs, abort the transaction
@@ -139,12 +148,13 @@ public class Sample implements AutoCloseable {
 
       // Put the order info into the orders table
       transaction.put(
-          new Put(
-              new Key("customer_id", customerId),
-              new Key("timestamp", System.currentTimeMillis()))
-              .withValue("order_id", orderId)
-              .forNamespace("order")
-              .forTable("orders"));
+          Put.newBuilder()
+              .namespace("order")
+              .table("orders")
+              .partitionKey(Key.ofInt("customer_id", customerId))
+              .clusteringKey(Key.ofBigInt("timestamp", System.currentTimeMillis()))
+              .textValue("order_id", orderId)
+              .build());
 
       int amount = 0;
       for (int i = 0; i < itemIds.length; i++) {
@@ -153,44 +163,56 @@ public class Sample implements AutoCloseable {
 
         // Put the order statement into the statements table
         transaction.put(
-            new Put(new Key("order_id", orderId), new Key("item_id", itemId))
-                .withValue("count", count)
-                .forNamespace("order")
-                .forTable("statements"));
+            Put.newBuilder()
+                .namespace("order")
+                .table("statements")
+                .partitionKey(Key.ofText("order_id", orderId))
+                .clusteringKey(Key.ofInt("item_id", itemId))
+                .intValue("count", count)
+                .build());
 
         // Retrieve the item info from the items table
         Optional<Result> item =
             transaction.get(
-                new Get(new Key("item_id", itemId)).forNamespace("order").forTable("items"));
+                Get.newBuilder()
+                    .namespace("order")
+                    .table("items")
+                    .partitionKey(Key.ofInt("item_id", itemId))
+                    .build());
+
         if (!item.isPresent()) {
           throw new RuntimeException("Item not found");
         }
 
         // Calculate the total amount
-        amount += item.get().getValue("price").get().getAsInt() * count;
+        amount += item.get().getInt("price") * count;
       }
 
       // Check if the credit total exceeds the credit limit after payment
       Optional<Result> customer =
           transaction.get(
-              new Get(new Key("customer_id", customerId))
-                  .forNamespace("customer")
-                  .forTable("customers"));
+              Get.newBuilder()
+                  .namespace("customer")
+                  .table("customers")
+                  .partitionKey(Key.ofInt("customer_id", customerId))
+                  .build());
       if (!customer.isPresent()) {
         throw new RuntimeException("Customer not found");
       }
-      int creditLimit = customer.get().getValue("credit_limit").get().getAsInt();
-      int creditTotal = customer.get().getValue("credit_total").get().getAsInt();
+      int creditLimit = customer.get().getInt("credit_limit");
+      int creditTotal = customer.get().getInt("credit_total");
       if (creditTotal + amount > creditLimit) {
         throw new RuntimeException("Credit limit exceeded");
       }
 
       // Update credit_total for the customer
       transaction.put(
-          new Put(new Key("customer_id", customerId))
-              .withValue("credit_total", creditTotal + amount)
-              .forNamespace("customer")
-              .forTable("customers"));
+          Put.newBuilder()
+              .namespace("customer")
+              .table("customers")
+              .partitionKey(Key.ofInt("customer_id", customerId))
+              .intValue("credit_total", creditTotal + amount)
+              .build());
 
       // Commit the transaction
       transaction.commit();
@@ -211,50 +233,63 @@ public class Sample implements AutoCloseable {
     // Retrieve the order info for the order ID from the orders table
     Optional<Result> order =
         transaction.get(
-            new Get(new Key("order_id", orderId)).forNamespace("order").forTable("orders"));
+            Get.newBuilder()
+                .namespace("order")
+                .table("orders")
+                .partitionKey(Key.ofText("order_id", orderId))
+                .build());
+
     if (!order.isPresent()) {
       throw new RuntimeException("Order not found");
     }
 
-    int customerId = order.get().getValue("customer_id").get().getAsInt();
+    int customerId = order.get().getInt("customer_id");
 
     // Retrieve the customer info for the specified customer ID from the customers table
     Optional<Result> customer =
         transaction.get(
-            new Get(new Key("customer_id", customerId))
-                .forNamespace("customer")
-                .forTable("customers"));
+            Get.newBuilder()
+                .namespace("customer")
+                .table("customers")
+                .partitionKey(Key.ofInt("customer_id", customerId))
+                .build());
+    assert customer.isPresent();
 
     // Retrieve the order statements for the order ID from the statements table
     List<Result> statements =
         transaction.scan(
-            new Scan(new Key("order_id", orderId)).forNamespace("order").forTable("statements"));
+            Scan.newBuilder()
+                .namespace("order")
+                .table("statements")
+                .partitionKey(Key.ofText("order_id", orderId))
+                .build());
 
     // Make the statements JSONs
     List<String> statementJsons = new ArrayList<>();
     int total = 0;
     for (Result statement : statements) {
-      int itemId = statement.getValue("item_id").get().getAsInt();
+      int itemId = statement.getInt("item_id");
 
       // Retrieve the item data from the items table
       Optional<Result> item =
           transaction.get(
-              new Get(new Key("item_id", itemId)).forNamespace("order").forTable("items"));
+              Get.newBuilder()
+                  .namespace("order")
+                  .table("items")
+                  .partitionKey(Key.ofInt("item_id", itemId))
+                  .build());
+
       if (!item.isPresent()) {
         throw new RuntimeException("Item not found");
       }
 
-      int price = item.get().getValue("price").get().getAsInt();
-      int count = statement.getValue("count").get().getAsInt();
+      int price = item.get().getInt("price");
+      int count = statement.getInt("count");
 
       statementJsons.add(
           String.format(
               "{\"item_id\": %d,\"item_name\": \"%s\",\"price\": %d,\"count\": %d,\"total\": %d}",
-              itemId,
-              item.get().getValue("name").get().getAsString().get(),
-              price,
-              count,
-              price * count));
+              itemId, item.get().getText("name"), price, count, price * count));
 
       total += price * count;
     }
@@ -263,9 +298,9 @@ public class Sample implements AutoCloseable {
     return String.format(
         "{\"order_id\": \"%s\",\"timestamp\": %d,\"customer_id\": %d,\"customer_name\": \"%s\",\"statement\": [%s],\"total\": %d}",
         orderId,
-        order.get().getValue("timestamp").get().getAsLong(),
+        order.get().getBigInt("timestamp"),
         customerId,
-        customer.get().getValue("name").get().getAsString().get(),
+        customer.get().getText("name"),
         String.join(",", statementJsons),
         total);
   }
@@ -302,15 +337,16 @@ public class Sample implements AutoCloseable {
       // Retrieve the order info for the customer ID from the orders table
       List<Result> orders =
           transaction.scan(
-              new Scan(new Key("customer_id", customerId))
-                  .forNamespace("order")
-                  .forTable("orders"));
+              Scan.newBuilder()
+                  .namespace("order")
+                  .table("orders")
+                  .partitionKey(Key.ofInt("customer_id", customerId))
+                  .build());
 
       // Make order JSONs for the orders of the customer
       List<String> orderJsons = new ArrayList<>();
       for (Result order : orders) {
-        orderJsons.add(
-            getOrderJson(transaction, order.getValue("order_id").get().getAsString().get()));
+        orderJsons.add(getOrderJson(transaction, order.getText("order_id")));
       }
 
       // Commit the transaction (even when the transaction is read-only, we need to commit)
@@ -336,14 +372,16 @@ public class Sample implements AutoCloseable {
       // Retrieve the customer info for the specified customer ID from the customers table
       Optional<Result> customer =
           transaction.get(
-              new Get(new Key("customer_id", customerId))
-                  .forNamespace("customer")
-                  .forTable("customers"));
+              Get.newBuilder()
+                  .namespace("customer")
+                  .table("customers")
+                  .partitionKey(Key.ofInt("customer_id", customerId))
+                  .build());
       if (!customer.isPresent()) {
         throw new RuntimeException("Customer not found");
       }
 
-      int updatedCreditLimit = customer.get().getValue("credit_total").get().getAsInt() - amount;
+      int updatedCreditLimit = customer.get().getInt("credit_total") - amount;
 
       // Check if over repayment or not
       if (updatedCreditLimit < 0) {
@@ -352,10 +390,12 @@ public class Sample implements AutoCloseable {
 
       // Reduce credit_total in the customer
       transaction.put(
-          new Put(new Key("customer_id", customerId))
-              .withValue("credit_total", updatedCreditLimit)
-              .forNamespace("customer")
-              .forTable("customers"));
+          Put.newBuilder()
+              .namespace("customer")
+              .table("customers")
+              .partitionKey(Key.ofInt("customer_id", customerId))
+              .intValue("credit_total", updatedCreditLimit)
+              .build());
 
       // Commit the transaction
       transaction.commit();

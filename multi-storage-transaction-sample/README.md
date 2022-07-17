@@ -87,7 +87,7 @@ The `customers` table is created in the `customer` namespace. And the `orders`, 
 The `customer.customers` table manages customers' information.
 The `credit_limit` is the maximum amount of money a lender will allow each customer to spend using a credit card, and the `credit_total` is the amount of money that each customer has already spent by using the credit card.
 
-The `orders.orders` table manages orders' information, and the `orders.statements` table manages the statements' information of the orders. Finally, the `orders.items` table manages items' information to be ordered.
+The `order.orders` table manages orders' information, and the `order.statements` table manages the statements' information of the orders. Finally, the `order.items` table manages items' information to be ordered.
 
 The ER diagram for the schema is as follows:
 
@@ -136,8 +136,8 @@ https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transacti
 ## Set up
 
 You need to run the following `docker-compose` command:
-```
-docker-compose up -d
+```shell
+$ docker-compose up -d
 ```
 
 This command starts Cassandra and MySQL, and loads the schema.
@@ -146,8 +146,8 @@ Please note that you need to wait around more than one minute for the containers
 ### Initial data
 
 You first need to load initial data with the following command:
-```
-# ./gradlew run --args="LoadInitialData"
+```shell
+$ ./gradlew run --args="LoadInitialData"
 ```
 
 And the following data will be loaded:
@@ -173,16 +173,16 @@ And the following data will be loaded:
 ## Run the sample application
 
 Let's start with getting the customer information whose ID is `1`:
-```
-# ./gradlew run --args="GetCustomerInfo 1"
+```shell
+$ ./gradlew run --args="GetCustomerInfo 1"
 ...
 {"id": 1, "name": "Yamada Taro", "credit_limit": 10000, "credit_total": 0}
 ...
 ```
 
 Then, place an order for three apples and two oranges with customer ID `1`. Note that the format of order is `<Item ID>:<Count>,<Item ID>:<Count>,...`:
-```
-# ./gradlew run --args="PlaceOrder 1 1:3,2:2"
+```shell
+$ ./gradlew run --args="PlaceOrder 1 1:3,2:2"
 ...
 {"order_id": "9099eca6-98b8-4ef5-a803-3166dfe635ad"}
 ...
@@ -191,20 +191,20 @@ Then, place an order for three apples and two oranges with customer ID `1`. Note
 The command shows the order ID of the order.
 
 Let's check the details of the order with the order ID:
-```
-# ./gradlew run --args="GetOrder 9099eca6-98b8-4ef5-a803-3166dfe635ad"
+```shell
+$ ./gradlew run --args="GetOrder 9099eca6-98b8-4ef5-a803-3166dfe635ad"
 ...
 {"order": {"order_id": "9099eca6-98b8-4ef5-a803-3166dfe635ad","timestamp": 1652668907742,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 1,"item_name": "Apple","price": 1000,"count": 3,"total": 3000},{"item_id": 2,"item_name": "Orange","price": 2000,"count": 2,"total": 4000}],"total": 7000}}
 ...
 ```
 
 So, let's place an order again and get the order histories by customer ID `1`:
-```
-# ./gradlew run --args="PlaceOrder 1 5:1"
+```shell
+$ ./gradlew run --args="PlaceOrder 1 5:1"
 ...
 {"order_id": "cff41250-01aa-4a4e-ae1c-651b74bb1cff"}
 ...
-# ./gradlew run --args="GetOrders 1"
+$ ./gradlew run --args="GetOrders 1"
 ...
 {"order": [{"order_id": "9099eca6-98b8-4ef5-a803-3166dfe635ad","timestamp": 1652668907742,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 1,"item_name": "Apple","price": 1000,"count": 3,"total": 3000},{"item_id": 2,"item_name": "Orange","price": 2000,"count": 2,"total": 4000}],"total": 7000},{"order_id": "cff41250-01aa-4a4e-ae1c-651b74bb1cff","timestamp": 1652668943114,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 5,"item_name": "Melon","price": 3000,"count": 1,"total": 3000}],"total": 3000}]}
 ...
@@ -215,15 +215,15 @@ These histories are ordered by timestamp in a descending manner.
 The current `credit_total` is `10000`, so it has reached the `credit_limit`.
 So, the customer can't place an order anymore due to the limit.
 
-```
-# ./gradlew run --args="GetCustomerInfo 1"
+```shell
+$ ./gradlew run --args="GetCustomerInfo 1"
 ...
 {"id": 1, "name": "Yamada Taro", "credit_limit": 10000, "credit_total": 10000}
 ...
-# ./gradlew run --args="PlaceOrder 1 3:1,4:1"
+$ ./gradlew run --args="PlaceOrder 1 3:1,4:1"
 ...
 java.lang.RuntimeException: Credit limit exceeded
-        at sample.Sample.placeOrder(Sample.java:185)
+        at sample.Sample.placeOrder(Sample.java:205)
         at sample.command.PlaceOrderCommand.call(PlaceOrderCommand.java:33)
         at sample.command.PlaceOrderCommand.call(PlaceOrderCommand.java:8)
         at picocli.CommandLine.executeUserObject(CommandLine.java:1783)
@@ -238,14 +238,14 @@ java.lang.RuntimeException: Credit limit exceeded
 
 After repayment, the customer will be able to place an order again!
 
-```
-# ./gradlew run --args="Repayment 1 8000"
+```shell
+$ ./gradlew run --args="Repayment 1 8000"
 ...
-# ./gradlew run --args="GetCustomerInfo 1"
+$ ./gradlew run --args="GetCustomerInfo 1"
 ...
 {"id": 1, "name": "Yamada Taro", "credit_limit": 10000, "credit_total": 2000}
 ...
-# ./gradlew run --args="PlaceOrder 1 3:1,4:1"
+$ ./gradlew run --args="PlaceOrder 1 3:1,4:1"
 ...
 {"order_id": "4b1c5f53-e2fb-4489-be1f-cfc2aef29123"}
 ...
@@ -254,6 +254,6 @@ After repayment, the customer will be able to place an order again!
 ## Clean up
 
 To stop Cassandra and MySQL, run the following command:
-```
-# docker-compose down
+```shell
+$ docker-compose down
 ```

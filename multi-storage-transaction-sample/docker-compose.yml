@@ -17,7 +17,7 @@ services:
     networks:
       - sample-network
   schema-loader:
-    image: ghcr.io/scalar-labs/scalardb-schema-loader:3.5.2
+    image: ghcr.io/scalar-labs/scalardb-schema-loader:3.6.0
     container_name: "schema-loader-1"
     depends_on:
       - cassandra
