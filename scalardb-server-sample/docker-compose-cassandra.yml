@@ -2,7 +2,7 @@ version: "3.5"
 services:
   cassandra:
     image: cassandra:3.11
-    container_name: "cassandradb-1"
+    container_name: "cassandra-1"
     volumes:
       - cassandra-data:/var/lib/cassandra
     ports:
@@ -10,7 +10,7 @@ services:
     networks:
       - scalar-network
   scalardb-server:
-    image: ghcr.io/scalar-labs/scalardb-server:3.4.1
+    image: ghcr.io/scalar-labs/scalardb-server:3.6.0
     container_name: "scalardb-server-1"
     depends_on:
       - cassandra
