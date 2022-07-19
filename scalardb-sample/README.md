@@ -77,7 +77,6 @@ Please note that application-specific error handling, authentication processing,
     }
   }
 }
-
 ```
 
 All the tables are created in the `sample` namespace.
@@ -118,8 +117,8 @@ Since you use Cassandra in this sample application as mentioned above, you need 
 ## Set up
 
 You need to run the following `docker-compose` command:
-```
-docker-compose up -d
+```shell
+$ docker-compose up -d
 ```
 
 This command starts Cassandra and loads the schema.
@@ -128,8 +127,8 @@ Please note that you need to wait around more than one minute for the containers
 ### Initial data
 
 You first need to load initial data with the following command:
-```
-# ./gradlew run --args="LoadInitialData"
+```shell
+$ ./gradlew run --args="LoadInitialData"
 ```
 
 And the following data will be loaded:
@@ -155,16 +154,16 @@ And the following data will be loaded:
 ## Run the sample application
 
 Let's start with getting the customer information whose ID is `1`:
-```
-# ./gradlew run --args="GetCustomerInfo 1"
+```shell
+$ ./gradlew run --args="GetCustomerInfo 1"
 ...
 {"id": 1, "name": "Yamada Taro", "credit_limit": 10000, "credit_total": 0}
 ...
 ```
 
 Then, place an order for three apples and two oranges with customer ID `1`. Note that the format of order is `<Item ID>:<Count>,<Item ID>:<Count>,...`:
-```
-# ./gradlew run --args="PlaceOrder 1 1:3,2:2"
+```shell
+$ ./gradlew run --args="PlaceOrder 1 1:3,2:2"
 ...
 {"order_id": "dea4964a-ff50-4ecf-9201-027981a1566e"}
 ...
@@ -173,20 +172,20 @@ Then, place an order for three apples and two oranges with customer ID `1`. Note
 The command shows the order ID of the order.
 
 Let's check the details of the order with the order ID:
-```
-# ./gradlew run --args="GetOrder dea4964a-ff50-4ecf-9201-027981a1566e"
+```shell
+$ ./gradlew run --args="GetOrder dea4964a-ff50-4ecf-9201-027981a1566e"
 ...
 {"order": {"order_id": "dea4964a-ff50-4ecf-9201-027981a1566e","timestamp": 1650948340914,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 1,"item_name": "Apple","price": 1000,"count": 3,"total": 3000},{"item_id": 2,"item_name": "Orange","price": 2000,"count": 2,"total": 4000}],"total": 7000}}
 ...
 ```
 
 So, let's place an order again and get the order histories by customer ID `1`:
-```
-# ./gradlew run --args="PlaceOrder 1 5:1"
+```shell
+$ ./gradlew run --args="PlaceOrder 1 5:1"
 ...
 {"order_id": "bcc34150-91fa-4bea-83db-d2dbe6f0f30d"}
 ...
-# ./gradlew run --args="GetOrders 1"
+$ ./gradlew run --args="GetOrders 1"
 ...
 {"order": [{"order_id": "dea4964a-ff50-4ecf-9201-027981a1566e","timestamp": 1650948340914,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 1,"item_name": "Apple","price": 1000,"count": 3,"total": 3000},{"item_id": 2,"item_name": "Orange","price": 2000,"count": 2,"total": 4000}],"total": 7000},{"order_id": "bcc34150-91fa-4bea-83db-d2dbe6f0f30d","timestamp": 1650948412766,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 5,"item_name": "Melon","price": 3000,"count": 1,"total": 3000}],"total": 3000}]}
 ...
@@ -197,15 +196,15 @@ These histories are ordered by timestamp in a descending manner.
 The current `credit_total` is `10000`, so it has reached the `credit_limit`.
 So, the customer can't place an order anymore due to the limit.
 
-```
-# ./gradlew run --args="GetCustomerInfo 1"
+```shell
+$ ./gradlew run --args="GetCustomerInfo 1"
 ...
 {"id": 1, "name": "Yamada Taro", "credit_limit": 10000, "credit_total": 10000}
 ...
-# ./gradlew run --args="PlaceOrder 1 3:1,4:1"
+$ ./gradlew run --args="PlaceOrder 1 3:1,4:1"
 ...
 java.lang.RuntimeException: Credit limit exceeded
-        at sample.Sample.placeOrder(Sample.java:185)
+        at sample.Sample.placeOrder(Sample.java:205)
         at sample.command.PlaceOrderCommand.call(PlaceOrderCommand.java:33)
         at sample.command.PlaceOrderCommand.call(PlaceOrderCommand.java:8)
         at picocli.CommandLine.executeUserObject(CommandLine.java:1783)
@@ -220,14 +219,14 @@ java.lang.RuntimeException: Credit limit exceeded
 
 After repayment, the customer will be able to place an order again!
 
-```
-# ./gradlew run --args="Repayment 1 8000"
+```shell
+$ ./gradlew run --args="Repayment 1 8000"
 ...
-# ./gradlew run --args="GetCustomerInfo 1"
+$ ./gradlew run --args="GetCustomerInfo 1"
 ...
 {"id": 1, "name": "Yamada Taro", "credit_limit": 10000, "credit_total": 2000}
 ...
-# ./gradlew run --args="PlaceOrder 1 3:1,4:1"
+$ ./gradlew run --args="PlaceOrder 1 3:1,4:1"
 ...
 {"order_id": "8911cab3-1c2b-4322-9386-adb1c024e078"}
 ...
@@ -236,6 +235,6 @@ After repayment, the customer will be able to place an order again!
 ## Clean up
 
 To stop Cassandra, run the following command:
-```
-# docker-compose down
+```shell
+$ docker-compose down
 ```
