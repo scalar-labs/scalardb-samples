@@ -62,7 +62,7 @@ scalar.db.transaction_manager=grpc
 Now you apply the database schema of the sample application as shown below. (It is stored in [emoney.json](emoney.json)).
 ```json
 {
-  "emoney_storage.account": {
+  "emoney.account": {
     "transaction": true,
     "partition-key": [
       "id"
@@ -123,7 +123,7 @@ $ java -jar scalardb-schema-loader-<version>.jar --config scalardb-client.proper
 You can create a schema by setting `transaction` to false. (The updated schema is stored in [emoney-storage.json](emoney-storage.json))
 ```json
 {
-  "emoney_transaction.account": {
+  "emoney.account": {
     "transaction": false,
     "partition-key": [
       "id"
