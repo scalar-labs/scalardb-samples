@@ -3,8 +3,6 @@ services:
   cassandra:
     image: cassandra:3.11
     container_name: "cassandra-1"
-    volumes:
-      - cassandra-data:/var/lib/cassandra
     ports:
       - "9042:9042"
     networks:
@@ -27,5 +25,3 @@ services:
 networks:
   scalar-network:
     name: scalar-network
-volumes:
-  cassandra-data:
