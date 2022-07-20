@@ -1,11 +1,13 @@
 # Scalar DB Server Sample
-This is a sample application that uses Scalar DB server, a gRPC server that implements Scalar DB interface, as a backend. For using the native Scalar DB library, please refer to [Getting Started](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started.md).
-More information about Scalar DB server can be found [here](https://github.com/scalar-labs/scalardb/tree/master/docs/scalardb-server.md).
+This is a sample application that uses Scalar DB Server, a gRPC server that implements Scalar DB interface, as a backend.
+For using the native Scalar DB library, please refer to [Getting Started](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started.md).
+More information about Scalar DB Server can be found [here](https://github.com/scalar-labs/scalardb/tree/master/docs/scalardb-server.md).
 
 ## Sample application
 The sample application is a simple electronic money application that has the following features:
 - Charge an `amount` to a `user_id`
 - Pay an `amount` from a `user_id` to another `user_id`
+- Get a `balace` of a `user_id`
 
 ## Prerequisites
 - Java (OpenJDK 8 or higher)
@@ -13,9 +15,10 @@ The sample application is a simple electronic money application that has the fol
 - Docker, Docker Compose
 
 ## Set up
-### Scalar DB server
-In this sample, we will use Cassandra as storage for Scalar DB server. The configuration of Scalar DB server is shown below. (It is also stored in [database.properties](./database.properties))
-```
+### Scalar DB Server
+In this sample, we will use Cassandra as storage for Scalar DB Server.
+The configuration of Scalar DB Server is shown below. (It is also stored in [database.properties](./database.properties))
+```properties
 # Comma separated contact points
 scalar.db.contact_points=cassandra
 
@@ -29,17 +32,21 @@ scalar.db.password=cassandra
 # Storage implementation
 scalar.db.storage=cassandra
 ```
-To start Scalar DB server, we use the following command. Please note that we should wait around a bit more than one minute because Scalar DB container has to wait for Cassandra container to be fully started.
+
+To start Cassandra and Scalar DB Server, we use the following command.
+Please note that we should wait around a bit more than one minute because Scalar DB container has to wait for Cassandra container to be fully started.
+```shell
+$ docker-compose -f docker-compose-cassandra.yml up -d
 ```
-docker-compose -f docker-compose-cassandra.yml up -d
-```
-*For using other databases as the backend for Scalar DB server, we can change the configuration of [database.properties](database.properties) according to [Getting Started](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started.md). After that we can start Scalar DB server using [docker-compose.yml](docker-compose.yml) instead.*
+*For using other databases as the backend for Scalar DB Server, we can change the configuration of [database.properties](database.properties) according to [Getting Started](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started.md). After that we can start Scalar DB Server using [docker-compose.yml](docker-compose.yml) instead.*
 
 ### Scalar DB client
-The sample application uses a client that implements Scalar DB interface. Thus, you can configure the client in the same way as the server-side. But, in this case, you need to specify the server as a contact point and `grpc` for the storage and transaction_manager configuration as follows. (it is stored in [scalardb-client.properties](scalardb-client.properties)).
-```
+The sample application uses a client that implements Scalar DB interface.
+Thus, you can configure the client in the same way as the server-side.
+But, in this case, you need to specify the server as a contact point and `grpc` for the storage and transaction_manager configuration as follows. (it is stored in [scalardb-client.properties](scalardb-client.properties)).
+```properties
 # Comma separated contact points
-scalar.db.contact_points=127.0.0.1
+scalar.db.contact_points=localhost
 
 # Port number for all the contact points. Default port number for each database is used if empty.
 scalar.db.contact_port=60051
@@ -50,37 +57,12 @@ scalar.db.storage=grpc
 # The type of the transaction manager
 scalar.db.transaction_manager=grpc
 ```
-Setting up Scalar DB schema: As mentioned in [Getting started with Scalar DB](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started-with-scalardb.md) storing and retrieving data in `Scalar DB` can be done using either the `storage` or the `transaction` mode.
 
-Now you apply the database schema of the sample application as shown below. (It is stored in [emoney-storage-schema.json](./src/main/resources/emoney-storage-schema.json)).
-Note that you use non-transactional schema (storage mode) since `transaction` key is set to false.
-
-```
+### Set up database schema
+Now you apply the database schema of the sample application as shown below. (It is stored in [emoney.json](emoney.json)).
+```json
 {
-  "emoney_storage.account": {
-    "transaction": false,
-    "partition-key": [
-      "id"
-    ],
-    "clustering-key": [],
-    "columns": {
-      "id": "TEXT",
-      "balance": "INT"
-    }
-  }
-}
-```
-You then apply the schema with the following command. Please note that `scalardb-schema-loader-<version>.jar` is the schema loader that can be found in [releases](https://github.com/scalar-labs/scalardb/releases) of Scalar DB.
-
-```
-java -jar scalardb-schema-loader-<version>.jar --config scalardb-client.properties --schema-file src/main/resources/emoney-storage-schema.json
-```
-
-You can create a transaction-enabled schema by setting `transaction` to true. (The updated schema is stored in [emoney-transaction-schema.json](src/main/resources/emoney-transaction-schema.json))
-
-```
-{
-  "emoney_transaction.account": {
+  "emoney.account": {
     "transaction": true,
     "partition-key": [
       "id"
@@ -94,39 +76,100 @@ You can create a transaction-enabled schema by setting `transaction` to true. (T
 }
 ```
 
-You can apply the schema in the same way as above. Note that `--coordinator` is specified to create the coordinator table needed for transactions.
+You then apply the schema with the following command.
+Please download the schema tool `scalardb-schema-loader-<version>.jar` that can be found in [releases](https://github.com/scalar-labs/scalardb/releases) of Scalar DB.
+```shell
+$ java -jar scalardb-schema-loader-<version>.jar --config scalardb-client.properties --schema-file emoney.json --coordinator
+```
 
-```
-java -jar scalardb-schema-loader-<version>.jar --config scalardb-client.properties --schema-file src/main/resources/emoney-transaction-schema.json --coordinator
-```
+Note that `--coordinator` is specified to create the coordinator table needed for transactions.
 
 ## Run the sample
-Scenario:
-  - Charge the user `user1` with an amount of 10.
-  - Charge the user `user2` with an amount of 20.
-  - `user1` pays an amount of 5 to `user2`.
+- Charge `1000` to `user1`:
+```shell
+$ ./gradlew run --args="-action charge -amount 1000 -to user1"
+```
 
-Run
-  - Storage mode
-   ```
-   # charge user1 with an amount of 10
-   ./gradlew run --args="cmd storage charge -a 10 -u user1"
+- Charge `0` to `merchant1` (Just create an account for `merchant1`):
+```shell
+$ ./gradlew run --args="-action charge -amount 0 -to merchant1"
+```
 
-   # charge user2 with an amount of 20
-   ./gradlew run --args="cmd storage charge -a 20 -u user2"
+- Pay `100` from `user1` to `merchant1`:
+```shell
+$ ./gradlew run --args="-action pay -amount 100 -from user1 -to merchant1"
+```
 
-   # pay 5 from user1 to user2
-   ./gradlew run --args="cmd storage pay -a 5 -f user1 -t user2"
-   ```
+- Get the balance of `user1`:
+```shell
+$ ./gradlew run --args="-action getBalance -id user1"
+```
 
-  - Transaction mode
-   ```
-   # charge user1 with an amount of 10
-   ./gradlew run --args="cmd transaction charge -a 10 -u user1"
+- Get the balance of `merchant1`:
+```shell
+$ ./gradlew run --args="-action getBalance -id merchant1"
+```
 
-   # charge user2 with an amount of 20
-   ./gradlew run --args="cmd transaction charge -a 20 -u user2"
+## Storage abstraction
+Scalar DB Server also supports [Storage API](https://github.com/scalar-labs/scalardb/blob/master/docs/storage-abstraction.md).
+The following describes a sample of Storage API.
 
-   # pay 5 from user1 to user2
-   ./gradlew run --args="cmd transaction pay -a 5 -f user1 -t user2"
-   ```
+### Set up database schema
+If you have created the tables for transactions, you can delete them with the `-D` option as follows.
+```shell
+$ java -jar scalardb-schema-loader-<version>.jar --config scalardb-client.properties --schema-file emoney.json --coordinator -D
+```
+
+You can create a schema by setting `transaction` to false. (The updated schema is stored in [emoney-storage.json](emoney-storage.json))
+```json
+{
+  "emoney.account": {
+    "transaction": false,
+    "partition-key": [
+      "id"
+    ],
+    "clustering-key": [],
+    "columns": {
+      "id": "TEXT",
+      "balance": "INT"
+    }
+  }
+}
+```
+
+You then apply the schema with the following command.
+```shell
+$ java -jar scalardb-schema-loader-<version>.jar --config scalardb-client.properties --schema-file emoney-storage.json
+```
+
+### Run the sample with Storage API
+- Charge `1000` to `user1`:
+```shell
+$ ./gradlew -Pstorage run --args="-action charge -amount 1000 -to user1"
+```
+
+- Charge `0` to `merchant1` (Just create an account for `merchant1`):
+```shell
+$ ./gradlew -Pstorage run --args="-action charge -amount 0 -to merchant1"
+```
+
+- Pay `100` from `user1` to `merchant1`:
+```shell
+$ ./gradlew -Pstorage run --args="-action pay -amount 100 -from user1 -to merchant1"
+```
+
+- Get the balance of `user1`:
+```shell
+$ ./gradlew -Pstorage run --args="-action getBalance -id user1"
+```
+
+- Get the balance of `merchant1`:
+```shell
+$ ./gradlew -Pstorage run --args="-action getBalance -id merchant1"
+```
+
+## Clean up
+To stop Cassandra and Scalar DB Server, run the following command:
+```shell
+$ docker-compose -f docker-compose-cassandra.yml down
+```
