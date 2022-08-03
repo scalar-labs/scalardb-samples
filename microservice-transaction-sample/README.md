@@ -32,7 +32,7 @@ In this sample application, for ease of setup and explanation, we co-locate the 
 Also, note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use Scalar DB.
 Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions) for the details of how to handle exceptions in Scalar DB.
 
-Additionally, you assume each service has one container in this sample application to omit considering request routing between the services.
+Additionally, you assume each service has one container in this sample application to avoid considering request routing between the services.
 However, for production, because each service typically has multiple servers (or hosts) for scalability and availability, you should consider request routing between the services in Two-phase Commit Transactions.
 Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#request-routing-in-two-phase-commit-transactions) for the details of Request Routing in Two-phase Commit Transactions.
 
