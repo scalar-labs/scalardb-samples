@@ -177,21 +177,21 @@ When the microservices start, the initial data is loaded automatically as follow
 
 - For the `customer_service.customers` table:
 
-| customer_id  | name          | credit_limit | credit_total |
-| ------------ | ------------- | ------------ | ------------ |
-| 1            | Yamada Taro   | 10000        | 0            |
-| 2            | Yamada Hanako | 10000        | 0            |
-| 3            | Suzuki Ichiro | 10000        | 0            |
+| customer_id | name          | credit_limit | credit_total |
+|-------------|---------------|--------------|--------------|
+| 1           | Yamada Taro   | 10000        | 0            |
+| 2           | Yamada Hanako | 10000        | 0            |
+| 3           | Suzuki Ichiro | 10000        | 0            |
 
 - For the `order_service.items` table:
 
-| item_id  | name   | price |
-| -------- | ------ | ----- |
-| 1        | Apple  | 1000  |
-| 2        | Orange | 2000  |
-| 3        | Grape  | 2500  |
-| 4        | Mango  | 5000  |
-| 5        | Melon  | 3000  |
+| item_id | name   | price |
+|---------|--------|-------|
+| 1       | Apple  | 1000  |
+| 2       | Orange | 2000  |
+| 3       | Grape  | 2500  |
+| 4       | Mango  | 5000  |
+| 5       | Melon  | 3000  |
 
 ## Run the sample application
 
