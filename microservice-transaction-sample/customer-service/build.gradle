@@ -15,11 +15,11 @@ dependencies {
 }
 
 application {
-    mainClassName = 'example.customer.CustomerServiceServer'
+    mainClassName = 'sample.customer.CustomerServiceServer'
 }
 
 docker {
-    name "example-customer-service:${project.version}"
+    name "sample-customer-service:${project.version}"
     files tasks.distTar.outputs, 'customer-service.properties'
 }
 
@@ -28,7 +28,7 @@ distTar {
     duplicatesStrategy DuplicatesStrategy.EXCLUDE
 }
 
-archivesBaseName = "example-customer-service"
+archivesBaseName = "sample-customer-service"
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8

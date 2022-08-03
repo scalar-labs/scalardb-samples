@@ -22,7 +22,7 @@ protobuf {
     generatedFilesBaseDir = "$projectDir/src"
 }
 
-archivesBaseName = "example-rpc"
+archivesBaseName = "sample-rpc"
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8

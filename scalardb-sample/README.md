@@ -15,6 +15,7 @@ This is a simple EC application where you can order items and pay with a credit 
 In this article, you create the application on Cassandra.
 Even though Cassandra does not provide ACID transaction capability, you can achieve ACID transactions on Cassandra by accessing Cassandra through Scalar DB.
 Please note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use Scalar DB.
+Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions) for the details of how to handle exceptions in Scalar DB.
 
 ### Schema
 
@@ -135,21 +136,21 @@ And the following data will be loaded:
 
 - For the `sample.customers` table:
 
-| customer_id  | name          | credit_limit | credit_total |
-| ------------ | ------------- | ------------ | ------------ |
-| 1            | Yamada Taro   | 10000        | 0            |
-| 2            | Yamada Hanako | 10000        | 0            |
-| 3            | Suzuki Ichiro | 10000        | 0            |
+| customer_id | name          | credit_limit | credit_total |
+|-------------|---------------|--------------|--------------|
+| 1           | Yamada Taro   | 10000        | 0            |
+| 2           | Yamada Hanako | 10000        | 0            |
+| 3           | Suzuki Ichiro | 10000        | 0            |
 
 - For the `sample.items` table:
 
-| item_id  | name   | price |
-| -------- | ------ | ----- |
-| 1        | Apple  | 1000  |
-| 2        | Orange | 2000  |
-| 3        | Grape  | 2500  |
-| 4        | Mango  | 5000  |
-| 5        | Melon  | 3000  |
+| item_id | name   | price |
+|---------|--------|-------|
+| 1       | Apple  | 1000  |
+| 2       | Orange | 2000  |
+| 3       | Grape  | 2500  |
+| 4       | Mango  | 5000  |
+| 5       | Melon  | 3000  |
 
 ## Run the sample application
 

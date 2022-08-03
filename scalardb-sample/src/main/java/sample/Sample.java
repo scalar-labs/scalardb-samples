@@ -179,7 +179,6 @@ public class Sample implements AutoCloseable {
                     .table("items")
                     .partitionKey(Key.ofInt("item_id", itemId))
                     .build());
-
         if (!item.isPresent()) {
           throw new RuntimeException("Item not found");
         }
@@ -236,7 +235,7 @@ public class Sample implements AutoCloseable {
             Get.newBuilder()
                 .namespace("sample")
                 .table("orders")
-                .partitionKey(Key.ofText("order_id", orderId))
+                .indexKey(Key.ofText("order_id", orderId))
                 .build());
 
     if (!order.isPresent()) {
@@ -388,7 +387,7 @@ public class Sample implements AutoCloseable {
         throw new RuntimeException("Over repayment");
       }
 
-      // Reduce credit_total in the customer
+      // Reduce credit_total for the customer
       transaction.put(
           Put.newBuilder()
               .namespace("sample")

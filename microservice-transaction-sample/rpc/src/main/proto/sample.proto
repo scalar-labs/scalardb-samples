@@ -1,0 +1,135 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "sample.rpc";
+option java_outer_classname = "Sample";
+
+package rpc;
+
+import "google/protobuf/empty.proto";
+
+// for Order Service
+service OrderService {
+  // Place an order. It's a transaction that spans OrderService and CustomerService
+  rpc PlaceOrder(PlaceOrderRequest) returns (PlaceOrderResponse) {
+  }
+  // Get Order information by order ID
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse) {
+  }
+  // Get Order information by customer ID
+  rpc GetOrders(GetOrdersRequest) returns (GetOrdersResponse) {
+  }
+}
+
+message ItemOrder {
+  int32 item_id = 1;
+  int32 count = 2;
+}
+
+message PlaceOrderRequest {
+  int32 customer_id = 1;
+  repeated ItemOrder item_order = 2;
+}
+
+message PlaceOrderResponse {
+  string order_id = 1;
+}
+
+message Order {
+  string order_id = 1;
+  int64 timestamp = 2;
+  int32 customer_id = 3;
+  string customer_name = 4;
+  repeated Statement statement = 5;
+  int32 total = 6;
+}
+
+message Statement {
+  int32 item_id = 1;
+  string item_name = 2;
+  int32 price = 3;
+  int32 count = 4;
+  int32 total = 5;
+}
+
+message GetOrderRequest {
+  string order_id = 1;
+}
+
+message GetOrderResponse {
+  Order order = 1;
+}
+
+message GetOrdersRequest {
+  int32 customer_id = 1;
+}
+
+message GetOrdersResponse {
+  repeated Order order = 1;
+}
+
+// for Customer Service
+service CustomerService {
+  // Get a customer information
+  rpc GetCustomerInfo(GetCustomerInfoRequest) returns (GetCustomerInfoResponse) {
+  }
+  // Credit card repayment
+  rpc Repayment(RepaymentRequest) returns (google.protobuf.Empty) {
+  }
+
+  // RPCs for two-phase commit transactions
+
+  // Credit card payment
+  rpc Payment(PaymentRequest) returns (google.protobuf.Empty) {
+  }
+  // Prepare the transaction
+  rpc Prepare(PrepareRequest) returns (google.protobuf.Empty) {
+  }
+  // Validate the transaction
+  rpc Validate(ValidateRequest) returns (google.protobuf.Empty) {
+  }
+  // Commit the transaction
+  rpc Commit(CommitRequest) returns (google.protobuf.Empty) {
+  }
+  // Rollback the transaction
+  rpc Rollback(RollbackRequest) returns (google.protobuf.Empty) {
+  }
+}
+
+message GetCustomerInfoRequest {
+  int32 customer_id = 1;
+}
+
+message GetCustomerInfoResponse {
+  int32 id = 1;
+  string name = 2;
+  int32 credit_limit = 3;
+  int32 credit_total = 4;
+}
+
+message PaymentRequest {
+  string transaction_id = 1;
+  int32 customer_id = 2;
+  int32 amount = 3;
+}
+
+message RepaymentRequest {
+  int32 customer_id = 1;
+  int32 amount = 2;
+}
+
+message PrepareRequest {
+  string transaction_id = 1;
+}
+
+message ValidateRequest {
+  string transaction_id = 1;
+}
+
+message CommitRequest {
+  string transaction_id = 1;
+}
+
+message RollbackRequest {
+  string transaction_id = 1;
+}
