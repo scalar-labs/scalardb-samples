@@ -14,12 +14,15 @@ services:
       - cassandra
     restart: "always"
     volumes:
-      - ./database.properties:/scalardb/server/database.properties
+      - ./database.properties:/scalardb/server/database.properties.tmpl
       - ./wait-for-it.sh:/scalardb/server/wait-for-it.sh
     ports:
       - "60051:60051" # scalardb-server port
     entrypoint: /bin/bash
-    command: ./wait-for-it.sh -t 60 cassandra:9042 -- ./bin/scalardb-server --config database.properties
+    command: >
+      ./wait-for-it.sh -t 60 cassandra:9042 --
+      dockerize -template database.properties.tmpl:database.properties -template log4j2.properties.tmpl:log4j2.properties --
+      ./bin/scalardb-server --config database.properties
     networks:
       - scalar-network
 networks:

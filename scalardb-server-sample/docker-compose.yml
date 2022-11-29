@@ -4,7 +4,7 @@ services:
     image: ghcr.io/scalar-labs/scalardb-server:3.6.0
     container_name: "scalardb-server-1"
     volumes:
-      - ./database.properties:/scalardb/server/database.properties
+      - ./database.properties:/scalardb/server/database.properties.tmpl
     ports:
       - "60051:60051" # scalardb-server port
     networks:
