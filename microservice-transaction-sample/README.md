@@ -1,7 +1,7 @@
 # Microservice Transaction Sample
 
-This is a sample application for Microservice Transaction that uses Two-phase Commit Transactions in Scalar DB.
-You can find more information about Two-phase Commit Transactions in Scalar DB [here](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md).
+This is a sample application for Microservice Transaction that uses Two-phase Commit Transactions in ScalarDB.
+You can find more information about Two-phase Commit Transactions in ScalarDB [here](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md).
 
 ## Prerequisites
 - Java (OpenJDK 8 or higher)
@@ -19,7 +19,7 @@ There are two microservices called *Customer Service* and *Order Service* based 
 Customer Service manages customers' information including credit card information like a credit limit and a credit total.
 Order Service is responsible for order operations like placing an order and getting order histories.
 Each service has gRPC endpoints. Clients call the endpoints, and the services call the endpoints each other as well.
-Customer Service and Order Service uses MySQL and Cassandra through Scalar DB, respectively.
+Customer Service and Order Service uses MySQL and Cassandra through ScalarDB, respectively.
 
 ![Overview](images/overview.png)
 
@@ -29,8 +29,8 @@ The database is service-independent and exists for managing transaction metadata
 
 In this sample application, for ease of setup and explanation, we co-locate the coordinator database in the same Cassandra instance of the Order Service, but of course, the coordinator database can be managed as a separate database.
 
-Also, note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use Scalar DB.
-Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions) for the details of how to handle exceptions in Scalar DB.
+Also, note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use ScalarDB.
+Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions) for the details of how to handle exceptions in ScalarDB.
 
 Additionally, you assume each service has one container in this sample application to avoid considering request routing between the services.
 However, for production, because each service typically has multiple servers (or hosts) for scalability and availability, you should consider request routing between the services in Two-phase Commit Transactions.
@@ -440,4 +440,4 @@ TwoPhaseCommitTransaction transaction =
 transaction.rollback();
 ```
 
-Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions) for the details of how to handle exceptions in Scalar DB.
+Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions) for the details of how to handle exceptions in ScalarDB.
