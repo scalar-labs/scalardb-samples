@@ -1,4 +1,4 @@
-# Scalar DB GraphQL Sample
+# ScalarDB GraphQL Sample
 
 This sample application is a simple CLI electronic money application that has the following features:
 
@@ -6,7 +6,7 @@ This sample application is a simple CLI electronic money application that has th
 - Pay an `amount` from a `user` to another `user`
 - Show the balance of a `user`
 
-In this sample, we will use Cassandra as a storage for Scalar DB. The Cassandra server and the Scalar DB GraphQL server will run with Docker.
+In this sample, we will use Cassandra as a storage for ScalarDB. The Cassandra server and the ScalarDB GraphQL server will run with Docker.
 
 Apart from them, we will build a client Node.js application that will communicate with the GraphQL server. Please note that this client app is just one example of the clients; since GraphQL is a communication pattern, there are many tools in various programming languages for building applications.
 
@@ -16,7 +16,7 @@ Apart from them, we will build a client Node.js application that will communicat
 - Docker Compose 1.28+
 - Node.js 16+
 
-You need a Personal Access Token (PAT) to access the Docker image of Scalar DB GraphQL in GitHub Container registry since the image is private. Ask a person in charge to get your account ready. Please read [the official document](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) for more detail.
+You need a Personal Access Token (PAT) to access the Docker image of ScalarDB GraphQL in GitHub Container registry since the image is private. Ask a person in charge to get your account ready. Please read [the official document](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) for more detail.
 
 ## Set up
 

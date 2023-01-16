@@ -1,6 +1,6 @@
 # Multi-storage Transaction Sample
 
-This is a sample application for Multi-storage Transaction in Scalar DB.
+This is a sample application for Multi-storage Transaction in ScalarDB.
 
 ## Prerequisites
 - Java (OpenJDK 8 or higher)
@@ -11,12 +11,12 @@ This is a sample application for Multi-storage Transaction in Scalar DB.
 
 ### Overview
 
-This is a simple EC application where you can order items and pay with a credit card using Scalar DB.
+This is a simple EC application where you can order items and pay with a credit card using ScalarDB.
 
 In this article, you create the sample application on Cassandra and MySQL.
-With Multi-storage Transaction in Scalar DB, you can execute a transaction that spans Cassandra and MySQL.
-Please note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use Scalar DB.
-Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions) for the details of how to handle exceptions in Scalar DB.
+With Multi-storage Transaction in ScalarDB, you can execute a transaction that spans Cassandra and MySQL.
+Please note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use ScalarDB.
+Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions) for the details of how to handle exceptions in ScalarDB.
 
 ![Overview](images/overview.png)
 
@@ -127,7 +127,7 @@ This configuration defines two storages, `cassandra` and `mysql`, in the `scalar
 And the storage settings of each of them is configured in the `scalar.db.multi_storage.storages.cassandra.*` properties and the `scalar.db.multi_storage.storages.mysql.*` properties respectively.
 The `scalar.db.multi_storage.namespace_mapping` property defines the mapping between namespaces and storages, in this case, operations for the tables in the `customer` namespace are mapped to the `mysql` storage, and operations for the tables in the `order` namespace are mapped to the `cassandra` storage.
 Note that it also defines that operations for the tables in the `coordinator` namespace are mapped to the `cassandra` storage.
-The tables in the `coordinator` namespace are created automatically and used in the Scalar DB's transaction protocol called Consensus Commit. 
+The tables in the `coordinator` namespace are created automatically and used in the ScalarDB's transaction protocol called Consensus Commit. 
 And the `scalar.db.multi_storage.default_storage` property defines the default storage that’s used if a specified table doesn't have any table mapping.
 In this case, if a specified table doesn't have any table mapping, operations for the table are mapped to the `cassandra` storage.
 

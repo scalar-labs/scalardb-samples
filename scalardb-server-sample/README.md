@@ -1,7 +1,7 @@
-# Scalar DB Server Sample
-This is a sample application that uses Scalar DB Server, a gRPC server that implements Scalar DB interface, as a backend.
-For using the native Scalar DB library, please refer to [Getting Started](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started.md).
-More information about Scalar DB Server can be found [here](https://github.com/scalar-labs/scalardb/tree/master/docs/scalardb-server.md).
+# ScalarDB Server Sample
+This is a sample application that uses ScalarDB Server, a gRPC server that implements ScalarDB interface, as a backend.
+For using the native ScalarDB library, please refer to [Getting Started](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started.md).
+More information about ScalarDB Server can be found [here](https://github.com/scalar-labs/scalardb/tree/master/docs/scalardb-server.md).
 
 ## Sample application
 The sample application is a simple electronic money application that has the following features:
@@ -15,9 +15,9 @@ The sample application is a simple electronic money application that has the fol
 - Docker, Docker Compose
 
 ## Set up
-### Scalar DB Server
-In this sample, we will use Cassandra as storage for Scalar DB Server.
-The configuration of Scalar DB Server is shown below. (It is also stored in [database.properties](./database.properties))
+### ScalarDB Server
+In this sample, we will use Cassandra as storage for ScalarDB Server.
+The configuration of ScalarDB Server is shown below. (It is also stored in [database.properties](./database.properties))
 ```properties
 # Comma separated contact points
 scalar.db.contact_points=cassandra
@@ -33,15 +33,15 @@ scalar.db.password=cassandra
 scalar.db.storage=cassandra
 ```
 
-To start Cassandra and Scalar DB Server, we use the following command.
-Please note that we should wait around a bit more than one minute because Scalar DB container has to wait for Cassandra container to be fully started.
+To start Cassandra and ScalarDB Server, we use the following command.
+Please note that we should wait around a bit more than one minute because ScalarDB container has to wait for Cassandra container to be fully started.
 ```shell
 $ docker-compose -f docker-compose-cassandra.yml up -d
 ```
-*For using other databases as the backend for Scalar DB Server, we can change the configuration of [database.properties](database.properties) according to [Getting Started](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started.md). After that we can start Scalar DB Server using [docker-compose.yml](docker-compose.yml) instead.*
+*For using other databases as the backend for ScalarDB Server, we can change the configuration of [database.properties](database.properties) according to [Getting Started](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started.md). After that we can start ScalarDB Server using [docker-compose.yml](docker-compose.yml) instead.*
 
-### Scalar DB client
-The sample application uses a client that implements Scalar DB interface.
+### ScalarDB client
+The sample application uses a client that implements ScalarDB interface.
 Thus, you can configure the client in the same way as the server-side.
 But, in this case, you need to specify the server as a contact point and `grpc` for the storage and transaction_manager configuration as follows. (it is stored in [scalardb-client.properties](scalardb-client.properties)).
 ```properties
@@ -77,7 +77,7 @@ Now you apply the database schema of the sample application as shown below. (It 
 ```
 
 You then apply the schema with the following command.
-Please download the schema tool `scalardb-schema-loader-<version>.jar` that can be found in [releases](https://github.com/scalar-labs/scalardb/releases) of Scalar DB.
+Please download the schema tool `scalardb-schema-loader-<version>.jar` that can be found in [releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB.
 ```shell
 $ java -jar scalardb-schema-loader-<version>.jar --config scalardb-client.properties --schema-file emoney.json --coordinator
 ```
@@ -111,7 +111,7 @@ $ ./gradlew run --args="-action getBalance -id merchant1"
 ```
 
 ## Storage abstraction
-Scalar DB Server also supports [Storage API](https://github.com/scalar-labs/scalardb/blob/master/docs/storage-abstraction.md).
+ScalarDB Server also supports [Storage API](https://github.com/scalar-labs/scalardb/blob/master/docs/storage-abstraction.md).
 The following describes a sample of Storage API.
 
 ### Set up database schema
@@ -169,7 +169,7 @@ $ ./gradlew -Pstorage run --args="-action getBalance -id merchant1"
 ```
 
 ## Clean up
-To stop Cassandra and Scalar DB Server, run the following command:
+To stop Cassandra and ScalarDB Server, run the following command:
 ```shell
 $ docker-compose -f docker-compose-cassandra.yml down
 ```

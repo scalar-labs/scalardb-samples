@@ -1,6 +1,6 @@
-# Scalar DB Sample
+# ScalarDB Sample
 
-This is a sample application for Scalar DB.
+This is a sample application for ScalarDB.
 
 ## Prerequisites
 - Java (OpenJDK 8 or higher)
@@ -11,11 +11,11 @@ This is a sample application for Scalar DB.
 
 ### Overview
 
-This is a simple EC application where you can order items and pay with a credit card using Scalar DB.
+This is a simple EC application where you can order items and pay with a credit card using ScalarDB.
 In this article, you create the application on Cassandra.
-Even though Cassandra does not provide ACID transaction capability, you can achieve ACID transactions on Cassandra by accessing Cassandra through Scalar DB.
-Please note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use Scalar DB.
-Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions) for the details of how to handle exceptions in Scalar DB.
+Even though Cassandra does not provide ACID transaction capability, you can achieve ACID transactions on Cassandra by accessing Cassandra through ScalarDB.
+Please note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use ScalarDB.
+Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions) for the details of how to handle exceptions in ScalarDB.
 
 ### Schema
 
