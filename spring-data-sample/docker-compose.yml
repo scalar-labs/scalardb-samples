@@ -1,0 +1,26 @@
+version: "3.5"
+services:
+  cassandra:
+    image: cassandra:3.11
+    container_name: "cassandra-1"
+    ports:
+      - "9042:9042"
+    networks:
+      - sample-network
+  schema-loader:
+    image: ghcr.io/scalar-labs/scalardb-schema-loader:3.8.0
+    container_name: "schema-loader-1"
+    depends_on:
+      - cassandra
+    volumes:
+      - ./wait-for-it.sh:/wait-for-it.sh
+      - ./database-docker.properties:/database.properties
+      - ./schema.json:/schema.json
+    entrypoint: /bin/bash
+    command: /wait-for-it.sh -t 60 cassandra:9042 -- java -jar app.jar -f /schema.json --config /database.properties --replication-factor 1 --coordinator
+    networks:
+      - sample-network
+    restart: on-failure
+networks:
+  sample-network:
+    name: sample-network
