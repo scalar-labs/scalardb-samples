@@ -1,6 +1,6 @@
 # Spring Data integration Sample
 
-This is a sample application for Spring Data integration with ScalarDB.
+This is a sample Spring Boot application for Spring Data integration with ScalarDB.
 
 ## Prerequisites
 - Java (OpenJDK 8 or higher)
@@ -11,7 +11,7 @@ This is a sample application for Spring Data integration with ScalarDB.
 
 ### Overview
 
-This article describes how to create an applicaiton for the same use case as [ScalarDB Sample](https://github.com/scalar-labs/scalardb-samples/tree/main/scalardb-sample) using Spring Data integration with ScalarDB.
+This article describes how to create a Spring Boot applicaiton for the same use case as [ScalarDB Sample](https://github.com/scalar-labs/scalardb-samples/tree/main/scalardb-sample) using Spring Data integration with ScalarDB.
 Please note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use Spring Data integration.
 Please see [this document](https://scalar-labs.github.io/scalardb-sql/spring-data-guide.html) for the details.
 
@@ -102,13 +102,15 @@ The following five transactions are implemented in this sample application:
 
 ### Configuration
 
-The configurations for the sample application is as follows:
+The configurations for the sample Spring Boot application is as follows:
 
-```properties
-scalar.db.storage=cassandra
-scalar.db.contact_points=localhost
-scalar.db.username=cassandra
-scalar.db.password=cassandra
+```application.properties
+spring.datasource.driver-class-name=com.scalar.db.sql.jdbc.SqlJdbcDriver
+spring.datasource.url=jdbc:scalardb:
+?scalar.db.storage=cassandra\
+&scalar.db.contact_points=localhost\
+&scalar.db.username=cassandra\
+&scalar.db.password=cassandra
 ```
 
 Since you use Cassandra in this sample application as mentioned above, you need to configure Cassandra settings in the configuration.
