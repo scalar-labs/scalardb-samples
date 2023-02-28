@@ -13,7 +13,7 @@ public class LoadInitialDataCommand implements Callable<Integer> {
   @Autowired SampleService sampleService;
 
   @Override
-  public Integer call() throws Exception {
+  public Integer call() {
     sampleService.loadInitialData();
     return 0;
   }

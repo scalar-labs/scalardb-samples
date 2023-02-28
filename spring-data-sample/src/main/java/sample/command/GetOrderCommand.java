@@ -16,7 +16,7 @@ public class GetOrderCommand implements Callable<Integer> {
   private String orderId;
 
   @Override
-  public Integer call() throws Exception {
+  public Integer call() {
     System.out.println(sampleService.getOrderByOrderId(orderId));
     return 0;
   }

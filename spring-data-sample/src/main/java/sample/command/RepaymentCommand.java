@@ -18,7 +18,7 @@ public class RepaymentCommand implements Callable<Integer> {
   private int amount;
 
   @Override
-  public Integer call() throws Exception {
+  public Integer call() {
     sampleService.repayment(customerId, amount);
     return 0;
   }

@@ -25,7 +25,7 @@ public class PlaceOrderCommand implements Callable<Integer> {
   private String orders;
 
   @Override
-  public Integer call() throws Exception {
+  public Integer call() {
     String[] split = orders.split(",", -1);
     List<ItemOrder> itemOrders = new ArrayList<>();
 
