@@ -131,7 +131,7 @@ After the containers have loaded, you need to load the initial data by running t
 ```shell
 $ ./gradlew run --args="LoadInitialData"
 
-And the following data will be loaded:
+After the initial data has loaded, you will see the following:
 
 - For the `sample.customers` table:
 
@@ -197,8 +197,7 @@ $ ./gradlew run --args="GetOrders 1"
 
 This order history is shown in descending order by timestamp.
 
-The current `credit_total` is `10000`, so it has reached the `credit_limit`.
-So, the customer can't place an order anymore due to the limit.
+The customer's current `credit_total` is `10000`. Since the customer has now reached their `credit_limit`, which was shown when retrieving their information, they cannot place anymore orders.
 
 ```shell
 $ ./gradlew run --args="GetCustomerInfo 1"
