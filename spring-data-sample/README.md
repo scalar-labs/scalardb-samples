@@ -1,8 +1,9 @@
-# Spring Data integration Sample
+# Spring Data Integration Sample
 
-This is a sample Spring Boot application for Spring Data integration with ScalarDB.
+This tutorial describes how to create a sample Spring Boot application by using Spring Data integration in ScalarDB.
 
 ## Prerequisites
+
 - Java (OpenJDK 8 or higher)
 - Gradle
 - Docker, Docker Compose
@@ -11,9 +12,9 @@ This is a sample Spring Boot application for Spring Data integration with Scalar
 
 ### Overview
 
-This article describes how to create a Spring Boot applicaiton for the same use case as [ScalarDB Sample](https://github.com/scalar-labs/scalardb-samples/tree/main/scalardb-sample) using Spring Data integration with ScalarDB.
-Please note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use Spring Data integration.
-Please see [this document](https://scalar-labs.github.io/scalardb-sql/spring-data-guide.html) for the details.
+This tutorial describes how to create a sample Spring Boot application for the same use case as [ScalarDB Sample](https://github.com/scalar-labs/scalardb-samples/tree/main/scalardb-sample) but by using Spring Data integration in ScalarDB.
+Please note that application-specific error handling, authentication processing, etc. are omitted in the sample application since this tutorial focuses on explaining how to use Spring Data integration.
+For details, please see [Guide of Spring Data integration with ScalarDB](https://scalar-labs.github.io/scalardb-sql/spring-data-guide.html).
 
 ### Schema
 
@@ -80,11 +81,12 @@ Please see [this document](https://scalar-labs.github.io/scalardb-sql/spring-dat
 
 All the tables are created in the `sample` namespace.
 
-The `sample.customers` table manages customers' information.
-The `credit_limit` is the maximum amount of money a lender will allow each customer to spend using a credit card, and the `credit_total` is the amount of money that each customer has already spent by using the credit card.
-
-The `sample.orders` table manages orders' information, and the `sample.statements` table manages the statements' information of the orders. Finally, the `sample.items` table manages items' information to be ordered.
-
+- `sample.customers`: a table that manages customers' information
+- `credit_limit`: the maximum amount of money a lender will allow each customer to spend when using a credit card
+- `credit_total`: the amount of money that each customer has already spent by using the credit card
+`sample.orders`: a table that manages order information
+`sample.statements`: a table that manages order statement information
+`sample.items`: a table that manages information of items to be ordered
 
 The ER diagram for the schema is as follows:
 
@@ -95,14 +97,14 @@ The ER diagram for the schema is as follows:
 The following five transactions are implemented in this sample application:
 
 1. Getting customer information
-3. Placing an order. An order is paid by a credit card. It first checks if the amount of the money of the order exceeds the credit limit. If the check passes, it records order histories and updates the `credit_total`
-4. Getting order information by order ID
-5. Getting order information by customer ID
-6. Repayment. It reduces the amount of `credit_total`.
+2. Placing an order by credit card (checks if the cost of the order is below the credit limit, then records order history and updates the `credit_total` if the check passes)
+3. Getting order information by order ID
+4. Getting order information by customer ID
+5. Repayment (reduces the amount in the `credit_total`)
 
 ### Configuration
 
-The configurations for the sample Spring Boot application is as follows:
+Configurations for the sample Spring Boot application are as follows:
 
 ```application.properties
 spring.datasource.driver-class-name=com.scalar.db.sql.jdbc.SqlJdbcDriver
@@ -113,24 +115,21 @@ spring.datasource.url=jdbc:scalardb:
 &scalar.db.password=cassandra
 ```
 
-Since you use Cassandra in this sample application as mentioned above, you need to configure Cassandra settings in the configuration.
+Since this sample application uses Cassandra, as shown above, you need to configure your settings for Cassandra in this configuration.
 
-## Set up
+## Setup
 
-You need to run the following `docker-compose` command:
+To start Cassandra and load the schema, you need to run the following `docker-compose` command:
+
 ```shell
 $ docker-compose up -d
-```
-
-This command starts Cassandra and loads the schema.
-Please note that you need to wait around more than one minute for the containers to be fully started.
 
 ### Initial data
 
-You first need to load initial data with the following command:
+After the containers have loaded, you need to load the initial data by running the following command:
+
 ```shell
 $ ./gradlew run --args="LoadInitialData"
-```
 
 And the following data will be loaded:
 
@@ -154,7 +153,8 @@ And the following data will be loaded:
 
 ## Run the sample application
 
-Let's start with getting the customer information whose ID is `1`:
+Let's start with getting information about the customer whose ID is `1`:
+
 ```shell
 $ ./gradlew run --args="GetCustomerInfo 1"
 ...
@@ -162,7 +162,8 @@ $ ./gradlew run --args="GetCustomerInfo 1"
 ...
 ```
 
-Then, place an order for three apples and two oranges with customer ID `1`. Note that the format of order is `<Item ID>:<Count>,<Item ID>:<Count>,...`:
+Then, place an order for three apples and two oranges by using customer ID `1`. Note that the order format is `<Item ID>:<Count>,<Item ID>:<Count>,...`:
+
 ```shell
 $ ./gradlew run --args="PlaceOrder 1 1:3,2:2"
 ...
@@ -170,9 +171,10 @@ $ ./gradlew run --args="PlaceOrder 1 1:3,2:2"
 ...
 ```
 
-The command shows the order ID of the order.
+You can see that running this command shows the order ID.
 
-Let's check the details of the order with the order ID:
+Let's check the details of the order by using the order ID:
+
 ```shell
 $ ./gradlew run --args="GetOrder 2358ab35-5819-4f8f-acb1-12e73d97d34e"
 ...
@@ -180,7 +182,8 @@ $ ./gradlew run --args="GetOrder 2358ab35-5819-4f8f-acb1-12e73d97d34e"
 ...
 ```
 
-So, let's place an order again and get the order histories by customer ID `1`:
+Then, let's place another order and get the order history of customer ID `1`:
+
 ```shell
 $ ./gradlew run --args="PlaceOrder 1 5:1"
 ...
@@ -192,7 +195,7 @@ $ ./gradlew run --args="GetOrders 1"
 ...
 ```
 
-These histories are ordered by timestamp in a descending manner.
+This order history is shown in descending order by timestamp.
 
 The current `credit_total` is `10000`, so it has reached the `credit_limit`.
 So, the customer can't place an order anymore due to the limit.
@@ -238,7 +241,7 @@ java.lang.RuntimeException: Credit limit exceeded. limit:10000, total:17500
 ...
 ```
 
-After repayment, the customer will be able to place an order again!
+After making a payment, the customer will be able to place orders again.
 
 ```shell
 $ ./gradlew run --args="Repayment 1 8000"
@@ -253,9 +256,10 @@ $ ./gradlew run --args="PlaceOrder 1 3:1,4:1"
 ...
 ```
 
-## Clean up
+## Cleanup
 
-To stop Cassandra, run the following command:
+To stop Cassandra and shut down the sample application, run the following command:
+
 ```shell
 $ docker-compose down
 ```
