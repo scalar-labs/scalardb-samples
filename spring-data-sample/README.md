@@ -135,7 +135,7 @@ After the containers have loaded, you need to load the initial data by running t
 $ ./gradlew run --args="LoadInitialData"
 ```
 
-After the initial data has loaded, you will see the following:
+After the initial data has loaded, the following records should be stored in the tables:
 
 - For the `sample.customers` table:
 
