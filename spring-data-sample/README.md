@@ -84,11 +84,11 @@ All the tables are created in the `sample` namespace.
 - `sample.customers`: a table that manages customers' information
 - `credit_limit`: the maximum amount of money a lender will allow each customer to spend when using a credit card
 - `credit_total`: the amount of money that each customer has already spent by using the credit card
-`sample.orders`: a table that manages order information
-`sample.statements`: a table that manages order statement information
-`sample.items`: a table that manages information of items to be ordered
+- `sample.orders`: a table that manages order information
+- `sample.statements`: a table that manages order statement information
+- `sample.items`: a table that manages information of items to be ordered
 
-The ER diagram for the schema is as follows:
+The Entity Relationship Diagram for the schema is as follows:
 
 ![ERD](images/ERD.png)
 
@@ -123,6 +123,9 @@ To start Cassandra and load the schema, you need to run the following `docker-co
 
 ```shell
 $ docker-compose up -d
+```
+
+Please note that starting the containers may take more than one minute.
 
 ### Initial data
 
@@ -130,6 +133,7 @@ After the containers have loaded, you need to load the initial data by running t
 
 ```shell
 $ ./gradlew run --args="LoadInitialData"
+```
 
 After the initial data has loaded, you will see the following:
 
