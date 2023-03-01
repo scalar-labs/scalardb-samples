@@ -82,8 +82,8 @@ For details, please see [Guide of Spring Data integration with ScalarDB](https:/
 All the tables are created in the `sample` namespace.
 
 - `sample.customers`: a table that manages customers' information
-- `credit_limit`: the maximum amount of money a lender will allow each customer to spend when using a credit card
-- `credit_total`: the amount of money that each customer has already spent by using the credit card
+  - `credit_limit`: the maximum amount of money a lender will allow each customer to spend when using a credit card
+  - `credit_total`: the amount of money that each customer has already spent by using the credit card
 - `sample.orders`: a table that manages order information
 - `sample.statements`: a table that manages order statement information
 - `sample.items`: a table that manages information of items to be ordered
