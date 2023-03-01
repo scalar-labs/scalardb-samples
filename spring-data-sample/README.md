@@ -261,7 +261,7 @@ $ ./gradlew run --args="PlaceOrder 1 3:1,4:1"
 
 ## Cleanup
 
-To stop Cassandra and shut down the sample application, run the following command:
+To stop Cassandra, run the following command:
 
 ```shell
 $ docker-compose down
