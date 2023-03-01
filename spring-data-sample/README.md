@@ -129,7 +129,7 @@ Please note that starting the containers may take more than one minute.
 
 ### Initial data
 
-After the containers have loaded, you need to load the initial data by running the following command:
+After the containers have started, you need to load the initial data by running the following command:
 
 ```shell
 $ ./gradlew run --args="LoadInitialData"
