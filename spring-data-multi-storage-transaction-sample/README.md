@@ -1,6 +1,6 @@
-# Spring Data Integration Sample with Multi-storage Transaction
+# Spring Data Integration Sample with Multi-storage Transactions
 
-This tutorial describes how to create a sample Spring Boot application by using Spring Data integration with Multi-storage Transaction in ScalarDB.
+This tutorial describes how to create a sample Spring Boot application by using Spring Data integration with Multi-storage Transactions in ScalarDB.
 
 ## Prerequisites
 
@@ -125,14 +125,14 @@ spring.datasource.url=jdbc:scalardb:\
 &scalar.db.multi_storage.default_storage=cassandra
 ```
 
-- `scalar.db.storage`: `multi-storage` to use Multi-storage Transaction in ScalarDB
-- `scalar.db.multi_storage.storages`: Definition of storage names
-- `scalar.db.multi_storage.storages.cassandra.*`: Configurations of `cassandra` storage that is one of the storages defined in `scalar.db.multi_storage.storages`. You can configure all the properties of `scalar.db.*` for the `cassandra` storage here
-- `scalar.db.multi_storage.storages.mysql.*`: Configurations of `mysql` storage that is one of the storages defined in `scalar.db.multi_storage.storages`. You can configure all the properties of `scalar.db.*` for the `mysql` storage here
-- `scalar.db.multi_storage.namespace_mapping`: Mappings of namespace to storage. In this sample application, operations for `customer` namespace tables are mapped to the `mysql` storage and operations for `order` namespace tables are mapped to the `cassandra` storage. You can also define which storage is mapped for `coordinator` namespace that is used in Consensus Commit transaction
-- `scalar.db.multi_storage.default_storage`: Default storage that is used for operations on unmapped namespace tables
+- `scalar.db.storage`: Specifying `multi-storage` is necessary to use Multi-storage Transactions in ScalarDB.
+- `scalar.db.multi_storage.storages`: The types of storage must be defined here.
+- `scalar.db.multi_storage.storages.cassandra.*`: These configurations are for the `cassandra` storage, which is one of the storage types defined in `scalar.db.multi_storage.storages`. You can configure all the `scalar.db.*` properties for the `cassandra` storage here.
+- `scalar.db.multi_storage.storages.mysql.*`: These configurations are for the `mysql` storage, which is one of the storage types defined in `scalar.db.multi_storage.storages`. You can configure all the `scalar.db.*` properties for the `mysql` storage here.
+- `scalar.db.multi_storage.namespace_mapping`: This configuration maps the namespaces to the storage. In this sample application, operations for `customer` namespace tables are mapped to the `mysql` storage and operations for `order` namespace tables are mapped to the `cassandra` storage. You can also define which storage is mapped for the `coordinator` namespace that is used in Consensus Commit transactions.
+- `scalar.db.multi_storage.default_storage`: This configuration sets the default storage that is used for operations on unmapped namespace tables.
 
-For details, please see [Multi-storage Transaction configurations](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md).
+For details, please see [Configuration - Multi-storage Transactions](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md#configuration).
 
 ## Setup
 
