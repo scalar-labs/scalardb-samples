@@ -3,7 +3,7 @@ package sample.domain.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
-public class OrderDetail implements Comparable<OrderDetail> {
+public class OrderDetail {
   @JsonProperty("order_id")
   public final String orderId;
 
@@ -35,10 +35,5 @@ public class OrderDetail implements Comparable<OrderDetail> {
     this.timestamp = timestamp;
     this.statements = statements;
     this.total = total;
-  }
-
-  @Override
-  public int compareTo(OrderDetail o) {
-    return Math.toIntExact(timestamp - o.timestamp);
   }
 }
