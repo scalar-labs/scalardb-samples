@@ -17,9 +17,9 @@ import sample.command.SampleCommand;
 public class SampleApp implements CommandLineRunner, ExitCodeGenerator {
   private int exitCode;
 
-  @Autowired IFactory factory;
+  @Autowired private IFactory factory;
 
-  @Autowired SampleCommand sampleCommand;
+  @Autowired private SampleCommand sampleCommand;
 
   @Override
   public void run(String... args) {

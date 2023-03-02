@@ -18,7 +18,6 @@ import picocli.CommandLine.Option;
       RepaymentCommand.class
     })
 public class SampleCommand implements Runnable {
-
   @Option(
       names = {"-h", "--help"},
       usageHelp = true,

@@ -9,8 +9,7 @@ import sample.SampleService;
 @Component
 @Command(name = "LoadInitialData", description = "Load initial data")
 public class LoadInitialDataCommand implements Callable<Integer> {
-
-  @Autowired SampleService sampleService;
+  @Autowired private SampleService sampleService;
 
   @Override
   public Integer call() {
