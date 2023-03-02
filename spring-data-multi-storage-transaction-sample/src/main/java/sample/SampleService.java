@@ -35,10 +35,10 @@ import sample.domain.repository.StatementRepository;
 public class SampleService {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  @Autowired CustomerRepository customerRepository;
-  @Autowired ItemRepository itemRepository;
-  @Autowired OrderRepository orderRepository;
-  @Autowired StatementRepository statementRepository;
+  @Autowired private CustomerRepository customerRepository;
+  @Autowired private ItemRepository itemRepository;
+  @Autowired private OrderRepository orderRepository;
+  @Autowired private StatementRepository statementRepository;
 
   @Transactional
   public void loadInitialData() {
