@@ -82,8 +82,8 @@ For details, please see [Guide of Spring Data integration with ScalarDB](https:/
 All the tables are created in the `sample` namespace.
 
 - `sample.customers`: a table that manages customers' information
-- `credit_limit`: the maximum amount of money a lender will allow each customer to spend when using a credit card
-- `credit_total`: the amount of money that each customer has already spent by using the credit card
+  - `credit_limit`: the maximum amount of money a lender will allow each customer to spend when using a credit card
+  - `credit_total`: the amount of money that each customer has already spent by using the credit card
 - `sample.orders`: a table that manages order information
 - `sample.statements`: a table that manages order statement information
 - `sample.items`: a table that manages information of items to be ordered
@@ -129,7 +129,7 @@ Please note that starting the containers may take more than one minute.
 
 ### Initial data
 
-After the containers have loaded, you need to load the initial data by running the following command:
+After the containers have started, you need to load the initial data by running the following command:
 
 ```shell
 $ ./gradlew run --args="LoadInitialData"
@@ -261,7 +261,7 @@ $ ./gradlew run --args="PlaceOrder 1 3:1,4:1"
 
 ## Cleanup
 
-To stop Cassandra and shut down the sample application, run the following command:
+To stop Cassandra, run the following command:
 
 ```shell
 $ docker-compose down
