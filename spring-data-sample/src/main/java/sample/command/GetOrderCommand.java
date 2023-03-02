@@ -10,7 +10,7 @@ import sample.SampleService;
 @Component
 @Command(name = "GetOrder", description = "Get order information by order ID")
 public class GetOrderCommand implements Callable<Integer> {
-  @Autowired SampleService sampleService;
+  @Autowired private SampleService sampleService;
 
   @Parameters(index = "0", paramLabel = "ORDER_ID", description = "order ID")
   private String orderId;
