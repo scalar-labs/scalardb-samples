@@ -21,5 +21,5 @@ public interface OrderRepository
     return entity.get();
   }
 
-  List<Order> findAllByCustomerId(int customerId);
+  List<Order> findAllByCustomerIdOrderByTimestampDesc(int customerId);
 }

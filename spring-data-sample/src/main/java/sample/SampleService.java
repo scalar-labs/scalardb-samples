@@ -146,9 +146,8 @@ public class SampleService {
     // Retrieve the order info for the customer ID from the orders table.
     // Return the order info as a JSON format.
     return asJson(
-        orderRepository.findAllByCustomerId(customerId).stream()
+        orderRepository.findAllByCustomerIdOrderByTimestampDesc(customerId).stream()
             .map(order -> getOrderDetail(order.orderId))
-            .sorted()
             .collect(Collectors.toList()));
   }
 
