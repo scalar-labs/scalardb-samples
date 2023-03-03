@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id 'application'
+    id "com.diffplug.spotless" version "5.17.1"
+}
+
+group 'org.sample'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/scalar-labs/scalardb-sql")
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+        }
+    }
+}
+
+dependencies {
+    implementation "com.scalar-labs:scalardb-sql-spring-data:3.8.0"
+    // This includes dependencies to `spring-boot-starter` and `picocli`
+    implementation "info.picocli:picocli-spring-boot-starter:4.7.1"
+    // For retry
+    implementation 'org.springframework.boot:spring-boot-starter-aop:2.7.6'
+    implementation 'org.springframework.retry:spring-retry:1.3.4'
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
+}
+
+spotless {
+    java {
+        target 'src/*/java/**/*.java'
+        importOrder()
+        removeUnusedImports()
+        googleJavaFormat()
+    }
+}
+
+application {
+    mainClassName = 'sample.SampleApp'
+}
+
+archivesBaseName = "sample"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
