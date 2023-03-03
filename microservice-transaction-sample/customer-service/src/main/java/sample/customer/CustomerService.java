@@ -127,10 +127,10 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
         return;
       }
 
-      int updatedCreditLimit = result.get().creditTotal - request.getAmount();
+      int updatedCreditTotal = result.get().creditTotal - request.getAmount();
 
       // Check if over repayment or not
-      if (updatedCreditLimit < 0) {
+      if (updatedCreditTotal < 0) {
         abortTransaction(transaction);
         responseObserver.onError(
             Status.FAILED_PRECONDITION.withDescription("Over repayment").asRuntimeException());
@@ -138,7 +138,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       }
 
       // Reduce credit_total for the customer
-      Customer.updateCreditTotal(transaction, request.getCustomerId(), updatedCreditLimit);
+      Customer.updateCreditTotal(transaction, request.getCustomerId(), updatedCreditTotal);
 
       // Commit the transaction (even when the transaction is read-only, we need to commit)
       transaction.commit();

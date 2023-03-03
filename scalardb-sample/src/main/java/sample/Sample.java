@@ -380,10 +380,10 @@ public class Sample implements AutoCloseable {
         throw new RuntimeException("Customer not found");
       }
 
-      int updatedCreditLimit = customer.get().getInt("credit_total") - amount;
+      int updatedCreditTotal = customer.get().getInt("credit_total") - amount;
 
       // Check if over repayment or not
-      if (updatedCreditLimit < 0) {
+      if (updatedCreditTotal < 0) {
         throw new RuntimeException("Over repayment");
       }
 
@@ -393,7 +393,7 @@ public class Sample implements AutoCloseable {
               .namespace("sample")
               .table("customers")
               .partitionKey(Key.ofInt("customer_id", customerId))
-              .intValue("credit_total", updatedCreditLimit)
+              .intValue("credit_total", updatedCreditTotal)
               .build());
 
       // Commit the transaction
