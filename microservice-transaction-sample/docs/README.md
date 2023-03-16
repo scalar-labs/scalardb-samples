@@ -38,7 +38,7 @@ Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/d
 
 ### Schema
 
-[The schema for Customer Service](customer-service-schema.json) is as follows:
+[The schema for Customer Service](../customer-service-schema.json) is as follows:
 
 ```json
 {
@@ -61,7 +61,7 @@ The `customer_service.customers` table manages customers' information.
 The `credit_limit` for a customer is the maximum amount of money a lender will allow the customer to spend using a credit card,
 and the `credit_total` is the amount of money that the customer has already spent by using the credit card.
 
-[The schema for Order Service](order-service-schema.json) is as follows:
+[The schema for Order Service](../order-service-schema.json) is as follows:
 
 ```json
 {
@@ -301,9 +301,9 @@ The sequence diagram of transaction #2 is as follows:
 
 ### 1. Start a two-phase commit transaction
 
-When a client sends `Place an order` request to Order Service, [OrderService.placeOrder()](order-service/src/main/java/sample/order/OrderService.java#L102-L103) is called, and the microservice transaction starts.
+When a client sends `Place an order` request to Order Service, [OrderService.placeOrder()](../order-service/src/main/java/sample/order/OrderService.java#L102-L103) is called, and the microservice transaction starts.
 
-At first, Order Service starts a two-phase commit transaction with [start()](order-service/src/main/java/sample/order/OrderService.java#L109):
+At first, Order Service starts a two-phase commit transaction with [start()](../order-service/src/main/java/sample/order/OrderService.java#L109):
 ```java
 transaction = twoPhaseCommitTransactionManager.start();
 ```
@@ -312,7 +312,7 @@ transaction = twoPhaseCommitTransactionManager.start();
 
 After that, CRUD operations happen.
 
-Order Service puts the order information to the `order_service.orders` table also the detailed information to `order_service.statements` (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L111-L129)):
+Order Service puts the order information to the `order_service.orders` table also the detailed information to `order_service.statements` (the code is [here](../order-service/src/main/java/sample/order/OrderService.java#L111-L129)):
 ```java
 // Put the order info into the orders table
 Order.put(transaction, orderId, request.getCustomerId(), System.currentTimeMillis());
@@ -335,16 +335,16 @@ for (ItemOrder itemOrder : request.getItemOrderList()) {
 }
 ```
 
-And, Order Service calls the `payment` gRPC endpoint of Customer Service along with the transaction ID (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L132)).
+And, Order Service calls the `payment` gRPC endpoint of Customer Service along with the transaction ID (the code is [here](../order-service/src/main/java/sample/order/OrderService.java#L132)).
 
-This endpoint first joins the transaction with [join()](customer-service/src/main/java/sample/customer/CustomerService.java#L173):
+This endpoint first joins the transaction with [join()](../customer-service/src/main/java/sample/customer/CustomerService.java#L173):
 
 ```java
 twoPhaseCommitTransactionManager.join(request.getTransactionId());
 ```
 
 It then gets the customer information, and checks if the customer's credit total exceeds the credit limit after the payment.
-And if the check is okay, it updates the customer's credit total (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L172-L195)):
+And if the check is okay, it updates the customer's credit total (the code is [here](../customer-service/src/main/java/sample/customer/CustomerService.java#L172-L195)):
 ```java
 // Join the transaction that the order service started
 transaction = twoPhaseCommitTransactionManager.join(request.getTransactionId());
@@ -374,7 +374,7 @@ Customer.updateCreditTotal(transaction, request.getCustomerId(), updatedCreditTo
 
 #### Suspend the transaction
 
-After that, the endpoint suspends the transaction with [suspend()](customer-service/src/main/java/sample/customer/CustomerService.java#L207) to resume the transaction object in the following endpoints of Customer Service: 
+After that, the endpoint suspends the transaction with [suspend()](../customer-service/src/main/java/sample/customer/CustomerService.java#L207) to resume the transaction object in the following endpoints of Customer Service: 
 
 ```java
 twoPhaseCommitTransactionManager.suspend(transaction);
@@ -387,13 +387,13 @@ The following endpoints of Customer Service also suspend the transaction to shar
 Once Order Service receives that the payment succeeded, Order Service tries to commit the transaction.
 
 To do that, Order Service starts with preparing the transaction.
-Order Service calls `prepare()` of its transaction object and calls the `prepare` gRPC endpoint of Customer Service (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L135-L136)):
+Order Service calls `prepare()` of its transaction object and calls the `prepare` gRPC endpoint of Customer Service (the code is [here](../order-service/src/main/java/sample/order/OrderService.java#L135-L136)):
 ```java
 transaction.prepare();
 callPrepareEndpoint(transaction.getId());
 ```
 
-In this endpoint, Customer Service resumes the transaction and calls `prepare()` of its transaction object, as well (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L218-L222)):
+In this endpoint, Customer Service resumes the transaction and calls `prepare()` of its transaction object, as well (the code is [here](../customer-service/src/main/java/sample/customer/CustomerService.java#L218-L222)):
 ```java
 // Resume the suspended transaction
 transaction = twoPhaseCommitTransactionManager.resume(request.getTransactionId());
@@ -402,17 +402,17 @@ transaction = twoPhaseCommitTransactionManager.resume(request.getTransactionId()
 transaction.prepare();
 ```
 
-Similarly, Order Service and Customer Service call `validate()` of their transaction objects (the codes are [here](order-service/src/main/java/sample/order/OrderService.java#L142) and [here](customer-service/src/main/java/sample/customer/CustomerService.java#L245-L249)).
+Similarly, Order Service and Customer Service call `validate()` of their transaction objects (the codes are [here](../order-service/src/main/java/sample/order/OrderService.java#L142) and [here](../customer-service/src/main/java/sample/customer/CustomerService.java#L245-L249)).
 For the details of `validate()`, see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#validate-the-transaction).
 
 When preparing (and validating) the transaction succeeds in both Order Service and Customer Service, you can commit the transaction.
-Order Service calls `commit()` of its transaction object, and then calls the `commit` gRPC endpoint of Customer Service (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L146-L147)):
+Order Service calls `commit()` of its transaction object, and then calls the `commit` gRPC endpoint of Customer Service (the code is [here](../order-service/src/main/java/sample/order/OrderService.java#L146-L147)):
 ```java
 transaction.commit();
 callCommitEndpoint(transaction.getId());
 ```
 
-In this endpoint, Customer Service resumes the transaction and calls `commit()` of its transaction object, as well (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L146-L147)):
+In this endpoint, Customer Service resumes the transaction and calls `commit()` of its transaction object, as well (the code is [here](../order-service/src/main/java/sample/order/OrderService.java#L146-L147)):
 ```java
 // Resume the suspended transaction
 transaction = twoPhaseCommitTransactionManager.resume(request.getTransactionId());
@@ -424,13 +424,13 @@ transaction.commit();
 #### Error handling
 
 When some error happens during the transaction, you need to rollback the transaction.
-In this case, Order Service calls `rollback()` of its transaction object, and then calls the `rollback` gRPC endpoint of Customer Service (the codes are [here](order-service/src/main/java/sample/order/OrderService.java#L160-L161), [here](order-service/src/main/java/sample/order/OrderService.java#L176-L177), and [here](order-service/src/main/java/sample/order/OrderService.java#L191-L192)):
+In this case, Order Service calls `rollback()` of its transaction object, and then calls the `rollback` gRPC endpoint of Customer Service (the codes are [here](../order-service/src/main/java/sample/order/OrderService.java#L160-L161), [here](../order-service/src/main/java/sample/order/OrderService.java#L176-L177), and [here](../order-service/src/main/java/sample/order/OrderService.java#L191-L192)):
 ```java
 transaction.rollback();
 callRollbackEndpoint(transaction.getId());
 ```
 
-In this endpoint, Customer Service resumes the transaction and calls `rollback()` of its transaction object, as well (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L298-L303)):
+In this endpoint, Customer Service resumes the transaction and calls `rollback()` of its transaction object, as well (the code is [here](../customer-service/src/main/java/sample/customer/CustomerService.java#L298-L303)):
 ```java
 // Resume the suspended transaction
 TwoPhaseCommitTransaction transaction =
