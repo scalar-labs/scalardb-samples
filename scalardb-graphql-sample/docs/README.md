@@ -34,7 +34,7 @@ You need to wait for the Cassandra to start up. Checking the logs with the `dock
 
 ### Load schema
 
-In this step, you will load the database schema for the sample app (`emoney-schema.json`) to the Cassandra database.
+In this step, you will load the database schema for the sample app (`emoney-../schema.json`) to the Cassandra database.
 
 Since the `schema-loader` service is defined in `docker-compose.yml` as a one-shot service (with `profiles`), you can load the schema to the database by the following command:
 

@@ -22,7 +22,7 @@ Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/d
 
 ### Schema
 
-[The schema](schema.json) is as follows:
+[The schema](../schema.json) is as follows:
 
 ```json
 {

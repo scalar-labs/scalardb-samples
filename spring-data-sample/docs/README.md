@@ -18,7 +18,7 @@ For details, please see [Guide of Spring Data integration with ScalarDB](https:/
 
 ### Schema
 
-[The schema](schema.json) is as follows:
+[The schema](../schema.json) is as follows:
 
 ```json
 {

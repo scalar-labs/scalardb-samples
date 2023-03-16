@@ -17,7 +17,7 @@ The sample application is a simple electronic money application that has the fol
 ## Set up
 ### ScalarDB Server
 In this sample, we will use Cassandra as storage for ScalarDB Server.
-The configuration of ScalarDB Server is shown below. (It is also stored in [database.properties](./database.properties))
+The configuration of ScalarDB Server is shown below. (It is also stored in [database.properties](../database.properties))
 ```properties
 # Comma separated contact points
 scalar.db.contact_points=cassandra
@@ -38,12 +38,12 @@ Please note that we should wait around a bit more than one minute because Scalar
 ```shell
 $ docker-compose -f docker-compose-cassandra.yml up -d
 ```
-*For using other databases as the backend for ScalarDB Server, we can change the configuration of [database.properties](database.properties) according to [Getting Started](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started.md). After that we can start ScalarDB Server using [docker-compose.yml](docker-compose.yml) instead.*
+*For using other databases as the backend for ScalarDB Server, we can change the configuration of [database.properties](../database.properties) according to [Getting Started](https://github.com/scalar-labs/scalardb/blob/master/docs/getting-started.md). After that we can start ScalarDB Server using [docker-compose.yml](../docker-compose.yml) instead.*
 
 ### ScalarDB client
 The sample application uses a client that implements ScalarDB interface.
 Thus, you can configure the client in the same way as the server-side.
-But, in this case, you need to specify the server as a contact point and `grpc` for the storage and transaction_manager configuration as follows. (it is stored in [scalardb-client.properties](scalardb-client.properties)).
+But, in this case, you need to specify the server as a contact point and `grpc` for the storage and transaction_manager configuration as follows. (it is stored in [scalardb-client.properties](../scalardb-client.properties)).
 ```properties
 # Comma separated contact points
 scalar.db.contact_points=localhost
@@ -59,7 +59,7 @@ scalar.db.transaction_manager=grpc
 ```
 
 ### Set up database schema
-Now you apply the database schema of the sample application as shown below. (It is stored in [emoney.json](emoney.json)).
+Now you apply the database schema of the sample application as shown below. (It is stored in [emoney.json](../emoney.json)).
 ```json
 {
   "emoney.account": {
@@ -120,7 +120,7 @@ If you have created the tables for transactions, you can delete them with the `-
 $ java -jar scalardb-schema-loader-<version>.jar --config scalardb-client.properties --schema-file emoney.json --coordinator -D
 ```
 
-You can create a schema by setting `transaction` to false. (The updated schema is stored in [emoney-storage.json](emoney-storage.json))
+You can create a schema by setting `transaction` to false. (The updated schema is stored in [emoney-storage.json](../emoney-storage.json))
 ```json
 {
   "emoney.account": {

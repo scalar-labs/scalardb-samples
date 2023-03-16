@@ -38,7 +38,7 @@ Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/d
 
 ### Schema
 
-[The schema for Customer Service](../customer-service-schema.json) is as follows:
+[The schema for Customer Service](../customer-service-../schema.json) is as follows:
 
 ```json
 {
@@ -61,7 +61,7 @@ The `customer_service.customers` table manages customers' information.
 The `credit_limit` for a customer is the maximum amount of money a lender will allow the customer to spend using a credit card,
 and the `credit_total` is the amount of money that the customer has already spent by using the credit card.
 
-[The schema for Order Service](../order-service-schema.json) is as follows:
+[The schema for Order Service](../order-service-../schema.json) is as follows:
 
 ```json
 {
