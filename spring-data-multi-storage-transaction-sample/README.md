@@ -1,6 +1,6 @@
-# Spring Data Integration Sample with Multi-storage Transactions
+# Sample application of Spring Data JDBC for ScalarDB with Multi-storage Transactions
 
-This tutorial describes how to create a sample Spring Boot application by using Spring Data integration with Multi-storage Transactions in ScalarDB.
+This tutorial describes how to create a sample Spring Boot application by using Spring Data JDBC for ScalarDB with Multi-storage Transactions.
 
 ## Prerequisites
 
@@ -12,9 +12,9 @@ This tutorial describes how to create a sample Spring Boot application by using 
 
 ### Overview
 
-This tutorial describes how to create a sample Spring Boot application for the same use case as [ScalarDB Sample](https://github.com/scalar-labs/scalardb-samples/tree/main/scalardb-sample) but by using Spring Data integration with Multi-storage Transaction in ScalarDB.
-Please note that application-specific error handling, authentication processing, etc. are omitted in the sample application since this tutorial focuses on explaining how to use Spring Data integration with Multi-storage Transaction in ScalarDB.
-For details, please see [Guide of Spring Data integration with ScalarDB](https://scalar-labs.github.io/scalardb-sql/spring-data-guide.html).
+This tutorial describes how to create a sample Spring Boot application for the same use case as [ScalarDB Sample](https://github.com/scalar-labs/scalardb-samples/tree/main/scalardb-sample) but by using Spring Data JDBC for ScalarDB with Multi-storage Transaction.
+Please note that application-specific error handling, authentication processing, etc. are omitted in the sample application since this tutorial focuses on explaining how to use Spring Data JDBC for ScalarDB with Multi-storage Transaction.
+For details, please see [Guide of Spring Data JDBC for ScalarDB](https://scalar-labs.github.io/scalardb-sql/spring-data-guide.html).
 
 ![Overview](images/overview.png)
 
