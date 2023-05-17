@@ -13,6 +13,10 @@ services:
       - POSTGRES_DB=test
     networks:
       - scalar-network
+    depends_on:
+      - backend-postgres
+      - backend-cassandra
+      - backend-dynamodb
 
   backend-postgres:
     image: postgres:15.1
@@ -66,6 +70,10 @@ services:
       - scalar-network
     profiles:
       - dev
+    depends_on:
+      - backend-postgres
+      - backend-cassandra
+      - backend-dynamodb
 
   schema-importer:
     image: ghcr.io/scalar-labs/scalardb-analytics-postgresql-schema-importer:3.9.0
@@ -99,6 +107,8 @@ services:
         "--namespace",
         "dynamodbns",
       ]
+    depends_on:
+      - analytics
 
 volumes:
   analytics-data: {}
