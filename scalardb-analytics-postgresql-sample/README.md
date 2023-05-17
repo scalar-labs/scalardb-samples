@@ -61,11 +61,11 @@ The `dynamons.customer` table represents information about customers. It include
 
 The `postgresns.orders` table contains information about orders placed by customers. It includes attributes like order key, customer key, order status, order date, and order priority.
 
-The `cassandrans.` table represents line items associated with orders. It includes attributes such as order key, part key, supplier key, quantity, price, and ship date.
+The `cassandrans.lineitem` table represents line items associated with orders. It includes attributes such as order key, part key, supplier key, quantity, price, and ship date.
 
 ## Schema in PostgreSQL
 
-By running the Schema Importer, you can import the table schema in the ScalarDB database into the PostgreSQL database. More precisely, for each table of `namespace_name.table_name` in the ScalarDB database, you will have a foreign table of `namespace_name._table_name` and a view of `namespace.table_name` in the PostgreSQL database.
+By running the Schema Importer, you can import the table schema in the ScalarDB database into the PostgreSQL database. More precisely, for each table of `namespace_name.table_name` in the ScalarDB database, you will have a foreign table of `namespace_name._table_name` and a view of `namespace_name.table_name` in the PostgreSQL database.
 
 The foreign table has the identical columns to the table in the PostgreSQL, and the transaction metadata columns additionally. For example, given that you have the `dynamons.customer` table in the ScalarDB database with the following schema:
 
