@@ -83,30 +83,6 @@ services:
       - scalar-network
     profiles:
       - dev
-    command:
-      [
-        "import",
-        "--config",
-        "/etc/scalardb.properties",
-        "--config-on-postgres-host",
-        "/etc/scalardb.properties",
-        "--host",
-        "analytics",
-        "--port",
-        "5432",
-        "--database",
-        "test",
-        "--user",
-        "postgres",
-        "--password",
-        "postgres",
-        "--namespace",
-        "cassandrans",
-        "--namespace",
-        "postgresns",
-        "--namespace",
-        "dynamodbns",
-      ]
     depends_on:
       - analytics
 
