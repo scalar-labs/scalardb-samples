@@ -25,7 +25,7 @@ erDiagram
     }
     "postgresns.orders"  ||--|{ "cassandrans.lineitem" : "orderkey"
     "postgresns.orders" {
-      o_orderkey int
+      int o_orderkey
       int o_custkey
       text o_orderstatus
       double o_totalprice
@@ -36,8 +36,8 @@ erDiagram
       text o_comment
     }
     "cassandrans.lineitem" {
-     int l_orderkey PK
-     int l_partkey PK
+     int l_orderkey
+     int l_partkey
      int l_suppkey
      int l_linenumber
      double l_quantity
