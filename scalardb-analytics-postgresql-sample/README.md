@@ -1,14 +1,14 @@
-# A Sample Application of ScalarDB Analytics with PostgreSQL
+# Sample Application for ScalarDB Analytics with PostgreSQL
 
-This pages describe [the sample application](https://github.com/scalar-labs/scalardb-samples/scalardb-analytics-postgresql) of ScalarDB Analytics with PostgreSQL.
+This tutorial describes how to create a sample application for ScalarDB Analytics with PostgreSQL.
 
-## Setting up the database
+## Set up the database
 
-First, you need to set up the database to run analytical queries with ScalarDB Analytics with PostgreSQL. If you haven't done it yet, please follow the instructions in [the Getting Started page](./getting-started.md).
+First, you must set up the database to run analytical queries with ScalarDB Analytics with PostgreSQL. If you have not set up the database yet, please follow the instructions in [Getting Started](https://scalardb.scalar-labs.com/docs/3.9/scalardb-analytics-postgresql/getting-started.md).
 
 ## Schema in ScalarDB
 
-In this application, you have the tables with the following schema in the ScalarDB database:
+In this application, you have tables with the following schema in the ScalarDB database:
 
 ```mermaid
 erDiagram
@@ -55,19 +55,19 @@ erDiagram
     }
 ```
 
-The `dynamons`, `postgresns`, and `cassandrans` are namespaces mapped to the back-end storages of DynamoDB, PostgreSQL, and Cassandra respectively.
+`dynamons`, `postgresns`, and `cassandrans` are namespaces that are mapped to the back-end storages of DynamoDB, PostgreSQL, and Cassandra, respectively.
 
-The `dynamons.customer` table represents information about customers. It includes attributes like customer key, name, address, phone number, and account balance.
+The `dynamons.customer` table represents information about customers. This table includes attributes like customer key, name, address, phone number, and account balance.
 
-The `postgresns.orders` table contains information about orders placed by customers. It includes attributes like order key, customer key, order status, order date, and order priority.
+The `postgresns.orders` table contains information about orders that customers have placed. This table includes attributes like order key, customer key, order status, order date, and order priority.
 
-The `cassandrans.lineitem` table represents line items associated with orders. It includes attributes such as order key, part key, supplier key, quantity, price, and ship date.
+The `cassandrans.lineitem` table represents line items associated with orders. This table includes attributes such as order key, part key, supplier key, quantity, price, and ship date.
 
 ## Schema in PostgreSQL
 
-By running the Schema Importer, you can import the table schema in the ScalarDB database into the PostgreSQL database. More precisely, for each table of `namespace_name.table_name` in the ScalarDB database, you will have a foreign table of `namespace_name._table_name` and a view of `namespace_name.table_name` in the PostgreSQL database.
+By running the Schema Importer, you can import the table schema in the ScalarDB database into the PostgreSQL database. More precisely, for each `namespace_name.table_name` table in the ScalarDB database, you will have a foreign table for `namespace_name._table_name` and a view for `namespace_name.table_name` in the PostgreSQL database.
 
-The foreign table has the identical columns to the table in the PostgreSQL, and the transaction metadata columns additionally. For example, given that you have the `dynamons.customer` table in the ScalarDB database with the following schema:
+The columns in the foreign table are identical to the columns in the table in PostgreSQL and in the transaction metadata. For example, in the `dynamons.customer` table in the ScalarDB database, you should see the following schema:
 
 ```shell
 $ docker compose run --rm sql-cli --config /etc/scalardb.properties -e "DESCRIBE dynamons.customer";
@@ -85,7 +85,7 @@ $ docker compose run --rm sql-cli --config /etc/scalardb.properties -e "DESCRIBE
 +--------------+--------+--------------+----------------+-----------------+-----------------+-----------+
 ```
 
-You have the foreign table of `dynamons._customer` in the PostgreSQL database as well.
+You should see the foreign table for `dynamons._customer` in the PostgreSQL database as well.
 
 ```shell
 $ psql -U postgres -h localhost test -c '\d dynamons._customer';
@@ -122,9 +122,9 @@ Server: multi_storage_dynamodb
 FDW options: (namespace 'dynamons', table_name 'customer')
 ```
 
-As you can see, the tables contains the transaction metadata columns as well. This is required to ensure the Read-Committed isolation level.
+As you can see in the foreign table, the table contains the transaction metadata columns as well. These columns are required to ensure the Read Committed isolation level.
 
-You also have the view of `dynamons.customer` as below:
+You also have the view for `dynamons.customer`, as shown below:
 
 ```shell
 $ psql -U postgres -h localhost test -c '\d dynamons.customer';
@@ -142,17 +142,17 @@ Password for user postgres:
  c_comment    | text             |           |          |
 ```
 
-The column definitions are completely the same as the original table in the ScalarDB database. Type mapping between ScalarDB and PostgreSQL is explained [here](https://scalardb.scalar-labs.com/docs/3.9/schema-loader/#data-type-mapping-between-scalardb-and-the-other-databases). Internally, this view is based on the foreign table explained above, and it interprets the transaction metadata to expose only the valid data with Read-Committed isolation level.
+The column definitions are the same as the original table in the ScalarDB database. Type mapping between ScalarDB and PostgreSQL is explained in [Data type mapping between ScalarDB and the other databases](https://scalardb.scalar-labs.com/docs/3.9/schema-loader/#data-type-mapping-between-scalardb-and-the-other-databases). Internally, this view is based on the foreign table explained above and interprets the transaction metadata to expose only the valid data with the Read Committed isolation level.
 
 Normally, you don't need to access the foreign tables directly. You can equate the views with the tables in the ScalarDB database.
 
-## Running analytical queries
+## Run analytical queries
 
-You can run any arbitrary queries with the above imported tables supported by PostgreSQL. PostgreSQL support various type of queries. Please refer to [the PostgreSQL official documentation](https://www.postgresql.org/docs/current/index.html).
+You can run any arbitrary query that PostgreSQL supports on the above imported tables. To see which types of queries PostgreSQL supports, see the [PostgreSQL documentation](https://www.postgresql.org/docs/current/index.html).
 
-In this example, we will two types of queries: a single-table query and a multi-table query.
+In this example, we will run two types of queries: a single-table query and a multi-table query.
 
-The following query read data from `cassandrans.lineitem`, whose actual data is stored in the back-end Cassandra, and calculate several summaries of the ordered line items by aggregating the data.
+The following query reads data from `cassandrans.lineitem`, with the actual data stored in the Cassandra back-end, and calculates several summaries of the ordered line items by aggregating the data.
 
 ```shell
 $ psql -U postgres -h localhost test << EOS
@@ -189,7 +189,7 @@ Password for user postgres:
 (4 rows)
 ```
 
-You can also join the tables spanning the multiple back-end storages.
+You can also run a query to join tables that span multiple back-end storages.
 
 ```shell
 $ psql -U postgres -h localhost test << EOS
@@ -228,6 +228,6 @@ Password for user postgres:
 (3 rows)
 ```
 
-This query joins the tables connected to the three back-end storages and calculates the unshipped orders with the highest revenue on a particular date.
+This query joins the tables that are connected to the three back-end storages and calculates the unshipped orders with the highest revenue on a particular date.
 
-As ScalarDB Analytics with PostgreSQL supports all queries supported by PostgreSQL, you can use not only join, aggregation, filtering, and ordering as shown in the example, but also window function, lateral join, or various analytical operations. Let's try to run any queries you want.
+Since ScalarDB Analytics with PostgreSQL supports all queries that PostgreSQL supports, you can use not only join, aggregation, filtering, and ordering as shown in the example, but also the window function, lateral join, or various analytical operations.
