@@ -2,6 +2,11 @@
 
 This tutorial describes how to create a sample application for ScalarDB Analytics with PostgreSQL.
 
+## Prerequisites
+
+- Docker
+- psql
+
 ## Set up the database
 
 First, you must set up the database to run analytical queries with ScalarDB Analytics with PostgreSQL. If you have not set up the database yet, please follow the instructions in [Getting Started](https://scalardb.scalar-labs.com/docs/3.9/scalardb-analytics-postgresql/getting-started.md).
