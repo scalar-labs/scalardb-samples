@@ -13,10 +13,6 @@ services:
       - POSTGRES_DB=test
     networks:
       - scalar-network
-    depends_on:
-      - backend-postgres
-      - backend-cassandra
-      - backend-dynamodb
 
   backend-postgres:
     image: postgres:15.1
