@@ -1,0 +1,92 @@
+version: "3"
+services:
+  analytics:
+    image: ghcr.io/scalar-labs/scalardb-analytics-postgresql:3.9.0
+    ports:
+      - "5432:5432"
+    volumes:
+      - analytics-data:/var/lib/postgresql/data
+      - ./scalardb.properties:/etc/scalardb.properties
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=test
+    networks:
+      - scalar-network
+
+  backend-postgres:
+    image: postgres:15.1
+    ports:
+      - "5434:5432"
+    volumes:
+      - backend-postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=test
+    networks:
+      - scalar-network
+
+  backend-cassandra:
+    image: cassandra:3.11
+    ports:
+      - "9042:9042"
+    volumes:
+      - backend-cassandra-data:/var/lib/cassandra
+    environment:
+      - CASSANDRA_DC=dc1
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+    networks:
+      - scalar-network
+
+  backend-dynamodb:
+    image: amazon/dynamodb-local:1.21.0
+    ports:
+      - "8000:8000"
+    command:
+      [
+        "-jar",
+        "DynamoDBLocal.jar",
+        "-sharedDb",
+        "-dbPath",
+        "/home/dynamodblocal",
+        "-optimizeDbBeforeStartup",
+      ]
+    volumes:
+      - backend-dynamodb-data:/home/dynamodblocal
+    networks:
+      - scalar-network
+
+  sql-cli:
+    image: ghcr.io/scalar-labs/scalardb-sql-cli:3.9.0
+    volumes:
+      - ./scalardb.properties:/etc/scalardb.properties
+      - ./sample_data.sql:/etc/sample_data.sql
+    networks:
+      - scalar-network
+    profiles:
+      - dev
+    depends_on:
+      - backend-postgres
+      - backend-cassandra
+      - backend-dynamodb
+
+  schema-importer:
+    image: ghcr.io/scalar-labs/scalardb-analytics-postgresql-schema-importer:3.9.0
+    volumes:
+      - ./scalardb.properties:/etc/scalardb.properties
+    networks:
+      - scalar-network
+    profiles:
+      - dev
+    depends_on:
+      - analytics
+
+volumes:
+  analytics-data: {}
+  backend-postgres-data: {}
+  backend-cassandra-data: {}
+  backend-dynamodb-data: {}
+
+networks:
+  scalar-network: {}
