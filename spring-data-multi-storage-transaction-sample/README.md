@@ -111,7 +111,8 @@ Configurations for the sample Spring Boot application are as follows:
 ```application.properties
 spring.datasource.driver-class-name=com.scalar.db.sql.jdbc.SqlJdbcDriver
 spring.datasource.url=jdbc:scalardb:\
-?scalar.db.storage=multi-storage\
+?scalar.db.sql.connection_mode=direct\
+&scalar.db.storage=multi-storage\
 &scalar.db.multi_storage.storages=cassandra,mysql\
 &scalar.db.multi_storage.storages.cassandra.storage=cassandra\
 &scalar.db.multi_storage.storages.cassandra.contact_points=localhost\
@@ -122,7 +123,8 @@ spring.datasource.url=jdbc:scalardb:\
 &scalar.db.multi_storage.storages.mysql.username=root\
 &scalar.db.multi_storage.storages.mysql.password=mysql\
 &scalar.db.multi_storage.namespace_mapping=customer:mysql,order:cassandra,coordinator:cassandra\
-&scalar.db.multi_storage.default_storage=cassandra
+&scalar.db.multi_storage.default_storage=cassandra\
+&scalar.db.consensus_commit.isolation_level=SERIALIZABLE
 ```
 
 - `scalar.db.storage`: Specifying `multi-storage` is necessary to use Multi-storage Transactions in ScalarDB.

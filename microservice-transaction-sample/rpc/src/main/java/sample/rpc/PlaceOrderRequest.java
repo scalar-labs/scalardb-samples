@@ -26,66 +26,6 @@ private static final long serialVersionUID = 0L;
     return new PlaceOrderRequest();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet
-  getUnknownFields() {
-    return this.unknownFields;
-  }
-  private PlaceOrderRequest(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 8: {
-
-            customerId_ = input.readInt32();
-            break;
-          }
-          case 18: {
-            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              itemOrder_ = new java.util.ArrayList<sample.rpc.ItemOrder>();
-              mutable_bitField0_ |= 0x00000001;
-            }
-            itemOrder_.add(
-                input.readMessage(sample.rpc.ItemOrder.parser(), extensionRegistry));
-            break;
-          }
-          default: {
-            if (!parseUnknownField(
-                input, unknownFields, extensionRegistry, tag)) {
-              done = true;
-            }
-            break;
-          }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(
-          e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        itemOrder_ = java.util.Collections.unmodifiableList(itemOrder_);
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
     return sample.rpc.Sample.internal_static_rpc_PlaceOrderRequest_descriptor;
@@ -100,7 +40,7 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int CUSTOMER_ID_FIELD_NUMBER = 1;
-  private int customerId_;
+  private int customerId_ = 0;
   /**
    * <code>int32 customer_id = 1;</code>
    * @return The customerId.
@@ -111,6 +51,7 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int ITEM_ORDER_FIELD_NUMBER = 2;
+  @SuppressWarnings("serial")
   private java.util.List<sample.rpc.ItemOrder> itemOrder_;
   /**
    * <code>repeated .rpc.ItemOrder item_order = 2;</code>
@@ -170,7 +111,7 @@ private static final long serialVersionUID = 0L;
     for (int i = 0; i < itemOrder_.size(); i++) {
       output.writeMessage(2, itemOrder_.get(i));
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -187,7 +128,7 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(2, itemOrder_.get(i));
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -206,7 +147,7 @@ private static final long serialVersionUID = 0L;
         != other.getCustomerId()) return false;
     if (!getItemOrderList()
         .equals(other.getItemOrderList())) return false;
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -223,7 +164,7 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + ITEM_ORDER_FIELD_NUMBER;
       hash = (53 * hash) + getItemOrderList().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -272,11 +213,13 @@ private static final long serialVersionUID = 0L;
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
+
   public static sample.rpc.PlaceOrderRequest parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
+
   public static sample.rpc.PlaceOrderRequest parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -340,31 +283,26 @@ private static final long serialVersionUID = 0L;
 
     // Construct using sample.rpc.PlaceOrderRequest.newBuilder()
     private Builder() {
-      maybeForceBuilderInitialization();
+
     }
 
     private Builder(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3
-              .alwaysUseFieldBuilders) {
-        getItemOrderFieldBuilder();
-      }
+
     }
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       customerId_ = 0;
-
       if (itemOrderBuilder_ == null) {
         itemOrder_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
       } else {
+        itemOrder_ = null;
         itemOrderBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000002);
       return this;
     }
 
@@ -391,53 +329,31 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public sample.rpc.PlaceOrderRequest buildPartial() {
       sample.rpc.PlaceOrderRequest result = new sample.rpc.PlaceOrderRequest(this);
-      int from_bitField0_ = bitField0_;
-      result.customerId_ = customerId_;
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) { buildPartial0(result); }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(sample.rpc.PlaceOrderRequest result) {
       if (itemOrderBuilder_ == null) {
-        if (((bitField0_ & 0x00000001) != 0)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           itemOrder_ = java.util.Collections.unmodifiableList(itemOrder_);
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.itemOrder_ = itemOrder_;
       } else {
         result.itemOrder_ = itemOrderBuilder_.build();
       }
-      onBuilt();
-      return result;
     }
 
-    @java.lang.Override
-    public Builder clone() {
-      return super.clone();
+    private void buildPartial0(sample.rpc.PlaceOrderRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.customerId_ = customerId_;
+      }
     }
-    @java.lang.Override
-    public Builder setField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        java.lang.Object value) {
-      return super.setField(field, value);
-    }
-    @java.lang.Override
-    public Builder clearField(
-        com.google.protobuf.Descriptors.FieldDescriptor field) {
-      return super.clearField(field);
-    }
-    @java.lang.Override
-    public Builder clearOneof(
-        com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-      return super.clearOneof(oneof);
-    }
-    @java.lang.Override
-    public Builder setRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        int index, java.lang.Object value) {
-      return super.setRepeatedField(field, index, value);
-    }
-    @java.lang.Override
-    public Builder addRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        java.lang.Object value) {
-      return super.addRepeatedField(field, value);
-    }
+
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
       if (other instanceof sample.rpc.PlaceOrderRequest) {
@@ -457,7 +373,7 @@ private static final long serialVersionUID = 0L;
         if (!other.itemOrder_.isEmpty()) {
           if (itemOrder_.isEmpty()) {
             itemOrder_ = other.itemOrder_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             ensureItemOrderIsMutable();
             itemOrder_.addAll(other.itemOrder_);
@@ -470,7 +386,7 @@ private static final long serialVersionUID = 0L;
             itemOrderBuilder_.dispose();
             itemOrderBuilder_ = null;
             itemOrder_ = other.itemOrder_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
             itemOrderBuilder_ = 
               com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                  getItemOrderFieldBuilder() : null;
@@ -479,7 +395,7 @@ private static final long serialVersionUID = 0L;
           }
         }
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -494,17 +410,48 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      sample.rpc.PlaceOrderRequest parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8: {
+              customerId_ = input.readInt32();
+              bitField0_ |= 0x00000001;
+              break;
+            } // case 8
+            case 18: {
+              sample.rpc.ItemOrder m =
+                  input.readMessage(
+                      sample.rpc.ItemOrder.parser(),
+                      extensionRegistry);
+              if (itemOrderBuilder_ == null) {
+                ensureItemOrderIsMutable();
+                itemOrder_.add(m);
+              } else {
+                itemOrderBuilder_.addMessage(m);
+              }
+              break;
+            } // case 18
+            default: {
+              if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                done = true; // was an endgroup tag
+              }
+              break;
+            } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (sample.rpc.PlaceOrderRequest) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
     private int bitField0_;
@@ -524,8 +471,9 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder setCustomerId(int value) {
-      
+
       customerId_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -534,7 +482,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearCustomerId() {
-      
+      bitField0_ = (bitField0_ & ~0x00000001);
       customerId_ = 0;
       onChanged();
       return this;
@@ -543,9 +491,9 @@ private static final long serialVersionUID = 0L;
     private java.util.List<sample.rpc.ItemOrder> itemOrder_ =
       java.util.Collections.emptyList();
     private void ensureItemOrderIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
+      if (!((bitField0_ & 0x00000002) != 0)) {
         itemOrder_ = new java.util.ArrayList<sample.rpc.ItemOrder>(itemOrder_);
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000002;
        }
     }
 
@@ -695,7 +643,7 @@ private static final long serialVersionUID = 0L;
     public Builder clearItemOrder() {
       if (itemOrderBuilder_ == null) {
         itemOrder_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
       } else {
         itemOrderBuilder_.clear();
@@ -772,7 +720,7 @@ private static final long serialVersionUID = 0L;
         itemOrderBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
             sample.rpc.ItemOrder, sample.rpc.ItemOrder.Builder, sample.rpc.ItemOrderOrBuilder>(
                 itemOrder_,
-                ((bitField0_ & 0x00000001) != 0),
+                ((bitField0_ & 0x00000002) != 0),
                 getParentForChildren(),
                 isClean());
         itemOrder_ = null;
@@ -812,7 +760,18 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return new PlaceOrderRequest(input, extensionRegistry);
+      Builder builder = newBuilder();
+      try {
+        builder.mergeFrom(input, extensionRegistry);
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(builder.buildPartial());
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(e)
+            .setUnfinishedMessage(builder.buildPartial());
+      }
+      return builder.buildPartial();
     }
   };
 

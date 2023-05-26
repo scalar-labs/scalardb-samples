@@ -25,61 +25,6 @@ private static final long serialVersionUID = 0L;
     return new GetOrderResponse();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet
-  getUnknownFields() {
-    return this.unknownFields;
-  }
-  private GetOrderResponse(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10: {
-            sample.rpc.Order.Builder subBuilder = null;
-            if (order_ != null) {
-              subBuilder = order_.toBuilder();
-            }
-            order_ = input.readMessage(sample.rpc.Order.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(order_);
-              order_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          default: {
-            if (!parseUnknownField(
-                input, unknownFields, extensionRegistry, tag)) {
-              done = true;
-            }
-            break;
-          }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(
-          e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
     return sample.rpc.Sample.internal_static_rpc_GetOrderResponse_descriptor;
@@ -116,7 +61,7 @@ private static final long serialVersionUID = 0L;
    */
   @java.lang.Override
   public sample.rpc.OrderOrBuilder getOrderOrBuilder() {
-    return getOrder();
+    return order_ == null ? sample.rpc.Order.getDefaultInstance() : order_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -136,7 +81,7 @@ private static final long serialVersionUID = 0L;
     if (order_ != null) {
       output.writeMessage(1, getOrder());
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -149,7 +94,7 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(1, getOrder());
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -169,7 +114,7 @@ private static final long serialVersionUID = 0L;
       if (!getOrder()
           .equals(other.getOrder())) return false;
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -184,7 +129,7 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + ORDER_FIELD_NUMBER;
       hash = (53 * hash) + getOrder().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -233,11 +178,13 @@ private static final long serialVersionUID = 0L;
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
+
   public static sample.rpc.GetOrderResponse parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
+
   public static sample.rpc.GetOrderResponse parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -301,26 +248,21 @@ private static final long serialVersionUID = 0L;
 
     // Construct using sample.rpc.GetOrderResponse.newBuilder()
     private Builder() {
-      maybeForceBuilderInitialization();
+
     }
 
     private Builder(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3
-              .alwaysUseFieldBuilders) {
-      }
+
     }
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      if (orderBuilder_ == null) {
-        order_ = null;
-      } else {
-        order_ = null;
+      bitField0_ = 0;
+      order_ = null;
+      if (orderBuilder_ != null) {
+        orderBuilder_.dispose();
         orderBuilder_ = null;
       }
       return this;
@@ -349,47 +291,20 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public sample.rpc.GetOrderResponse buildPartial() {
       sample.rpc.GetOrderResponse result = new sample.rpc.GetOrderResponse(this);
-      if (orderBuilder_ == null) {
-        result.order_ = order_;
-      } else {
-        result.order_ = orderBuilder_.build();
-      }
+      if (bitField0_ != 0) { buildPartial0(result); }
       onBuilt();
       return result;
     }
 
-    @java.lang.Override
-    public Builder clone() {
-      return super.clone();
+    private void buildPartial0(sample.rpc.GetOrderResponse result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.order_ = orderBuilder_ == null
+            ? order_
+            : orderBuilder_.build();
+      }
     }
-    @java.lang.Override
-    public Builder setField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        java.lang.Object value) {
-      return super.setField(field, value);
-    }
-    @java.lang.Override
-    public Builder clearField(
-        com.google.protobuf.Descriptors.FieldDescriptor field) {
-      return super.clearField(field);
-    }
-    @java.lang.Override
-    public Builder clearOneof(
-        com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-      return super.clearOneof(oneof);
-    }
-    @java.lang.Override
-    public Builder setRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        int index, java.lang.Object value) {
-      return super.setRepeatedField(field, index, value);
-    }
-    @java.lang.Override
-    public Builder addRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        java.lang.Object value) {
-      return super.addRepeatedField(field, value);
-    }
+
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
       if (other instanceof sample.rpc.GetOrderResponse) {
@@ -405,7 +320,7 @@ private static final long serialVersionUID = 0L;
       if (other.hasOrder()) {
         mergeOrder(other.getOrder());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -420,19 +335,40 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      sample.rpc.GetOrderResponse parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              input.readMessage(
+                  getOrderFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              bitField0_ |= 0x00000001;
+              break;
+            } // case 10
+            default: {
+              if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                done = true; // was an endgroup tag
+              }
+              break;
+            } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (sample.rpc.GetOrderResponse) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
+    private int bitField0_;
 
     private sample.rpc.Order order_;
     private com.google.protobuf.SingleFieldBuilderV3<
@@ -442,7 +378,7 @@ private static final long serialVersionUID = 0L;
      * @return Whether the order field is set.
      */
     public boolean hasOrder() {
-      return orderBuilder_ != null || order_ != null;
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>.rpc.Order order = 1;</code>
@@ -464,11 +400,11 @@ private static final long serialVersionUID = 0L;
           throw new NullPointerException();
         }
         order_ = value;
-        onChanged();
       } else {
         orderBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -478,11 +414,11 @@ private static final long serialVersionUID = 0L;
         sample.rpc.Order.Builder builderForValue) {
       if (orderBuilder_ == null) {
         order_ = builderForValue.build();
-        onChanged();
       } else {
         orderBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -490,38 +426,38 @@ private static final long serialVersionUID = 0L;
      */
     public Builder mergeOrder(sample.rpc.Order value) {
       if (orderBuilder_ == null) {
-        if (order_ != null) {
-          order_ =
-            sample.rpc.Order.newBuilder(order_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000001) != 0) &&
+          order_ != null &&
+          order_ != sample.rpc.Order.getDefaultInstance()) {
+          getOrderBuilder().mergeFrom(value);
         } else {
           order_ = value;
         }
-        onChanged();
       } else {
         orderBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
      * <code>.rpc.Order order = 1;</code>
      */
     public Builder clearOrder() {
-      if (orderBuilder_ == null) {
-        order_ = null;
-        onChanged();
-      } else {
-        order_ = null;
+      bitField0_ = (bitField0_ & ~0x00000001);
+      order_ = null;
+      if (orderBuilder_ != null) {
+        orderBuilder_.dispose();
         orderBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
      * <code>.rpc.Order order = 1;</code>
      */
     public sample.rpc.Order.Builder getOrderBuilder() {
-      
+      bitField0_ |= 0x00000001;
       onChanged();
       return getOrderFieldBuilder().getBuilder();
     }
@@ -585,7 +521,18 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return new GetOrderResponse(input, extensionRegistry);
+      Builder builder = newBuilder();
+      try {
+        builder.mergeFrom(input, extensionRegistry);
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(builder.buildPartial());
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(e)
+            .setUnfinishedMessage(builder.buildPartial());
+      }
+      return builder.buildPartial();
     }
   };
 

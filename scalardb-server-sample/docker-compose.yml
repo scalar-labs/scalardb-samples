@@ -1,7 +1,7 @@
 version: "3.5"
 services:
   scalardb-server:
-    image: ghcr.io/scalar-labs/scalardb-server:3.6.0
+    image: ghcr.io/scalar-labs/scalardb-server:3.9.0
     container_name: "scalardb-server-1"
     volumes:
       - ./database.properties:/scalardb/server/database.properties.tmpl

@@ -3,12 +3,12 @@ subprojects {
     project.version = '1.0'
 
     ext {
-        grpcVersion = '1.38.0'
-        protocVersion = '3.17.2'
-        scalarDbVersion = '3.6.0'
-        picoCliVersion = '4.1.4'
+        grpcVersion = '1.53.0'
+        protocVersion = '3.23.1'
+        scalarDbVersion = '3.9.0'
+        picoCliVersion = '4.7.1'
         protobufJavaFormatVersion = '1.4'
-        log4jVersion = '2.14.1'
+        log4jVersion = '2.20.0'
     }
 
     repositories {

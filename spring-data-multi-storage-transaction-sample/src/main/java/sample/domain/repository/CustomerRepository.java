@@ -1,16 +1,14 @@
 package sample.domain.repository;
 
-import com.scalar.db.sql.springdata.ScalarDbHelperRepository;
+import com.scalar.db.sql.springdata.ScalarDbRepository;
 import java.util.Optional;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import sample.domain.model.Customer;
 
 @Transactional
 @Repository
-public interface CustomerRepository
-    extends PagingAndSortingRepository<Customer, Integer>, ScalarDbHelperRepository<Customer> {
+public interface CustomerRepository extends ScalarDbRepository<Customer, Integer> {
 
   default Customer getById(int id) {
     Optional<Customer> entity = findById(id);

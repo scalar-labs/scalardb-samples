@@ -108,11 +108,14 @@ Configurations for the sample Spring Boot application are as follows:
 
 ```application.properties
 spring.datasource.driver-class-name=com.scalar.db.sql.jdbc.SqlJdbcDriver
-spring.datasource.url=jdbc:scalardb:
-?scalar.db.storage=cassandra\
+spring.datasource.url=jdbc:scalardb:\
+?scalar.db.sql.connection_mode=direct\
+&scalar.db.storage=cassandra\
 &scalar.db.contact_points=localhost\
 &scalar.db.username=cassandra\
-&scalar.db.password=cassandra
+&scalar.db.password=cassandra\
+&scalar.db.consensus_commit.isolation_level=SERIALIZABLE\
+&scalar.db.sql.default_namespace_name=sample
 ```
 
 Since this sample application uses Cassandra, as shown above, you need to configure your settings for Cassandra in this configuration.

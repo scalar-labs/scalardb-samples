@@ -201,13 +201,6 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       logger.error(message, e);
       responseObserver.onError(
           Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
-    } finally {
-      // Suspend the transaction
-      try {
-        twoPhaseCommitTransactionManager.suspend(transaction);
-      } catch (TransactionException e) {
-        logger.error("suspend failed", e);
-      }
     }
   }
 
@@ -228,13 +221,6 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       logger.error(message, e);
       responseObserver.onError(
           Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
-    } finally {
-      // Suspend the transaction
-      try {
-        twoPhaseCommitTransactionManager.suspend(transaction);
-      } catch (TransactionException e) {
-        logger.error("suspend failed", e);
-      }
     }
   }
 
@@ -255,13 +241,6 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       logger.error(message, e);
       responseObserver.onError(
           Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
-    } finally {
-      // Suspend the transaction
-      try {
-        twoPhaseCommitTransactionManager.suspend(transaction);
-      } catch (TransactionException e) {
-        logger.error("suspend failed", e);
-      }
     }
   }
 
@@ -282,13 +261,6 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       logger.error(message, e);
       responseObserver.onError(
           Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
-
-      try {
-        // Suspend the transaction
-        twoPhaseCommitTransactionManager.suspend(transaction);
-      } catch (TransactionException ex) {
-        logger.error("suspend failed", ex);
-      }
     }
   }
 

@@ -11,7 +11,7 @@ services:
       - scalar-network
 
   schema-loader:
-    image: ghcr.io/scalar-labs/scalardb-schema-loader:3.5.0
+    image: ghcr.io/scalar-labs/scalardb-schema-loader:3.9.0
     container_name: "scalardb-schema-loader-1"
     volumes:
       - ./database.properties:/database.properties
@@ -23,7 +23,7 @@ services:
       - tools
 
   scalardb-graphql:
-    image: ghcr.io/scalar-labs/scalardb-graphql:3.5.0
+    image: ghcr.io/scalar-labs/scalardb-graphql:3.9.0
     container_name: "scalardb-graphql-1"
     depends_on:
       - cassandra
