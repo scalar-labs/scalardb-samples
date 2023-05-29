@@ -28,6 +28,14 @@ distTar {
     duplicatesStrategy DuplicatesStrategy.EXCLUDE
 }
 
+distZip {
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+}
+
+installDist {
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+}
+
 archivesBaseName = "sample-customer-service"
 
 sourceCompatibility = 1.8

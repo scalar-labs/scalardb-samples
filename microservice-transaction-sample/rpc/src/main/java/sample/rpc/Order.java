@@ -28,88 +28,6 @@ private static final long serialVersionUID = 0L;
     return new Order();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet
-  getUnknownFields() {
-    return this.unknownFields;
-  }
-  private Order(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            orderId_ = s;
-            break;
-          }
-          case 16: {
-
-            timestamp_ = input.readInt64();
-            break;
-          }
-          case 24: {
-
-            customerId_ = input.readInt32();
-            break;
-          }
-          case 34: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            customerName_ = s;
-            break;
-          }
-          case 42: {
-            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              statement_ = new java.util.ArrayList<sample.rpc.Statement>();
-              mutable_bitField0_ |= 0x00000001;
-            }
-            statement_.add(
-                input.readMessage(sample.rpc.Statement.parser(), extensionRegistry));
-            break;
-          }
-          case 48: {
-
-            total_ = input.readInt32();
-            break;
-          }
-          default: {
-            if (!parseUnknownField(
-                input, unknownFields, extensionRegistry, tag)) {
-              done = true;
-            }
-            break;
-          }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(
-          e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        statement_ = java.util.Collections.unmodifiableList(statement_);
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
     return sample.rpc.Sample.internal_static_rpc_Order_descriptor;
@@ -124,7 +42,8 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int ORDER_ID_FIELD_NUMBER = 1;
-  private volatile java.lang.Object orderId_;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object orderId_ = "";
   /**
    * <code>string order_id = 1;</code>
    * @return The orderId.
@@ -162,7 +81,7 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int TIMESTAMP_FIELD_NUMBER = 2;
-  private long timestamp_;
+  private long timestamp_ = 0L;
   /**
    * <code>int64 timestamp = 2;</code>
    * @return The timestamp.
@@ -173,7 +92,7 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int CUSTOMER_ID_FIELD_NUMBER = 3;
-  private int customerId_;
+  private int customerId_ = 0;
   /**
    * <code>int32 customer_id = 3;</code>
    * @return The customerId.
@@ -184,7 +103,8 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int CUSTOMER_NAME_FIELD_NUMBER = 4;
-  private volatile java.lang.Object customerName_;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object customerName_ = "";
   /**
    * <code>string customer_name = 4;</code>
    * @return The customerName.
@@ -222,6 +142,7 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int STATEMENT_FIELD_NUMBER = 5;
+  @SuppressWarnings("serial")
   private java.util.List<sample.rpc.Statement> statement_;
   /**
    * <code>repeated .rpc.Statement statement = 5;</code>
@@ -262,7 +183,7 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int TOTAL_FIELD_NUMBER = 6;
-  private int total_;
+  private int total_ = 0;
   /**
    * <code>int32 total = 6;</code>
    * @return The total.
@@ -286,7 +207,7 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (!getOrderIdBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(orderId_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, orderId_);
     }
     if (timestamp_ != 0L) {
@@ -295,7 +216,7 @@ private static final long serialVersionUID = 0L;
     if (customerId_ != 0) {
       output.writeInt32(3, customerId_);
     }
-    if (!getCustomerNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(customerName_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 4, customerName_);
     }
     for (int i = 0; i < statement_.size(); i++) {
@@ -304,7 +225,7 @@ private static final long serialVersionUID = 0L;
     if (total_ != 0) {
       output.writeInt32(6, total_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -313,7 +234,7 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (!getOrderIdBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(orderId_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, orderId_);
     }
     if (timestamp_ != 0L) {
@@ -324,7 +245,7 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeInt32Size(3, customerId_);
     }
-    if (!getCustomerNameBytes().isEmpty()) {
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(customerName_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, customerName_);
     }
     for (int i = 0; i < statement_.size(); i++) {
@@ -335,7 +256,7 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeInt32Size(6, total_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -362,7 +283,7 @@ private static final long serialVersionUID = 0L;
         .equals(other.getStatementList())) return false;
     if (getTotal()
         != other.getTotal()) return false;
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -388,7 +309,7 @@ private static final long serialVersionUID = 0L;
     }
     hash = (37 * hash) + TOTAL_FIELD_NUMBER;
     hash = (53 * hash) + getTotal();
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -437,11 +358,13 @@ private static final long serialVersionUID = 0L;
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
+
   public static sample.rpc.Order parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
+
   public static sample.rpc.Order parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -505,39 +428,30 @@ private static final long serialVersionUID = 0L;
 
     // Construct using sample.rpc.Order.newBuilder()
     private Builder() {
-      maybeForceBuilderInitialization();
+
     }
 
     private Builder(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3
-              .alwaysUseFieldBuilders) {
-        getStatementFieldBuilder();
-      }
+
     }
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       orderId_ = "";
-
       timestamp_ = 0L;
-
       customerId_ = 0;
-
       customerName_ = "";
-
       if (statementBuilder_ == null) {
         statement_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
       } else {
+        statement_ = null;
         statementBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000010);
       total_ = 0;
-
       return this;
     }
 
@@ -564,57 +478,43 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public sample.rpc.Order buildPartial() {
       sample.rpc.Order result = new sample.rpc.Order(this);
-      int from_bitField0_ = bitField0_;
-      result.orderId_ = orderId_;
-      result.timestamp_ = timestamp_;
-      result.customerId_ = customerId_;
-      result.customerName_ = customerName_;
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) { buildPartial0(result); }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(sample.rpc.Order result) {
       if (statementBuilder_ == null) {
-        if (((bitField0_ & 0x00000001) != 0)) {
+        if (((bitField0_ & 0x00000010) != 0)) {
           statement_ = java.util.Collections.unmodifiableList(statement_);
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000010);
         }
         result.statement_ = statement_;
       } else {
         result.statement_ = statementBuilder_.build();
       }
-      result.total_ = total_;
-      onBuilt();
-      return result;
     }
 
-    @java.lang.Override
-    public Builder clone() {
-      return super.clone();
+    private void buildPartial0(sample.rpc.Order result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.orderId_ = orderId_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.timestamp_ = timestamp_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.customerId_ = customerId_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.customerName_ = customerName_;
+      }
+      if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.total_ = total_;
+      }
     }
-    @java.lang.Override
-    public Builder setField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        java.lang.Object value) {
-      return super.setField(field, value);
-    }
-    @java.lang.Override
-    public Builder clearField(
-        com.google.protobuf.Descriptors.FieldDescriptor field) {
-      return super.clearField(field);
-    }
-    @java.lang.Override
-    public Builder clearOneof(
-        com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-      return super.clearOneof(oneof);
-    }
-    @java.lang.Override
-    public Builder setRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        int index, java.lang.Object value) {
-      return super.setRepeatedField(field, index, value);
-    }
-    @java.lang.Override
-    public Builder addRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        java.lang.Object value) {
-      return super.addRepeatedField(field, value);
-    }
+
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
       if (other instanceof sample.rpc.Order) {
@@ -629,6 +529,7 @@ private static final long serialVersionUID = 0L;
       if (other == sample.rpc.Order.getDefaultInstance()) return this;
       if (!other.getOrderId().isEmpty()) {
         orderId_ = other.orderId_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (other.getTimestamp() != 0L) {
@@ -639,13 +540,14 @@ private static final long serialVersionUID = 0L;
       }
       if (!other.getCustomerName().isEmpty()) {
         customerName_ = other.customerName_;
+        bitField0_ |= 0x00000008;
         onChanged();
       }
       if (statementBuilder_ == null) {
         if (!other.statement_.isEmpty()) {
           if (statement_.isEmpty()) {
             statement_ = other.statement_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000010);
           } else {
             ensureStatementIsMutable();
             statement_.addAll(other.statement_);
@@ -658,7 +560,7 @@ private static final long serialVersionUID = 0L;
             statementBuilder_.dispose();
             statementBuilder_ = null;
             statement_ = other.statement_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000010);
             statementBuilder_ = 
               com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                  getStatementFieldBuilder() : null;
@@ -670,7 +572,7 @@ private static final long serialVersionUID = 0L;
       if (other.getTotal() != 0) {
         setTotal(other.getTotal());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -685,17 +587,68 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      sample.rpc.Order parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              orderId_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000001;
+              break;
+            } // case 10
+            case 16: {
+              timestamp_ = input.readInt64();
+              bitField0_ |= 0x00000002;
+              break;
+            } // case 16
+            case 24: {
+              customerId_ = input.readInt32();
+              bitField0_ |= 0x00000004;
+              break;
+            } // case 24
+            case 34: {
+              customerName_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000008;
+              break;
+            } // case 34
+            case 42: {
+              sample.rpc.Statement m =
+                  input.readMessage(
+                      sample.rpc.Statement.parser(),
+                      extensionRegistry);
+              if (statementBuilder_ == null) {
+                ensureStatementIsMutable();
+                statement_.add(m);
+              } else {
+                statementBuilder_.addMessage(m);
+              }
+              break;
+            } // case 42
+            case 48: {
+              total_ = input.readInt32();
+              bitField0_ |= 0x00000020;
+              break;
+            } // case 48
+            default: {
+              if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                done = true; // was an endgroup tag
+              }
+              break;
+            } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (sample.rpc.Order) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
     private int bitField0_;
@@ -741,11 +694,9 @@ private static final long serialVersionUID = 0L;
      */
     public Builder setOrderId(
         java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      if (value == null) { throw new NullPointerException(); }
       orderId_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -754,8 +705,8 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearOrderId() {
-      
       orderId_ = getDefaultInstance().getOrderId();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -766,12 +717,10 @@ private static final long serialVersionUID = 0L;
      */
     public Builder setOrderIdBytes(
         com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
+      if (value == null) { throw new NullPointerException(); }
+      checkByteStringIsUtf8(value);
       orderId_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -791,8 +740,9 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder setTimestamp(long value) {
-      
+
       timestamp_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -801,7 +751,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearTimestamp() {
-      
+      bitField0_ = (bitField0_ & ~0x00000002);
       timestamp_ = 0L;
       onChanged();
       return this;
@@ -822,8 +772,9 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder setCustomerId(int value) {
-      
+
       customerId_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -832,7 +783,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearCustomerId() {
-      
+      bitField0_ = (bitField0_ & ~0x00000004);
       customerId_ = 0;
       onChanged();
       return this;
@@ -879,11 +830,9 @@ private static final long serialVersionUID = 0L;
      */
     public Builder setCustomerName(
         java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      if (value == null) { throw new NullPointerException(); }
       customerName_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -892,8 +841,8 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearCustomerName() {
-      
       customerName_ = getDefaultInstance().getCustomerName();
+      bitField0_ = (bitField0_ & ~0x00000008);
       onChanged();
       return this;
     }
@@ -904,12 +853,10 @@ private static final long serialVersionUID = 0L;
      */
     public Builder setCustomerNameBytes(
         com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
+      if (value == null) { throw new NullPointerException(); }
+      checkByteStringIsUtf8(value);
       customerName_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -917,9 +864,9 @@ private static final long serialVersionUID = 0L;
     private java.util.List<sample.rpc.Statement> statement_ =
       java.util.Collections.emptyList();
     private void ensureStatementIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
+      if (!((bitField0_ & 0x00000010) != 0)) {
         statement_ = new java.util.ArrayList<sample.rpc.Statement>(statement_);
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000010;
        }
     }
 
@@ -1069,7 +1016,7 @@ private static final long serialVersionUID = 0L;
     public Builder clearStatement() {
       if (statementBuilder_ == null) {
         statement_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000010);
         onChanged();
       } else {
         statementBuilder_.clear();
@@ -1146,7 +1093,7 @@ private static final long serialVersionUID = 0L;
         statementBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
             sample.rpc.Statement, sample.rpc.Statement.Builder, sample.rpc.StatementOrBuilder>(
                 statement_,
-                ((bitField0_ & 0x00000001) != 0),
+                ((bitField0_ & 0x00000010) != 0),
                 getParentForChildren(),
                 isClean());
         statement_ = null;
@@ -1169,8 +1116,9 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder setTotal(int value) {
-      
+
       total_ = value;
+      bitField0_ |= 0x00000020;
       onChanged();
       return this;
     }
@@ -1179,7 +1127,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearTotal() {
-      
+      bitField0_ = (bitField0_ & ~0x00000020);
       total_ = 0;
       onChanged();
       return this;
@@ -1217,7 +1165,18 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return new Order(input, extensionRegistry);
+      Builder builder = newBuilder();
+      try {
+        builder.mergeFrom(input, extensionRegistry);
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(builder.buildPartial());
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(e)
+            .setUnfinishedMessage(builder.buildPartial());
+      }
+      return builder.buildPartial();
     }
   };
 

@@ -17,7 +17,7 @@ services:
     networks:
       - sample-network
   customer-service-schema-loader:
-    image: ghcr.io/scalar-labs/scalardb-schema-loader:3.6.0
+    image: ghcr.io/scalar-labs/scalardb-schema-loader:3.9.0
     container_name: "customer-service-schema-loader-1"
     depends_on:
       - mysql
@@ -47,7 +47,7 @@ services:
     networks:
       - sample-network
   order-service-schema-loader:
-    image: ghcr.io/scalar-labs/scalardb-schema-loader:3.6.0
+    image: ghcr.io/scalar-labs/scalardb-schema-loader:3.9.0
     container_name: "order-service-schema-loader-1"
     depends_on:
       - cassandra
