@@ -372,16 +372,6 @@ if (updatedCreditTotal > result.get().creditLimit) {
 Customer.updateCreditTotal(transaction, request.getCustomerId(), updatedCreditTotal);
 ```
 
-#### Suspend the transaction
-
-After that, the endpoint suspends the transaction with [suspend()](customer-service/src/main/java/sample/customer/CustomerService.java#L207) to resume the transaction object in the following endpoints of Customer Service: 
-
-```java
-twoPhaseCommitTransactionManager.suspend(transaction);
-```
-
-The following endpoints of Customer Service also suspend the transaction to share the transaction object across the endpoints.
-
 ### 3. Two-phase Commit
 
 Once Order Service receives that the payment succeeded, Order Service tries to commit the transaction.
@@ -393,16 +383,16 @@ transaction.prepare();
 callPrepareEndpoint(transaction.getId());
 ```
 
-In this endpoint, Customer Service resumes the transaction and calls `prepare()` of its transaction object, as well (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L218-L222)):
+In this endpoint, Customer Service resumes the transaction and calls `prepare()` of its transaction object, as well (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L211-L215)):
 ```java
-// Resume the suspended transaction
+// Resume the transaction
 transaction = twoPhaseCommitTransactionManager.resume(request.getTransactionId());
 
 // Prepare the transaction
 transaction.prepare();
 ```
 
-Similarly, Order Service and Customer Service call `validate()` of their transaction objects (the codes are [here](order-service/src/main/java/sample/order/OrderService.java#L142) and [here](customer-service/src/main/java/sample/customer/CustomerService.java#L245-L249)).
+Similarly, Order Service and Customer Service call `validate()` of their transaction objects (the codes are [here](order-service/src/main/java/sample/order/OrderService.java#L142-L143) and [here](customer-service/src/main/java/sample/customer/CustomerService.java#L231-L235)).
 For the details of `validate()`, see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#validate-the-transaction).
 
 When preparing (and validating) the transaction succeeds in both Order Service and Customer Service, you can commit the transaction.
@@ -412,9 +402,9 @@ transaction.commit();
 callCommitEndpoint(transaction.getId());
 ```
 
-In this endpoint, Customer Service resumes the transaction and calls `commit()` of its transaction object, as well (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L146-L147)):
+In this endpoint, Customer Service resumes the transaction and calls `commit()` of its transaction object, as well (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L251-L255)):
 ```java
-// Resume the suspended transaction
+// Resume the transaction
 transaction = twoPhaseCommitTransactionManager.resume(request.getTransactionId());
 
 // Commit the transaction
@@ -430,9 +420,9 @@ transaction.rollback();
 callRollbackEndpoint(transaction.getId());
 ```
 
-In this endpoint, Customer Service resumes the transaction and calls `rollback()` of its transaction object, as well (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L298-L303)):
+In this endpoint, Customer Service resumes the transaction and calls `rollback()` of its transaction object, as well (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L270-L275)):
 ```java
-// Resume the suspended transaction
+// Resume the transaction
 TwoPhaseCommitTransaction transaction =
     twoPhaseCommitTransactionManager.resume(request.getTransactionId());
 
