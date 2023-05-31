@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id 'java-library-distribution'
+    id 'application'
+    id 'com.palantir.docker' version '0.25.0'
+}
+
+dependencies {
+    implementation project(':rpc')
+    implementation "info.picocli:picocli:${picoCliVersion}"
+    implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+    implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+
+    implementation "com.scalar-labs:scalardb-sql-spring-data:${scalarDbVersion}"
+    implementation "com.scalar-labs:scalardb-sql-direct-mode:${scalarDbVersion}"
+    implementation "org.springframework.boot:spring-boot-starter:${springBootVersion}"
+    // For retry
+//    implementation "org.springframework.boot:spring-boot-starter-aop:${springBootVersion}"
+    implementation "org.springframework.retry:spring-retry:${springRetryVersion}"
+}
+
+application {
+    mainClassName = 'sample.customer.CustomerServiceServer'
+}
+
+docker {
+    name "sample-customer-service:${project.version}"
+    files tasks.distTar.outputs, 'customer-service.properties'
+}
+
+distTar {
+    archiveFileName = "${project.name}.tar"
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+}
+
+distZip {
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+}
+
+installDist {
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+}
+
+archivesBaseName = "sample-customer-service"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8

@@ -1,0 +1,28 @@
+plugins {
+    id 'java'
+    id 'java-library-distribution'
+    id 'com.google.protobuf' version '0.8.17'
+}
+
+dependencies {
+    api "io.grpc:grpc-netty:${grpcVersion}"
+    api "io.grpc:grpc-protobuf:${grpcVersion}"
+    api "io.grpc:grpc-stub:${grpcVersion}"
+    api "io.grpc:grpc-services:${grpcVersion}"
+}
+
+protobuf {
+    protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+    }
+    generateProtoTasks {
+        all()*.plugins { grpc {} }
+    }
+    generatedFilesBaseDir = "$projectDir/src"
+}
+
+archivesBaseName = "sample-rpc"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8

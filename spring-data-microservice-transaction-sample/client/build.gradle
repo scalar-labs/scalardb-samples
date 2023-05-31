@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+dependencies {
+    implementation project(':rpc')
+    implementation "info.picocli:picocli:${picoCliVersion}"
+    implementation "com.googlecode.protobuf-java-format:protobuf-java-format:${protobufJavaFormatVersion}"
+}
+
+application {
+    mainClassName = 'sample.client.Client'
+}
+
+archivesBaseName = "sample-order-service"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
