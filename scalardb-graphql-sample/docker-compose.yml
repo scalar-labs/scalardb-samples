@@ -3,24 +3,10 @@ services:
   cassandra:
     image: cassandra:3.11
     container_name: "cassandradb-1"
-    volumes:
-      - cassandra-data:/var/lib/cassandra
     ports:
       - "9042:9042"
     networks:
       - scalar-network
-
-  schema-loader:
-    image: ghcr.io/scalar-labs/scalardb-schema-loader:3.9.0
-    container_name: "scalardb-schema-loader-1"
-    volumes:
-      - ./database.properties:/database.properties
-      - ./emoney-schema.json:/emoney-schema.json
-    command: "--config /database.properties -f /emoney-schema.json --coordinator"
-    networks:
-      - scalar-network
-    profiles:
-      - tools
 
   scalardb-graphql:
     image: ghcr.io/scalar-labs/scalardb-graphql:3.9.0
@@ -29,7 +15,7 @@ services:
       - cassandra
     restart: "always"
     volumes:
-      - ./database.properties:/scalardb-graphql/database.properties
+      - ./graphql-server-database.properties:/scalardb-graphql/database.properties
       - ./wait-for-it.sh:/scalardb-graphql/wait-for-it.sh
     ports:
       - "8080:8080" # scalardb-graphql-server port
@@ -41,6 +27,3 @@ services:
 networks:
   scalar-network:
     name: scalar-network
-
-volumes:
-  cassandra-data:

@@ -35,11 +35,11 @@ You need to wait for the Cassandra to start up. Checking the logs with the `dock
 ### Load schema
 
 In this step, you will load the database schema for the sample app (`emoney-schema.json`) to the Cassandra database.
+Please download the schema tool `scalardb-schema-loader-<version>.jar` that can be found in [releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB.
+You can load the schema to the database by the following command:
 
-Since the `schema-loader` service is defined in `docker-compose.yml` as a one-shot service (with `profiles`), you can load the schema to the database by the following command:
-
-```console
-docker-compose run --rm schema-loader
+```shell
+$ java -jar scalardb-schema-loader-<version>.jar --config database.properties --schema-file emoney-schema.json --coordinator
 ```
 
 ### Start GraphQL server
@@ -127,5 +127,4 @@ To stop the services and remove the volume for the Cassandra data, run the follo
 
 ```console
 docker-compose down
-docker volume rm scalardb-graphql-sample_cassandra-data
 ```
