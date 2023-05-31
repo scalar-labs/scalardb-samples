@@ -1,5 +1,4 @@
-FROM docker.io/busybox:1.32 AS tools
-FROM openjdk:8u292-jre-slim
+FROM openjdk:8
 
 WORKDIR /
 
@@ -7,8 +6,6 @@ ADD customer-service.tar .
 
 WORKDIR /customer-service
 
-COPY customer-service.properties database.properties
-
-ENTRYPOINT ["./bin/customer-service", "--config", "database.properties"]
+ENTRYPOINT ["./bin/customer-service"]
 
 EXPOSE 10010

@@ -3,7 +3,6 @@ package sample.customer.domain.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-// @Table(schema = "mysql", value = "customers")
 @Table(schema = "customer_service", value = "customers")
 public class Customer {
   @Id

@@ -6,7 +6,6 @@ import com.scalar.db.sql.springdata.exception.ScalarDbNonTransientException;
 import com.scalar.db.sql.springdata.exception.ScalarDbTransientException;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import java.io.Closeable;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
@@ -37,8 +36,7 @@ import sample.rpc.ValidateRequest;
     include = TransientDataAccessException.class,
     maxAttempts = 8,
     backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
-public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
-    implements Closeable {
+public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase {
   private static final Logger logger = LoggerFactory.getLogger(CustomerService.class);
 
   @Autowired
@@ -46,13 +44,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   @Autowired
   private CustomerTwoPcRepository customerTwoPcRepository;
 
-  public CustomerService() {
-    // Initialize the transaction managers
-    loadInitialData();
-  }
-
   @Transactional
-  private void loadInitialData() {
+  public void init() {
     customerRepository.insertIfNotExists(new Customer(1, "Yamada Taro", 10000, 0));
     customerRepository.insertIfNotExists(new Customer(2, "Yamada Hanako", 10000, 0));
     customerRepository.insertIfNotExists(new Customer(3, "Suzuki Ichiro", 10000, 0));
@@ -219,9 +212,5 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       // Rollback the transaction
       customerTwoPcRepository.rollback();
     });
-  }
-
-  @Override
-  public void close() {
   }
 }

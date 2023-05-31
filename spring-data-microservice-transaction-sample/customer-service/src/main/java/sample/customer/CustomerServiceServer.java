@@ -5,17 +5,35 @@ import io.grpc.ServerBuilder;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.ExitCodeGenerator;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.IFactory;
 
+@Configuration
+@ComponentScan
+@EnableAutoConfiguration
 @Command(name = "customer-service-server", description = "Starts Customer Service server.")
-public class CustomerServiceServer implements Callable<Integer> {
+public class CustomerServiceServer implements Callable<Integer>, CommandLineRunner, ExitCodeGenerator {
   private static final Logger logger = LoggerFactory.getLogger(CustomerServiceServer.class);
 
   private static final int PORT = 10010;
 
+  @Autowired
   private CustomerService service;
+
   private Server server;
+
+  private int exitCode;
+
+  @Autowired
+  private IFactory factory;
 
   @Override
   public Integer call() throws Exception {
@@ -26,7 +44,6 @@ public class CustomerServiceServer implements Callable<Integer> {
   }
 
   public void start() throws Exception {
-    service = new CustomerService();
     server = ServerBuilder.forPort(PORT).addService(service).build().start();
     logger.info("Customer Service server started, listening on " + PORT);
   }
@@ -39,7 +56,6 @@ public class CustomerServiceServer implements Callable<Integer> {
                   logger.info("Signal received. Shutting down the server ...");
                   shutdown();
                   blockUntilShutdown();
-                  service.close();
                   logger.info("The server shut down.");
                 }));
   }
@@ -65,8 +81,20 @@ public class CustomerServiceServer implements Callable<Integer> {
     }
   }
 
+  @Override
+  public void run(String... args) {
+    service.init();
+    exitCode = new CommandLine(this, factory).execute(args);
+  }
+
+  @Override
+  public int getExitCode() {
+    return exitCode;
+  }
+
   public static void main(String[] args) {
-    int exitCode = new CommandLine(new CustomerServiceServer()).execute(args);
+    // Invoke this application via org.springframework.boot.CommandLineRunner.run
+    int exitCode = SpringApplication.exit(SpringApplication.run(CustomerServiceServer.class, args));
     System.exit(exitCode);
   }
 }
