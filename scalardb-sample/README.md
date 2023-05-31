@@ -1,8 +1,9 @@
 # ScalarDB Sample
 
-This is a sample application for ScalarDB.
+This tutorial describes how to create a sample application by using ScalarDB.
 
 ## Prerequisites
+
 - Java (OpenJDK 8 or higher)
 - Gradle
 - Docker, Docker Compose
@@ -11,11 +12,11 @@ This is a sample application for ScalarDB.
 
 ### Overview
 
-This is a simple EC application where you can order items and pay with a credit card using ScalarDB.
-In this article, you create the application on Cassandra.
-Even though Cassandra does not provide ACID transaction capability, you can achieve ACID transactions on Cassandra by accessing Cassandra through ScalarDB.
-Please note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use ScalarDB.
-Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions) for the details of how to handle exceptions in ScalarDB.
+This tutorial illustrates the process of creating a sample e-commerce application, where items can be ordered and paid for with a credit card using ScalarDB.
+In this tutorial, you will build the application on Cassandra.
+Although Cassandra itself does not provide ACID transaction capabilities, it is possible to achieve ACID transactions on Cassandra by interfacing with it through ScalarDB.
+Please note that application-specific error handling, authentication processing, and the like are omitted in the sample application, as the focus is on demonstrating the use of ScalarDB.
+For detailed information on exception handling in ScalarDB, see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions).
 
 ### Schema
 
@@ -82,13 +83,14 @@ Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/d
 
 All the tables are created in the `sample` namespace.
 
-The `sample.customers` table manages customers' information.
-The `credit_limit` is the maximum amount of money a lender will allow each customer to spend using a credit card, and the `credit_total` is the amount of money that each customer has already spent by using the credit card.
+- `sample.customers`: a table that manages customers' information
+    - `credit_limit`: the maximum amount of money a lender will allow each customer to spend when using a credit card
+    - `credit_total`: the amount of money that each customer has already spent by using the credit card
+- `sample.orders`: a table that manages order information
+- `sample.statements`: a table that manages order statement information
+- `sample.items`: a table that manages information of items to be ordered
 
-The `sample.orders` table manages orders' information, and the `sample.statements` table manages the statements' information of the orders. Finally, the `sample.items` table manages items' information to be ordered.
-
-
-The ER diagram for the schema is as follows:
+The Entity Relationship Diagram for the schema is as follows:
 
 ![ERD](images/ERD.png)
 
@@ -97,14 +99,14 @@ The ER diagram for the schema is as follows:
 The following five transactions are implemented in this sample application:
 
 1. Getting customer information
-3. Placing an order. An order is paid by a credit card. It first checks if the amount of the money of the order exceeds the credit limit. If the check passes, it records order histories and updates the `credit_total`
-4. Getting order information by order ID
-5. Getting order information by customer ID
-6. Repayment. It reduces the amount of `credit_total`.
+2. Placing an order by credit card (checks if the cost of the order is below the credit limit, then records order history and updates the `credit_total` if the check passes)
+3. Getting order information by order ID
+4. Getting order information by customer ID
+5. Repayment (reduces the amount in the `credit_total`)
 
 ### Configuration
 
-The configurations for the sample application is as follows:
+Configurations for the sample application are as follows:
 
 ```properties
 scalar.db.storage=cassandra
@@ -113,26 +115,36 @@ scalar.db.username=cassandra
 scalar.db.password=cassandra
 ```
 
-Since you use Cassandra in this sample application as mentioned above, you need to configure Cassandra settings in the configuration.
+Since this sample application uses Cassandra, as shown above, you need to configure your settings for Cassandra in this configuration.
 
-## Set up
+## Setup Cassandra
 
-You need to run the following `docker-compose` command:
+To start Cassandra, you need to run the following `docker-compose` command:
+
 ```shell
 $ docker-compose up -d
 ```
 
-This command starts Cassandra and loads the schema.
-Please note that you need to wait around more than one minute for the containers to be fully started.
+Please note that starting the containers may take more than one minute.
 
-### Initial data
+## Load schema
 
-You first need to load initial data with the following command:
+You then need to apply the schema with the following command.
+Please download the schema tool `scalardb-schema-loader-<version>.jar` that can be found in [releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB.
+
+```shell
+$ java -jar scalardb-schema-loader-<version>.jar --config database.properties --schema-file schema.json --coordinator
+```
+
+## Load initial data
+
+After the containers have started, you need to load the initial data by running the following command:
+
 ```shell
 $ ./gradlew run --args="LoadInitialData"
 ```
 
-And the following data will be loaded:
+After the initial data has loaded, the following records should be stored in the tables:
 
 - For the `sample.customers` table:
 
@@ -154,7 +166,8 @@ And the following data will be loaded:
 
 ## Run the sample application
 
-Let's start with getting the customer information whose ID is `1`:
+Let's start with getting information about the customer whose ID is `1`:
+
 ```shell
 $ ./gradlew run --args="GetCustomerInfo 1"
 ...
@@ -162,7 +175,9 @@ $ ./gradlew run --args="GetCustomerInfo 1"
 ...
 ```
 
-Then, place an order for three apples and two oranges with customer ID `1`. Note that the format of order is `<Item ID>:<Count>,<Item ID>:<Count>,...`:
+Then, place an order for three apples and two oranges by using customer ID `1`.
+Note that the order format is `<Item ID>:<Count>,<Item ID>:<Count>,...`:
+
 ```shell
 $ ./gradlew run --args="PlaceOrder 1 1:3,2:2"
 ...
@@ -170,9 +185,10 @@ $ ./gradlew run --args="PlaceOrder 1 1:3,2:2"
 ...
 ```
 
-The command shows the order ID of the order.
+You can see that running this command shows the order ID.
 
-Let's check the details of the order with the order ID:
+Let's check the details of the order by using the order ID:
+
 ```shell
 $ ./gradlew run --args="GetOrder dea4964a-ff50-4ecf-9201-027981a1566e"
 ...
@@ -180,7 +196,8 @@ $ ./gradlew run --args="GetOrder dea4964a-ff50-4ecf-9201-027981a1566e"
 ...
 ```
 
-So, let's place an order again and get the order histories by customer ID `1`:
+Then, let's place another order and get the order history of customer ID `1`:
+
 ```shell
 $ ./gradlew run --args="PlaceOrder 1 5:1"
 ...
@@ -192,10 +209,10 @@ $ ./gradlew run --args="GetOrders 1"
 ...
 ```
 
-These histories are ordered by timestamp in a descending manner.
+This order history is shown in descending order by timestamp.
 
-The current `credit_total` is `10000`, so it has reached the `credit_limit`.
-So, the customer can't place an order anymore due to the limit.
+The customer's current `credit_total` is `10000`.
+Since the customer has now reached their `credit_limit`, which was shown when retrieving their information, they cannot place anymore orders.
 
 ```shell
 $ ./gradlew run --args="GetCustomerInfo 1"
@@ -218,7 +235,7 @@ java.lang.RuntimeException: Credit limit exceeded
 ...
 ```
 
-After repayment, the customer will be able to place an order again!
+After making a payment, the customer will be able to place orders again.
 
 ```shell
 $ ./gradlew run --args="Repayment 1 8000"
@@ -236,6 +253,7 @@ $ ./gradlew run --args="PlaceOrder 1 3:1,4:1"
 ## Clean up
 
 To stop Cassandra, run the following command:
+
 ```shell
 $ docker-compose down
 ```
