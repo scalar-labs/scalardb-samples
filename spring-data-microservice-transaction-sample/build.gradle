@@ -8,7 +8,7 @@ subprojects {
         scalarDbVersion = '3.9.0'
         picoCliVersion = '4.7.1'
         protobufJavaFormatVersion = '1.4'
-        log4jVersion = '2.20.0'
+        slf4jVersion = '2.0.7'
         springBootVersion = '2.7.12'
         springRetryVersion = '1.3.4'
     }
