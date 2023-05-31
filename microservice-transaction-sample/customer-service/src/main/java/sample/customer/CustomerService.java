@@ -208,7 +208,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   public void prepare(PrepareRequest request, StreamObserver<Empty> responseObserver) {
     TwoPhaseCommitTransaction transaction = null;
     try {
-      // Resume the suspended transaction
+      // Resume the transaction
       transaction = twoPhaseCommitTransactionManager.resume(request.getTransactionId());
 
       // Prepare the transaction
@@ -228,7 +228,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   public void validate(ValidateRequest request, StreamObserver<Empty> responseObserver) {
     TwoPhaseCommitTransaction transaction = null;
     try {
-      // Resume the suspended transaction
+      // Resume the transaction
       transaction = twoPhaseCommitTransactionManager.resume(request.getTransactionId());
 
       // Validate the transaction
@@ -248,7 +248,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   public void commit(CommitRequest request, StreamObserver<Empty> responseObserver) {
     TwoPhaseCommitTransaction transaction = null;
     try {
-      // Resume the suspended transaction
+      // Resume the transaction
       transaction = twoPhaseCommitTransactionManager.resume(request.getTransactionId());
 
       // Commit the transaction
@@ -267,7 +267,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   @Override
   public void rollback(RollbackRequest request, StreamObserver<Empty> responseObserver) {
     try {
-      // Resume the suspended transaction
+      // Resume the transaction
       TwoPhaseCommitTransaction transaction =
           twoPhaseCommitTransactionManager.resume(request.getTransactionId());
 
