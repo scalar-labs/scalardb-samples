@@ -134,7 +134,9 @@ scalar.db.multi_storage.default_storage=cassandra
 
 For details, please see [Configuration - Multi-storage Transactions](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md#configuration).
 
-## Setup Cassandra and MySQL
+## Setup
+
+### Start Cassandra and MySQL
 
 To start Cassandra and MySQL, you need to run the following `docker-compose` command:
 
@@ -144,7 +146,7 @@ $ docker-compose up -d
 
 Please note that starting the containers may take more than one minute.
 
-## Load schema
+### Load schema
 
 You then need to apply the schema with the following command.
 Please download the schema tool `scalardb-schema-loader-<version>.jar` that can be found in [releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB.
@@ -153,7 +155,7 @@ Please download the schema tool `scalardb-schema-loader-<version>.jar` that can 
 $ java -jar scalardb-schema-loader-<version>.jar --config database.properties --schema-file schema.json --coordinator
 ```
 
-## Load initial data
+### Load initial data
 
 After the containers have started, you need to load the initial data by running the following command:
 
