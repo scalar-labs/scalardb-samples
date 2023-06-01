@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'java-library-distribution'
-    id 'com.google.protobuf' version '0.8.17'
+    id 'com.google.protobuf' version '0.9.1'
 }
 
 dependencies {
@@ -23,6 +23,12 @@ protobuf {
 }
 
 archivesBaseName = "sample-rpc"
+
+// The processResources task needs to depend on the generateProto task because it uses the output
+// of the the generateProto task
+processResources {
+    dependsOn generateProto
+}
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
