@@ -224,7 +224,11 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
           }
 
           // Prepare, validate and commit are supposed to be invoked later
-          return task.get();
+          T result = task.get();
+
+          customerRepository.suspend();
+
+          return result;
         }
     ));
   }
