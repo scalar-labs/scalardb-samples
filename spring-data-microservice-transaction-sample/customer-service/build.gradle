@@ -12,7 +12,7 @@ dependencies {
     implementation "com.scalar-labs:scalardb-sql-spring-data:${scalarDbVersion}"
     implementation "com.scalar-labs:scalardb-sql-direct-mode:${scalarDbVersion}"
     implementation "info.picocli:picocli-spring-boot-starter:${picoCliVersion}"
-    implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-aop:${springBootVersion}"
     implementation "org.springframework.retry:spring-retry:${springRetryVersion}"
 }
 

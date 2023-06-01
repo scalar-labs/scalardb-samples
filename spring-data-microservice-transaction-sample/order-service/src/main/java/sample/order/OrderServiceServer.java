@@ -24,6 +24,7 @@ public class OrderServiceServer implements Callable<Integer>, CommandLineRunner,
 
   private static final int PORT = 10020;
 
+  @Autowired
   private OrderService service;
   private Server server;
 
@@ -41,7 +42,7 @@ public class OrderServiceServer implements Callable<Integer>, CommandLineRunner,
   }
 
   public void start() throws Exception {
-    service = new OrderService();
+    service.init();
     server = ServerBuilder.forPort(PORT).addService(service).build().start();
     logger.info("Order Service server started, listening on " + PORT);
   }
@@ -91,8 +92,6 @@ public class OrderServiceServer implements Callable<Integer>, CommandLineRunner,
   }
 
   public static void main(String[] args) {
-    logger.info("ORRRRRRRRRRRRRRRRRRDDDDDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEEEEERRRRRRRRRRRRRRRRRRRR");
-    System.out.println("ORRRRRRRRRRRRRRRRRRDDDDDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEEEEERRRRRRRRRRRRRRRRRRRR");
     // Invoke this application via org.springframework.boot.CommandLineRunner.run
     int exitCode = SpringApplication.exit(SpringApplication.run(OrderServiceServer.class, args));
     System.exit(exitCode);

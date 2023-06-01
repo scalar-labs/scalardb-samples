@@ -1,5 +1,6 @@
 package sample.customer;
 
+import com.scalar.db.sql.springdata.EnableScalarDbRepositories;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import java.util.concurrent.Callable;
@@ -9,16 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.retry.annotation.EnableRetry;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IFactory;
 
-@Configuration
-@ComponentScan
-@EnableAutoConfiguration
+@SpringBootApplication
+@EnableScalarDbRepositories
+@EnableRetry
 @Command(name = "customer-service-server", description = "Starts Customer Service server.")
 public class CustomerServiceServer implements Callable<Integer>, CommandLineRunner, ExitCodeGenerator {
   private static final Logger logger = LoggerFactory.getLogger(CustomerServiceServer.class);
@@ -44,6 +44,7 @@ public class CustomerServiceServer implements Callable<Integer>, CommandLineRunn
   }
 
   public void start() throws Exception {
+    service.init();
     server = ServerBuilder.forPort(PORT).addService(service).build().start();
     logger.info("Customer Service server started, listening on " + PORT);
   }
@@ -56,6 +57,7 @@ public class CustomerServiceServer implements Callable<Integer>, CommandLineRunn
                   logger.info("Signal received. Shutting down the server ...");
                   shutdown();
                   blockUntilShutdown();
+                  service.close();
                   logger.info("The server shut down.");
                 }));
   }
@@ -83,7 +85,6 @@ public class CustomerServiceServer implements Callable<Integer>, CommandLineRunn
 
   @Override
   public void run(String... args) {
-    service.init();
     exitCode = new CommandLine(this, factory).execute(args);
   }
 

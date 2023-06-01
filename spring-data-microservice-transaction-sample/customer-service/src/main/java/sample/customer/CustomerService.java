@@ -1,11 +1,12 @@
 package sample.customer;
 
 import com.google.protobuf.Empty;
-import com.scalar.db.sql.springdata.EnableScalarDbRepositories;
 import com.scalar.db.sql.springdata.exception.ScalarDbNonTransientException;
 import com.scalar.db.sql.springdata.exception.ScalarDbTransientException;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
+import java.io.Closeable;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
@@ -30,13 +31,13 @@ import sample.rpc.RepaymentRequest;
 import sample.rpc.RollbackRequest;
 import sample.rpc.ValidateRequest;
 
-@EnableScalarDbRepositories
 @Service
 @Retryable(
     include = TransientDataAccessException.class,
     maxAttempts = 8,
     backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
-public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase {
+public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase implements
+    Closeable {
   private static final Logger logger = LoggerFactory.getLogger(CustomerService.class);
 
   @Autowired
@@ -44,40 +45,15 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   @Autowired
   private CustomerTwoPcRepository customerTwoPcRepository;
 
-  @Transactional
   public void init() {
+    loadInitialData();
+  }
+
+  @Transactional
+  private void loadInitialData() {
     customerRepository.insertIfNotExists(new Customer(1, "Yamada Taro", 10000, 0));
     customerRepository.insertIfNotExists(new Customer(2, "Yamada Hanako", 10000, 0));
     customerRepository.insertIfNotExists(new Customer(3, "Suzuki Ichiro", 10000, 0));
-  }
-
-  private String handleError(StreamObserver<?> responseObserver, String funcName, Exception e) {
-      String message = funcName + " failed";
-      logger.error(message, e);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
-      return message;
-  }
-
-  private <T> void execOperation(StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
-    try {
-      T result = task.get();
-
-      responseObserver.onNext(result);
-      responseObserver.onCompleted();
-    } catch (ScalarDbNonTransientException e) {
-      String message = handleError(responseObserver, funcName, e);
-      throw new ScalarDbNonTransientException(message, e, e.getTransactionId());
-    } catch (ScalarDbTransientException e) {
-      String message = handleError(responseObserver, funcName, e);
-      throw new ScalarDbTransientException(message, e, e.getTransactionId());
-    } catch (NonTransientDataAccessException e) {
-      String message = handleError(responseObserver, funcName, e);
-      throw new ScalarDbNonTransientException(message, e, null);
-    } catch (Exception e) {
-      String message = handleError(responseObserver, funcName, e);
-      throw new ScalarDbTransientException(message, e, null);
-    }
   }
 
   @Transactional
@@ -212,5 +188,47 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       // Rollback the transaction
       customerTwoPcRepository.rollback();
     });
+  }
+
+  private String logFailure(String funcName, Exception e) {
+    String message = funcName + " failed";
+    logger.error(message, e);
+    return message;
+  }
+
+  private String handleError(StreamObserver<?> responseObserver, String funcName, Exception e) {
+    String message = logFailure(funcName, e);
+    responseObserver.onError(
+        Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
+    return message;
+  }
+
+  private <T> void execOperation(StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
+    try {
+      T result = task.get();
+
+      responseObserver.onNext(result);
+      responseObserver.onCompleted();
+    } catch (ScalarDbNonTransientException e) {
+      String message = handleError(responseObserver, funcName, e);
+      throw new ScalarDbNonTransientException(message, e, e.getTransactionId());
+    } catch (ScalarDbTransientException e) {
+      String message = handleError(responseObserver, funcName, e);
+      throw new ScalarDbTransientException(message, e, e.getTransactionId());
+    } catch (NonTransientDataAccessException e) {
+      String message = handleError(responseObserver, funcName, e);
+      throw new ScalarDbNonTransientException(message, e, null);
+    } catch (StatusRuntimeException e) {
+      String message = logFailure(funcName, e);
+      responseObserver.onError(e);
+      throw new ScalarDbNonTransientException(message, e, null);
+    } catch (Exception e) {
+      String message = handleError(responseObserver, funcName, e);
+      throw new ScalarDbTransientException(message, e, null);
+    }
+  }
+
+  @Override
+  public void close() {
   }
 }
