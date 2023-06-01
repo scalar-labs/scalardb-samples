@@ -18,6 +18,7 @@ import org.springframework.dao.TransientDataAccessException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sample.customer.domain.model.Customer;
 import sample.customer.domain.repository.CustomerRepository;
 import sample.rpc.CommitRequest;
@@ -196,23 +197,36 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     execOperation(responseObserver, funcName,
         // BEGIN is called before the execution of a passed task,
         // and then PREPARE, VALIDATE, COMMIT will be executed
-        () -> customerRepository.execWithinTransaction(task));
+        () -> customerRepository.execOneshotOperation(task)
+
+        // This doesn't work. It seems each method call is executed in a transaction.
+        /*
+        () -> {
+          customerRepository.begin();
+          T result = task.get();
+          customerRepository.prepare();
+          customerRepository.validate();
+          customerRepository.commit();
+          return result;
+        }
+         */
+    );
   }
 
   private <T> void execTwoPcOperation(String txId, boolean isJoin, StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
-    execOperation(responseObserver, funcName, () -> {
-      if (isJoin) {
-        // Join the transaction
-        customerRepository.join(txId);
-      }
-      else {
-        // Resume the transaction
-        customerRepository.resume(txId);
-      }
+    execOperation(responseObserver, funcName, () -> customerRepository.execBatchOperations(() -> {
+          if (isJoin) {
+            // Join the transaction
+            customerRepository.join(txId);
+          } else {
+            // Resume the transaction
+            customerRepository.resume(txId);
+          }
 
-      // Prepare, validate and commit are supposed to be invoked later
-      return task.get();
-    });
+          // Prepare, validate and commit are supposed to be invoked later
+          return task.get();
+        }
+    ));
   }
 
   private <T> void execOperation(@Nullable StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {

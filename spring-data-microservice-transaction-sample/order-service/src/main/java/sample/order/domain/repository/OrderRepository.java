@@ -17,7 +17,7 @@ public interface OrderRepository extends ScalarDbTwoPcRepository<Order, String> 
   //       so that we don't need to use this method
   //
   // TODO: Maybe This API should be moved to ScalarDbTwoPcRepository.
-  default <T> T execWithinTransaction(Supplier<T> task) {
+  default <T> T execOneshotOperation(Supplier<T> task) {
     begin();
     T result = task.get();
     prepare();

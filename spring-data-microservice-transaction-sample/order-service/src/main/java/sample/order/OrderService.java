@@ -2,12 +2,15 @@ package sample.order;
 
 import com.scalar.db.sql.springdata.exception.ScalarDbNonTransientException;
 import com.scalar.db.sql.springdata.exception.ScalarDbTransientException;
+import com.scalar.db.sql.springdata.twopc.RemotePrepareCommitPhaseOperations;
+import com.scalar.db.sql.springdata.twopc.TwoPcResult;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import java.io.Closeable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,7 +26,6 @@ import org.springframework.dao.TransientDataAccessException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import sample.order.domain.model.Item;
 import sample.order.domain.model.Order;
 import sample.order.domain.model.Statement;
@@ -92,57 +94,51 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
       PlaceOrderRequest request, StreamObserver<PlaceOrderResponse> responseObserver) {
 
     execOperation(responseObserver, "Placing an order", () -> {
-      String orderId = UUID.randomUUID().toString();
-
       // Start a two-phase commit transaction
-      String txId = orderRepository.begin();
+      TwoPcResult<String> result = orderRepository.executeTwoPcTransaction(txId -> {
+            String orderId = UUID.randomUUID().toString();
+            Order order = new Order(orderId, request.getCustomerId(), System.currentTimeMillis());
 
-      Order order = new Order(orderId, request.getCustomerId(), System.currentTimeMillis());
+            // Put the order info into the orders table
+            orderRepository.insert(order);
 
-      // Put the order info into the orders table
-      orderRepository.insert(order);
+            AtomicInteger amount = new AtomicInteger();
+            request.getItemOrderList().forEach(
+                itemOrder -> {
+                  int itemId = itemOrder.getItemId();
+                  int count = itemOrder.getCount();
+                  // Retrieve the item info from the items table
+                  Optional<Item> itemOpt = itemRepository.findById(itemId);
+                  if (!itemOpt.isPresent()) {
+                    String message = "Item not found: " + itemId;
+                    responseObserver.onError(
+                        Status.NOT_FOUND.withDescription(message).asRuntimeException());
+                    throw new ScalarDbNonTransientException(message);
+                  }
+                  Item item = itemOpt.get();
 
-      AtomicInteger amount = new AtomicInteger();
-      request.getItemOrderList().forEach(
-          itemOrder -> {
-            int itemId = itemOrder.getItemId();
-            int count = itemOrder.getCount();
-            // Retrieve the item info from the items table
-            Optional<Item> itemOpt = itemRepository.findById(itemId);
-            if (!itemOpt.isPresent()) {
-              String message = "Item not found: " + itemId;
-              responseObserver.onError(
-                  Status.NOT_FOUND.withDescription(message).asRuntimeException());
-              throw new ScalarDbNonTransientException(message);
-            }
-            Item item = itemOpt.get();
+                  int cost = item.price * count;
+                  // Put the order statement into the statements table
+                  statementRepository.insert(new Statement(itemId, orderId, count));
+                  // Calculate the total amount
+                  amount.addAndGet(cost);
+                });
 
-            int cost = item.price * count;
-            // Put the order statement into the statements table
-            statementRepository.insert(new Statement(itemId, orderId, count));
-            // Calculate the total amount
-            amount.addAndGet(cost);
-          });
+            // Call the payment endpoint of Customer service
+            callPaymentEndpoint(txId, request.getCustomerId(), amount.get());
+            return orderId;
+          },
+          Collections.singletonList(
+              RemotePrepareCommitPhaseOperations.createSerializable(
+                  this::callPrepareEndpoint,
+                  this::callValidateEndpoint,
+                  this::callCommitEndpoint,
+                  this::callRollbackEndpoint
+              )
+          )
+      );
+      String orderId = result.executionPhaseReturnValue();
 
-      // Call the payment endpoint of Customer service
-      callPaymentEndpoint(txId, request.getCustomerId(), amount.get());
-
-      // Prepare the transaction
-      orderRepository.prepare();
-      callPrepareEndpoint(txId);
-
-      // Validate the transaction. Depending on the concurrency control protocol, you need to call
-      // validate(). Currently, you need to call it when you use the Consensus Commit transaction
-      // manager and EXTRA_READ serializable strategy in SERIALIZABLE isolation level. In other
-      // cases, validate() does nothing.
-      orderRepository.validate();
-      callValidateEndpoint(txId);
-
-      // Commit the transaction
-      orderRepository.commit();
-      callCommitEndpoint(txId);
-
-      // Return the order id
       return PlaceOrderResponse.newBuilder().setOrderId(orderId).build();
     });
   }
@@ -278,23 +274,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     execOperation(responseObserver, funcName,
         // BEGIN is called before the execution of a passed task,
         // and then PREPARE, VALIDATE, COMMIT will be executed
-        () -> orderRepository.execWithinTransaction(task));
-  }
-
-  private <T> void execTwoPcOperation(String txId, boolean isJoin, StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
-    execOperation(responseObserver, funcName, () -> {
-      if (isJoin) {
-        // Join the transaction
-        orderRepository.join(txId);
-      }
-      else {
-        // Resume the transaction
-        orderRepository.resume(txId);
-      }
-
-      // Prepare, validate and commit are supposed to be invoked later
-      return task.get();
-    });
+        () -> orderRepository.execOneshotOperation(task));
   }
 
   private <T> void execOperation(@Nullable StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
