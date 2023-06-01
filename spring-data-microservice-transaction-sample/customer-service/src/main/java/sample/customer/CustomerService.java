@@ -9,6 +9,7 @@ import io.grpc.stub.StreamObserver;
 import java.io.Closeable;
 import java.util.Optional;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +18,8 @@ import org.springframework.dao.TransientDataAccessException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import sample.customer.domain.model.Customer;
 import sample.customer.domain.repository.CustomerRepository;
-import sample.customer.domain.repository.CustomerTwoPcRepository;
 import sample.rpc.CommitRequest;
 import sample.rpc.CustomerServiceGrpc;
 import sample.rpc.GetCustomerInfoRequest;
@@ -42,25 +41,24 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
 
   @Autowired
   private CustomerRepository customerRepository;
-  @Autowired
-  private CustomerTwoPcRepository customerTwoPcRepository;
 
   public void init() {
     loadInitialData();
   }
 
-  @Transactional
   private void loadInitialData() {
-    customerRepository.insertIfNotExists(new Customer(1, "Yamada Taro", 10000, 0));
-    customerRepository.insertIfNotExists(new Customer(2, "Yamada Hanako", 10000, 0));
-    customerRepository.insertIfNotExists(new Customer(3, "Suzuki Ichiro", 10000, 0));
+    execNormalOperation(null, "Loading initial data", () -> {
+      customerRepository.insertIfNotExists(new Customer(1, "Yamada Taro", 10000, 0));
+      customerRepository.insertIfNotExists(new Customer(2, "Yamada Hanako", 10000, 0));
+      customerRepository.insertIfNotExists(new Customer(3, "Suzuki Ichiro", 10000, 0));
+      return null;
+    });
   }
 
-  @Transactional
+  @Override
   public void getCustomerInfo(
     GetCustomerInfoRequest request, StreamObserver<GetCustomerInfoResponse> responseObserver) {
-
-    execOperation(responseObserver, "Getting customer info", () -> {
+    execNormalOperation(responseObserver, "Getting customer info", () -> {
       // Retrieve the customer info for the specified customer ID from the customers table.
       Optional<Customer> customerOpt = customerRepository.findById(request.getCustomerId());
       if (!customerOpt.isPresent()) {
@@ -112,28 +110,11 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     });
   }
 
-  private void execTwoPcOperation(String txId, boolean isJoin, StreamObserver<Empty> responseObserver, String funcName, Runnable task) {
-    execOperation(responseObserver, funcName, () -> {
-      if (isJoin) {
-        // Join the transaction
-        customerTwoPcRepository.join(txId);
-      }
-      else {
-        // Resume the transaction
-        customerTwoPcRepository.resume(txId);
-      }
-
-      task.run();
-
-      return Empty.getDefaultInstance();
-    });
-  }
-
   @Override
   public void payment(PaymentRequest request, StreamObserver<Empty> responseObserver) {
     execTwoPcOperation(request.getTransactionId(), true, responseObserver, "Payment", () -> {
       // Retrieve the customer info for the customer ID
-      Optional<Customer> customerOpt = customerTwoPcRepository.findById(request.getCustomerId());
+      Optional<Customer> customerOpt = customerRepository.findById(request.getCustomerId());
       if (!customerOpt.isPresent()) {
         String message = "Customer not found: " + request.getCustomerId();
         responseObserver.onError(
@@ -155,6 +136,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       }
       // Reduce credit_total for the customer
       customerRepository.update(customer.withCreditTotal(updatedCreditTotal));
+
+      return Empty.getDefaultInstance();
     });
   }
 
@@ -162,7 +145,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   public void prepare(PrepareRequest request, StreamObserver<Empty> responseObserver) {
     execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Payment", () -> {
       // Prepare the transaction
-      customerTwoPcRepository.prepare();
+      customerRepository.prepare();
+      return Empty.getDefaultInstance();
     });
   }
 
@@ -170,7 +154,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   public void validate(ValidateRequest request, StreamObserver<Empty> responseObserver) {
     execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Validate", () -> {
       // Validate the transaction
-      customerTwoPcRepository.validate();
+      customerRepository.validate();
+      return Empty.getDefaultInstance();
     });
   }
 
@@ -178,7 +163,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   public void commit(CommitRequest request, StreamObserver<Empty> responseObserver) {
     execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Commit", () -> {
       // Commit the transaction
-      customerTwoPcRepository.commit();
+      customerRepository.commit();
+      return Empty.getDefaultInstance();
     });
   }
 
@@ -186,7 +172,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   public void rollback(RollbackRequest request, StreamObserver<Empty> responseObserver) {
     execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Rollback", () -> {
       // Rollback the transaction
-      customerTwoPcRepository.rollback();
+      customerRepository.rollback();
+      return Empty.getDefaultInstance();
     });
   }
 
@@ -196,19 +183,46 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     return message;
   }
 
-  private String handleError(StreamObserver<?> responseObserver, String funcName, Exception e) {
+  private String handleError(@Nullable StreamObserver<?> responseObserver, String funcName, Exception e) {
     String message = logFailure(funcName, e);
-    responseObserver.onError(
-        Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
+    if (responseObserver != null) {
+      responseObserver.onError(
+          Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
+    }
     return message;
   }
 
-  private <T> void execOperation(StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
+  private <T> void execNormalOperation(StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
+    execOperation(responseObserver, funcName,
+        // BEGIN is called before the execution of a passed task,
+        // and then PREPARE, VALIDATE, COMMIT will be executed
+        () -> customerRepository.execWithinTransaction(task));
+  }
+
+  private <T> void execTwoPcOperation(String txId, boolean isJoin, StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
+    execOperation(responseObserver, funcName, () -> {
+      if (isJoin) {
+        // Join the transaction
+        customerRepository.join(txId);
+      }
+      else {
+        // Resume the transaction
+        customerRepository.resume(txId);
+      }
+
+      // Prepare, validate and commit are supposed to be invoked later
+      return task.get();
+    });
+  }
+
+  private <T> void execOperation(@Nullable StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
     try {
       T result = task.get();
 
-      responseObserver.onNext(result);
-      responseObserver.onCompleted();
+      if (responseObserver != null) {
+        responseObserver.onNext(result);
+        responseObserver.onCompleted();
+      }
     } catch (ScalarDbNonTransientException e) {
       String message = handleError(responseObserver, funcName, e);
       throw new ScalarDbNonTransientException(message, e, e.getTransactionId());
@@ -220,7 +234,9 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       throw new ScalarDbNonTransientException(message, e, null);
     } catch (StatusRuntimeException e) {
       String message = logFailure(funcName, e);
-      responseObserver.onError(e);
+      if (responseObserver != null) {
+        responseObserver.onError(e);
+      }
       throw new ScalarDbNonTransientException(message, e, null);
     } catch (Exception e) {
       String message = handleError(responseObserver, funcName, e);

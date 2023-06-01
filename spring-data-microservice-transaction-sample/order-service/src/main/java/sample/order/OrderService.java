@@ -1,11 +1,9 @@
 package sample.order;
 
-import com.scalar.db.sql.springdata.EnableScalarDbRepositories;
 import com.scalar.db.sql.springdata.exception.ScalarDbNonTransientException;
 import com.scalar.db.sql.springdata.exception.ScalarDbTransientException;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
-import io.grpc.StatusException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.StreamObserver;
@@ -16,6 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,6 @@ import sample.order.domain.model.Order;
 import sample.order.domain.model.Statement;
 import sample.order.domain.repository.ItemRepository;
 import sample.order.domain.repository.OrderRepository;
-import sample.order.domain.repository.OrderTwoPcRepository;
 import sample.order.domain.repository.StatementRepository;
 import sample.rpc.CommitRequest;
 import sample.rpc.CustomerServiceGrpc;
@@ -66,8 +64,6 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   private OrderRepository orderRepository;
   @Autowired
   private StatementRepository statementRepository;
-  @Autowired
-  private OrderTwoPcRepository orderTwoPcRepository;
 
   public OrderService() {
     // Initialize the gRPC connection to Customer service
@@ -79,13 +75,15 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     loadInitialData();
   }
 
-  @Transactional
   private void loadInitialData() {
-    itemRepository.insertIfNotExists(new Item(1, "Apple", 1000));
-    itemRepository.insertIfNotExists(new Item(2, "Orange", 2000));
-    itemRepository.insertIfNotExists(new Item(3, "Grape", 2500));
-    itemRepository.insertIfNotExists(new Item(4, "Mango", 5000));
-    itemRepository.insertIfNotExists(new Item(5, "Melon", 3000));
+    execNormalOperation(null, "Loading initial data", () -> {
+      itemRepository.insertIfNotExists(new Item(1, "Apple", 1000));
+      itemRepository.insertIfNotExists(new Item(2, "Orange", 2000));
+      itemRepository.insertIfNotExists(new Item(3, "Grape", 2500));
+      itemRepository.insertIfNotExists(new Item(4, "Mango", 5000));
+      itemRepository.insertIfNotExists(new Item(5, "Melon", 3000));
+      return null;
+    });
   }
 
   /** Place an order. It's a transaction that spans OrderService and CustomerService */
@@ -97,12 +95,12 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
       String orderId = UUID.randomUUID().toString();
 
       // Start a two-phase commit transaction
-      String txId = orderTwoPcRepository.begin();
+      String txId = orderRepository.begin();
 
       Order order = new Order(orderId, request.getCustomerId(), System.currentTimeMillis());
 
       // Put the order info into the orders table
-      orderTwoPcRepository.insert(order);
+      orderRepository.insert(order);
 
       AtomicInteger amount = new AtomicInteger();
       request.getItemOrderList().forEach(
@@ -130,18 +128,18 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
       callPaymentEndpoint(txId, request.getCustomerId(), amount.get());
 
       // Prepare the transaction
-      orderTwoPcRepository.prepare();
+      orderRepository.prepare();
       callPrepareEndpoint(txId);
 
       // Validate the transaction. Depending on the concurrency control protocol, you need to call
       // validate(). Currently, you need to call it when you use the Consensus Commit transaction
       // manager and EXTRA_READ serializable strategy in SERIALIZABLE isolation level. In other
       // cases, validate() does nothing.
-      orderTwoPcRepository.validate();
+      orderRepository.validate();
       callValidateEndpoint(txId);
 
       // Commit the transaction
-      orderTwoPcRepository.commit();
+      orderRepository.commit();
       callCommitEndpoint(txId);
 
       // Return the order id
@@ -177,7 +175,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   /** Get Order information by order ID */
   @Override
   public void getOrder(GetOrderRequest request, StreamObserver<GetOrderResponse> responseObserver) {
-    execOperation(responseObserver, "Getting an order", () -> {
+    execNormalOperation(responseObserver, "Getting an order", () -> {
       // Retrieve the order info for the specified order ID
       Optional<Order> orderOpt = orderRepository.findById(request.getOrderId());
       if (!orderOpt.isPresent()) {
@@ -199,7 +197,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   @Override
   public void getOrders(
       GetOrdersRequest request, StreamObserver<GetOrdersResponse> responseObserver) {
-    execOperation(responseObserver, "Getting an order", () -> {
+    execNormalOperation(responseObserver, "Getting an order", () -> {
       // Retrieve the order info for the specified order ID
       GetOrdersResponse.Builder builder = GetOrdersResponse.newBuilder();
       orderRepository.findAllByCustomerIdOrderByTimestampDesc(request.getCustomerId()).forEach(
@@ -267,19 +265,46 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     return message;
   }
 
-  private String handleError(StreamObserver<?> responseObserver, String funcName, Exception e) {
+  private String handleError(@Nullable StreamObserver<?> responseObserver, String funcName, Exception e) {
     String message = logFailure(funcName, e);
-    responseObserver.onError(
-        Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
+    if (responseObserver != null) {
+      responseObserver.onError(
+          Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
+    }
     return message;
   }
 
-  private <T> void execOperation(StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
+  private <T> void execNormalOperation(StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
+    execOperation(responseObserver, funcName,
+        // BEGIN is called before the execution of a passed task,
+        // and then PREPARE, VALIDATE, COMMIT will be executed
+        () -> orderRepository.execWithinTransaction(task));
+  }
+
+  private <T> void execTwoPcOperation(String txId, boolean isJoin, StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
+    execOperation(responseObserver, funcName, () -> {
+      if (isJoin) {
+        // Join the transaction
+        orderRepository.join(txId);
+      }
+      else {
+        // Resume the transaction
+        orderRepository.resume(txId);
+      }
+
+      // Prepare, validate and commit are supposed to be invoked later
+      return task.get();
+    });
+  }
+
+  private <T> void execOperation(@Nullable StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
     try {
       T result = task.get();
 
-      responseObserver.onNext(result);
-      responseObserver.onCompleted();
+      if (responseObserver != null) {
+        responseObserver.onNext(result);
+        responseObserver.onCompleted();
+      }
     } catch (ScalarDbNonTransientException e) {
       String message = handleError(responseObserver, funcName, e);
       throw new ScalarDbNonTransientException(message, e, e.getTransactionId());
@@ -291,7 +316,9 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
       throw new ScalarDbNonTransientException(message, e, null);
     } catch (StatusRuntimeException e) {
       String message = logFailure(funcName, e);
-      responseObserver.onError(e);
+      if (responseObserver != null) {
+        responseObserver.onError(e);
+      }
       throw new ScalarDbNonTransientException(message, e, null);
     } catch (Exception e) {
       String message = handleError(responseObserver, funcName, e);
