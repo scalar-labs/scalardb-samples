@@ -106,7 +106,7 @@ The following five transactions are implemented in this sample application:
 4. Getting order information by customer ID
 5. Repayment (reduces the amount in the `credit_total`)
 
-### Configuration
+## Configuration
 
 Configurations for the sample application are as follows:
 
