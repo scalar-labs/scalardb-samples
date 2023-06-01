@@ -8,77 +8,68 @@ This tutorial describes how to create a sample Spring Boot application by using 
 - Gradle
 - Docker, Docker Compose
 
+You also need access for [ScalarDB SQL GitHub repository](https://github.com/scalar-labs/scalardb-sql) and [Packages in ScalarDB SQL repository](https://github.com/orgs/scalar-labs/packages?repo_name=scalardb-sql).
+Since they are available under a commercial license, you need to get the license and permission to access them.
+For more details, please [contact us](https://scalar-labs.com/contact_us/).
+
+You also need the `gpr.user` property for your GitHub username and the `gpr.key` property for your personal access token.
+So you need to have the properties in `~/.gradle/gradle.properties`, or specify the properties with the `-P` option when running the `./gradlew` command as follows:
+
+```shell
+$ ./gradlew run ... -Pgpr.user=<your GitHub username> -Pgpr.key=<your personal access token>
+````
+
+Please read [Install - ScalarDB SQL](https://github.com/scalar-labs/scalardb-sql#install) for more detail.
+
 ## Sample application
 
 ### Overview
 
 This tutorial describes how to create a sample Spring Boot application for the same use case as [ScalarDB Sample](https://github.com/scalar-labs/scalardb-samples/tree/main/scalardb-sample) but by using Spring Data JDBC for ScalarDB with Multi-storage Transaction.
 Please note that application-specific error handling, authentication processing, etc. are omitted in the sample application since this tutorial focuses on explaining how to use Spring Data JDBC for ScalarDB with Multi-storage Transaction.
-For details, please see [Guide of Spring Data JDBC for ScalarDB](https://scalar-labs.github.io/scalardb-sql/spring-data-guide.html).
+For details, please see [Guide of Spring Data JDBC for ScalarDB](https://github.com/scalar-labs/scalardb-sql/blob/main/docs/spring-data-guide.md).
 
 ![Overview](images/overview.png)
 
 ### Schema
 
-[The schema](schema.json) is as follows:
+[The schema](schema.sql) is as follows:
 
-```json
-{
-  "customer.customers": {
-    "transaction": true,
-    "partition-key": [
-      "customer_id"
-    ],
-    "columns": {
-      "customer_id": "INT",
-      "name": "TEXT",
-      "credit_limit": "INT",
-      "credit_total": "INT"
-    }
-  },
-  "order.orders": {
-    "transaction": true,
-    "partition-key": [
-      "customer_id"
-    ],
-    "clustering-key": [
-      "timestamp"
-    ],
-    "secondary-index": [
-      "order_id"
-    ],
-    "columns": {
-      "order_id": "TEXT",
-      "customer_id": "INT",
-      "timestamp": "BIGINT"
-    }
-  },
-  "order.statements": {
-    "transaction": true,
-    "partition-key": [
-      "order_id"
-    ],
-    "clustering-key": [
-      "item_id"
-    ],
-    "columns": {
-      "order_id": "TEXT",
-      "item_id": "INT",
-      "count": "INT"
-    }
-  },
-  "order.items": {
-    "transaction": true,
-    "partition-key": [
-      "item_id"
-    ],
-    "columns": {
-      "item_id": "INT",
-      "name": "TEXT",
-      "price": "INT"
-    }
-  }
-}
+```sql
+CREATE COORDINATOR TABLES IF NOT EXIST;
+
+CREATE NAMESPACE IF NOT EXISTS sample;
+
+CREATE TABLE IF NOT EXISTS customer.customers (
+customer_id INT PRIMARY KEY,
+name TEXT,
+credit_limit INT,
+credit_total INT
+);
+
+CREATE NAMESPACE IF NOT EXISTS "order";
+
+CREATE TABLE IF NOT EXISTS "order".orders (
+customer_id INT,
+timestamp BIGINT,
+order_id TEXT,
+PRIMARY KEY (customer_id, timestamp)
+);
+
+CREATE INDEX IF NOT EXISTS ON "order".orders (order_id);
+
+CREATE TABLE IF NOT EXISTS "order".statements (
+order_id TEXT,
+item_id INT,
+count INT,
+PRIMARY KEY (order_id, item_id)
+);
+
+CREATE TABLE IF NOT EXISTS "order".items (
+item_id INT PRIMARY KEY,
+name TEXT,
+price INT
+);
 ```
 
 All the tables are created in the `customer` and `order` namespaces.
@@ -104,7 +95,7 @@ The following five transactions are implemented in this sample application:
 4. Getting order information by customer ID
 5. Repayment (reduces the amount in the `credit_total`)
 
-### Configuration
+## Configuration
 
 Configurations for the sample Spring Boot application are as follows:
 
@@ -138,7 +129,9 @@ For details, please see [Configuration - Multi-storage Transactions](https://git
 
 ## Setup
 
-To start Cassandra and MySQL, and load the schema, you need to run the following `docker-compose` command:
+### Start Cassandra and MySQL
+
+To start Cassandra and MySQL, you need to run the following `docker-compose` command:
 
 ```shell
 $ docker-compose up -d
@@ -146,7 +139,16 @@ $ docker-compose up -d
 
 Please note that starting the containers may take more than one minute.
 
-### Initial data
+### Load schema
+
+You then need to apply the schema with the following command.
+Please download the schema tool `scalardb-sql-cli-<version>-all.jar` that can be found in [releases](https://github.com/scalar-labs/scalardb-sql/releases) of ScalarDB SQL.
+
+```shell
+$ java -jar scalardb-sql-cli-<version>-all.jar --config scalardb-sql.properties --file schema.sql
+```
+
+### Load initial data
 
 After the containers have started, you need to load the initial data by running the following command:
 
@@ -285,4 +287,3 @@ To stop Cassandra and MySQL, run the following command:
 ```shell
 $ docker-compose down
 ```
-

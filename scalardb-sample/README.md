@@ -117,7 +117,9 @@ scalar.db.password=cassandra
 
 Since this sample application uses Cassandra, as shown above, you need to configure your settings for Cassandra in this configuration.
 
-## Setup Cassandra
+## Setup
+
+### Start Cassandra
 
 To start Cassandra, you need to run the following `docker-compose` command:
 
@@ -127,7 +129,7 @@ $ docker-compose up -d
 
 Please note that starting the containers may take more than one minute.
 
-## Load schema
+### Load schema
 
 You then need to apply the schema with the following command.
 Please download the schema tool `scalardb-schema-loader-<version>.jar` that can be found in [releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB.
@@ -136,7 +138,7 @@ Please download the schema tool `scalardb-schema-loader-<version>.jar` that can 
 $ java -jar scalardb-schema-loader-<version>.jar --config database.properties --schema-file schema.json --coordinator
 ```
 
-## Load initial data
+### Load initial data
 
 After the containers have started, you need to load the initial data by running the following command:
 
