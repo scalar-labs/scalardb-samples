@@ -82,7 +82,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
 
   @Override
   public void repayment(RepaymentRequest request, StreamObserver<Empty> responseObserver) {
-    execOperation(responseObserver, "Repayment", () -> {
+    execNormalOperation(responseObserver, "Repayment", () -> {
       // Retrieve the customer info for the specified customer ID
       Optional<Customer> customerOpt = customerRepository.findById(request.getCustomerId());
       if (!customerOpt.isPresent()) {
