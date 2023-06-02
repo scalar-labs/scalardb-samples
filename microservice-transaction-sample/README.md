@@ -177,18 +177,18 @@ Please note that you need to wait around more than one minute for the containers
 ### Load schema
 
 You then need to apply the schema with the following commands.
-Please download the schema tool `scalardb-schema-loader-<version>.jar` that can be found in [releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB.
+To download the schema loader tool, `scalardb-schema-loader-<VERSION>.jar`, see the [Releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB and download the version that you want to use.
 
 For MySQL:
 
 ```shell
-$ java -jar scalardb-schema-loader-<version>.jar --config database-mysql.properties --schema-file customer-service-schema.json
+$ java -jar scalardb-schema-loader-<VERSION>.jar --config database-mysql.properties --schema-file customer-service-schema.json
 ```
 
 For Cassandra:
 
 ```shell
-$ java -jar scalardb-schema-loader-<version>.jar --config database-cassandra.properties --schema-file order-service-schema.json --coordinator
+$ java -jar scalardb-schema-loader-<VERSION>.jar --config database-cassandra.properties --schema-file order-service-schema.json --coordinator
 ```
 
 ### Start Microservices
