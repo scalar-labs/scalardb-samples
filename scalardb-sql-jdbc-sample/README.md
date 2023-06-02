@@ -119,7 +119,7 @@ Please note that starting the containers may take more than one minute.
 ## Load schema
 
 You then need to apply the schema with the following command.
-To download the schema tool, `scalardb-sql-cli-<VERSION>-all.jar`, see the [Releases](https://github.com/scalar-labs/scalardb-sql/releases) of ScalarDB SQL and download the version that you want to use.
+To download the CLI tool, `scalardb-sql-cli-<VERSION>-all.jar`, see the [Releases](https://github.com/scalar-labs/scalardb-sql/releases) of ScalarDB SQL and download the version that you want to use.
 
 ```shell
 $ java -jar scalardb-sql-cli-<VERSION>-all.jar --config scalardb-sql.properties --file schema.sql
