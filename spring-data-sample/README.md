@@ -113,7 +113,7 @@ Since this sample application uses Cassandra, as shown above, you need to config
 
 ### Start Cassandra
 
-To start Cassandra you need to run the following `docker-compose` command:
+To start Cassandra, you need to run the following `docker-compose` command:
 
 ```shell
 $ docker-compose up -d
