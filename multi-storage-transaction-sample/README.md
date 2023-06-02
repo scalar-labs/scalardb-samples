@@ -15,8 +15,8 @@ This tutorial describes how to create a sample application by using ScalarDB wit
 This tutorial describes how to create a sample application for the same use case as [ScalarDB Sample](https://github.com/scalar-labs/scalardb-samples/tree/main/scalardb-sample) but by using ScalarDB with Multi-storage Transaction.
 In this tutorial, you will build an application that uses both Cassandra and MySQL.
 Using the Multi-storage Transaction feature of ScalarDB, you can execute a transaction that spans both Cassandra and MySQL.
-Please note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use ScalarDB with Multi-storage Transaction.
-For detailed information on exception handling in ScalarDB, see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions).
+Please note that application-specific error handling, authentication processing, and similar functions are not included in the sample application, as the focus is on demonstrating the use of ScalarDB.
+For detailed information on exception handling in ScalarDB, see [Handle SQLException](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions).
 
 ![Overview](images/overview.png)
 
@@ -149,10 +149,10 @@ Please note that starting the containers may take more than one minute.
 ### Load schema
 
 You then need to apply the schema with the following command.
-Please download the schema tool `scalardb-schema-loader-<version>.jar` that can be found in [releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB.
+To download the schema loader tool, `scalardb-schema-loader-<VERSION>.jar`, see the [Releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB and download the version that you want to use.
 
 ```shell
-$ java -jar scalardb-schema-loader-<version>.jar --config database.properties --schema-file schema.json --coordinator
+$ java -jar scalardb-schema-loader-<VERSION>.jar --config database.properties --schema-file schema.json --coordinator
 ```
 
 ### Load initial data

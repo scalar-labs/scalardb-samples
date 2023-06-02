@@ -8,18 +8,18 @@ This tutorial describes how to create a sample Spring Boot application by using 
 - Gradle
 - Docker, Docker Compose
 
-You also need access for [ScalarDB SQL GitHub repository](https://github.com/scalar-labs/scalardb-sql) and [Packages in ScalarDB SQL repository](https://github.com/orgs/scalar-labs/packages?repo_name=scalardb-sql).
-Since they are available under a commercial license, you need to get the license and permission to access them.
-For more details, please [contact us](https://scalar-labs.com/contact_us/).
+In addition, you need access to the [ScalarDB SQL GitHub repository](https://github.com/scalar-labs/scalardb-sql) and [Packages in ScalarDB SQL repository](https://github.com/orgs/scalar-labs/packages?repo_name=scalardb-sql).
+These repositories are available only to users with a commercial license and permission.
+To get a license and permission, please [contact us](https://scalar-labs.com/contact_us/).
 
 You also need the `gpr.user` property for your GitHub username and the `gpr.key` property for your personal access token.
-So you need to have the properties in `~/.gradle/gradle.properties`, or specify the properties with the `-P` option when running the `./gradlew` command as follows:
+You must either add these properties in `~/.gradle/gradle.properties` or specify the properties by using the `-P` option when running the `./gradlew` command as follows:
 
 ```shell
-$ ./gradlew run ... -Pgpr.user=<your GitHub username> -Pgpr.key=<your personal access token>
+$ ./gradlew run ... -Pgpr.user=<YOUR_GITHUB_USERNAME> -Pgpr.key=<YOUR_PERSONAL_ACCESS_TOKEN>
 ````
 
-Please read [Install - ScalarDB SQL](https://github.com/scalar-labs/scalardb-sql#install) for more detail.
+For more details, see [Install - ScalarDB SQL](https://github.com/scalar-labs/scalardb-sql#install).
 
 ## Sample application
 
@@ -142,10 +142,10 @@ Please note that starting the containers may take more than one minute.
 ### Load schema
 
 You then need to apply the schema with the following command.
-Please download the schema tool `scalardb-sql-cli-<version>-all.jar` that can be found in [releases](https://github.com/scalar-labs/scalardb-sql/releases) of ScalarDB SQL.
+To download the CLI tool, `scalardb-sql-cli-<VERSION>-all.jar`, see the [Releases](https://github.com/scalar-labs/scalardb-sql/releases) of ScalarDB SQL and download the version that you want to use.
 
 ```shell
-$ java -jar scalardb-sql-cli-<version>-all.jar --config scalardb-sql.properties --file schema.sql
+$ java -jar scalardb-sql-cli-<VERSION>-all.jar --config scalardb-sql.properties --file schema.sql
 ```
 
 ### Load initial data
