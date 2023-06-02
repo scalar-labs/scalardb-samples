@@ -125,7 +125,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
 
       Customer customer = customerOpt.get();
 
-      int updatedCreditTotal = customer.creditTotal - request.getAmount();
+      int updatedCreditTotal = customer.creditTotal + request.getAmount();
 
       // Check if the credit total exceeds the credit limit after payment
       if (updatedCreditTotal > customer.creditLimit) {
