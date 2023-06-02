@@ -1,7 +1,7 @@
 version: "3.5"
 services:
   mysql:
-    image: mysql:8.0.26
+    image: mysql:8.0
     environment:
       MYSQL_ROOT_PASSWORD: mysql
     container_name: "mysql-1"
@@ -16,60 +16,26 @@ services:
       - "9042:9042"
     networks:
       - sample-network
-  customer-service-schema-loader:
-    image: ghcr.io/scalar-labs/scalardb-schema-loader:3.9.0
-    container_name: "customer-service-schema-loader-1"
-    depends_on:
-      - mysql
-    volumes:
-      - ./wait-for-it.sh:/wait-for-it.sh
-      - ./customer-service-schema.json:/schema.json
-      - ./database-mysql.properties:/database.properties
-    entrypoint: /bin/bash
-    command: /wait-for-it.sh -t 60 mysql:3306 -- java -jar app.jar -f /schema.json --config /database.properties
-    networks:
-      - sample-network
-    restart: on-failure
   customer-service:
     image: sample-customer-service:1.0
     container_name: "customer-service-1"
     depends_on:
       - mysql
       - cassandra
-      - customer-service-schema-loader
-    volumes:
-      - ./wait-for-it.sh:/customer-service/wait-for-it.sh
     entrypoint: /bin/bash
-    command: ./wait-for-it.sh -t 60 mysql:3306 -- /bin/bash -c './wait-for-it.sh -t 60 cassandra:9042 -- /bin/bash -c "sleep 10 && ./bin/customer-service --config database.properties"'
+    command: ./bin/customer-service --config database.properties
     restart: "always"
     ports:
       - "10010:10010"
     networks:
       - sample-network
-  order-service-schema-loader:
-    image: ghcr.io/scalar-labs/scalardb-schema-loader:3.9.0
-    container_name: "order-service-schema-loader-1"
-    depends_on:
-      - cassandra
-    volumes:
-      - ./wait-for-it.sh:/wait-for-it.sh
-      - ./order-service-schema.json:/schema.json
-      - ./database-cassandra.properties:/database.properties
-    entrypoint: /bin/bash
-    command: /wait-for-it.sh -t 60 cassandra:9042 -- java -jar app.jar -f /schema.json --config /database.properties --replication-factor 1 --coordinator
-    networks:
-      - sample-network
-    restart: on-failure
   order-service:
     image: sample-order-service:1.0
     container_name: "order-service-1"
     depends_on:
       - cassandra
-      - order-service-schema-loader
-    volumes:
-      - ./wait-for-it.sh:/order-service/wait-for-it.sh
     entrypoint: /bin/bash
-    command: ./wait-for-it.sh -t 60 cassandra:9042 -- /bin/bash -c "sleep 10 && ./bin/order-service --config database.properties"
+    command: ./bin/order-service --config database.properties
     restart: "always"
     ports:
       - "10020:10020"
