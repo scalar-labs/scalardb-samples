@@ -1,8 +1,9 @@
 # Multi-storage Transaction Sample
 
-This is a sample application for Multi-storage Transaction in ScalarDB.
+This tutorial describes how to create a sample application by using ScalarDB with Multi-storage Transactions.
 
 ## Prerequisites
+
 - Java (OpenJDK 8 or higher)
 - Gradle
 - Docker, Docker Compose
@@ -11,12 +12,11 @@ This is a sample application for Multi-storage Transaction in ScalarDB.
 
 ### Overview
 
-This is a simple EC application where you can order items and pay with a credit card using ScalarDB.
-
-In this article, you create the sample application on Cassandra and MySQL.
-With Multi-storage Transaction in ScalarDB, you can execute a transaction that spans Cassandra and MySQL.
-Please note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use ScalarDB.
-Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions) for the details of how to handle exceptions in ScalarDB.
+This tutorial describes how to create a sample application for the same use case as [ScalarDB Sample](https://github.com/scalar-labs/scalardb-samples/tree/main/scalardb-sample) but by using ScalarDB with Multi-storage Transaction.
+In this tutorial, you will build an application that uses both Cassandra and MySQL.
+Using the Multi-storage Transaction feature of ScalarDB, you can execute a transaction that spans both Cassandra and MySQL.
+Please note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use ScalarDB with Multi-storage Transaction.
+For detailed information on exception handling in ScalarDB, see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions).
 
 ![Overview](images/overview.png)
 
@@ -83,14 +83,16 @@ Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/d
 }
 ```
 
-The `customers` table is created in the `customer` namespace. And the `orders`, `statements`, and `items` tables are created in the `order` namespace.
+All the tables are created in the `customer` and `order` namespaces.
 
-The `customer.customers` table manages customers' information.
-The `credit_limit` is the maximum amount of money a lender will allow each customer to spend using a credit card, and the `credit_total` is the amount of money that each customer has already spent by using the credit card.
+- `customer.customers`: a table that manages customers' information
+    - `credit_limit`: the maximum amount of money a lender will allow each customer to spend when using a credit card
+    - `credit_total`: the amount of money that each customer has already spent by using the credit card
+- `order.orders`: a table that manages order information
+- `order.statements`: a table that manages order statement information
+- `order.items`: a table that manages information of items to be ordered
 
-The `order.orders` table manages orders' information, and the `order.statements` table manages the statements' information of the orders. Finally, the `order.items` table manages items' information to be ordered.
-
-The ER diagram for the schema is as follows:
+The Entity Relationship Diagram for the schema is as follows:
 
 ![ERD](images/ERD.png)
 
@@ -99,14 +101,14 @@ The ER diagram for the schema is as follows:
 The following five transactions are implemented in this sample application:
 
 1. Getting customer information
-3. Placing an order. An order is paid by a credit card. It first checks if the amount of the money of the order exceeds the credit limit. If the check passes, it records order histories and updates the `credit_total`
-4. Getting order information by order ID
-5. Getting order information by customer ID
-6. Repayment. It reduces the amount of `credit_total`.
+2. Placing an order by credit card (checks if the cost of the order is below the credit limit, then records order history and updates the `credit_total` if the check passes)
+3. Getting order information by order ID
+4. Getting order information by customer ID
+5. Repayment (reduces the amount in the `credit_total`)
 
-### Configuration
+## Configuration
 
-The configurations for the sample application is as follows:
+Configurations for the sample application are as follows:
 
 ```properties
 scalar.db.storage=multi-storage
@@ -123,35 +125,45 @@ scalar.db.multi_storage.namespace_mapping=customer:mysql,order:cassandra,coordin
 scalar.db.multi_storage.default_storage=cassandra
 ```
 
-This configuration defines two storages, `cassandra` and `mysql`, in the `scalar.db.multi_storage.storages` property.
-And the storage settings of each of them is configured in the `scalar.db.multi_storage.storages.cassandra.*` properties and the `scalar.db.multi_storage.storages.mysql.*` properties respectively.
-The `scalar.db.multi_storage.namespace_mapping` property defines the mapping between namespaces and storages, in this case, operations for the tables in the `customer` namespace are mapped to the `mysql` storage, and operations for the tables in the `order` namespace are mapped to the `cassandra` storage.
-Note that it also defines that operations for the tables in the `coordinator` namespace are mapped to the `cassandra` storage.
-The tables in the `coordinator` namespace are created automatically and used in the ScalarDB's transaction protocol called Consensus Commit. 
-And the `scalar.db.multi_storage.default_storage` property defines the default storage that’s used if a specified table doesn't have any table mapping.
-In this case, if a specified table doesn't have any table mapping, operations for the table are mapped to the `cassandra` storage.
+- `scalar.db.storage`: Specifying `multi-storage` is necessary to use Multi-storage Transactions in ScalarDB.
+- `scalar.db.multi_storage.storages`: Your storage names must be defined here.
+- `scalar.db.multi_storage.storages.cassandra.*`: These configurations are for the `cassandra` storage, which is one of the storage names defined in `scalar.db.multi_storage.storages`. You can configure all the `scalar.db.*` properties for the `cassandra` storage here.
+- `scalar.db.multi_storage.storages.mysql.*`: These configurations are for the `mysql` storage, which is one of the storage names defined in `scalar.db.multi_storage.storages`. You can configure all the `scalar.db.*` properties for the `mysql` storage here.
+- `scalar.db.multi_storage.namespace_mapping`: This configuration maps the namespaces to the storage. In this sample application, operations for `customer` namespace tables are mapped to the `mysql` storage and operations for `order` namespace tables are mapped to the `cassandra` storage. You can also define which storage is mapped for the `coordinator` namespace that is used in Consensus Commit transactions.
+- `scalar.db.multi_storage.default_storage`: This configuration sets the default storage that is used for operations on unmapped namespace tables.
 
-Please see below for the details of Multi-storage Transaction configurations:
-https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md
+For details, please see [Configuration - Multi-storage Transactions](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md#configuration).
 
-## Set up
+## Setup
 
-You need to run the following `docker-compose` command:
+### Start Cassandra and MySQL
+
+To start Cassandra and MySQL, you need to run the following `docker-compose` command:
+
 ```shell
 $ docker-compose up -d
 ```
 
-This command starts Cassandra and MySQL, and loads the schema.
-Please note that you need to wait around more than one minute for the containers to be fully started.
+Please note that starting the containers may take more than one minute.
 
-### Initial data
+### Load schema
 
-You first need to load initial data with the following command:
+You then need to apply the schema with the following command.
+Please download the schema tool `scalardb-schema-loader-<version>.jar` that can be found in [releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB.
+
+```shell
+$ java -jar scalardb-schema-loader-<version>.jar --config database.properties --schema-file schema.json --coordinator
+```
+
+### Load initial data
+
+After the containers have started, you need to load the initial data by running the following command:
+
 ```shell
 $ ./gradlew run --args="LoadInitialData"
 ```
 
-And the following data will be loaded:
+After the initial data has loaded, the following records should be stored in the tables:
 
 - For the `customer.customers` table:
 
@@ -173,7 +185,8 @@ And the following data will be loaded:
 
 ## Run the sample application
 
-Let's start with getting the customer information whose ID is `1`:
+Let's start with getting information about the customer whose ID is `1`:
+
 ```shell
 $ ./gradlew run --args="GetCustomerInfo 1"
 ...
@@ -181,7 +194,9 @@ $ ./gradlew run --args="GetCustomerInfo 1"
 ...
 ```
 
-Then, place an order for three apples and two oranges with customer ID `1`. Note that the format of order is `<Item ID>:<Count>,<Item ID>:<Count>,...`:
+Then, place an order for three apples and two oranges by using customer ID `1`.
+Note that the order format is `<Item ID>:<Count>,<Item ID>:<Count>,...`:
+
 ```shell
 $ ./gradlew run --args="PlaceOrder 1 1:3,2:2"
 ...
@@ -189,9 +204,10 @@ $ ./gradlew run --args="PlaceOrder 1 1:3,2:2"
 ...
 ```
 
-The command shows the order ID of the order.
+You can see that running this command shows the order ID.
 
-Let's check the details of the order with the order ID:
+Let's check the details of the order by using the order ID:
+
 ```shell
 $ ./gradlew run --args="GetOrder 9099eca6-98b8-4ef5-a803-3166dfe635ad"
 ...
@@ -199,7 +215,8 @@ $ ./gradlew run --args="GetOrder 9099eca6-98b8-4ef5-a803-3166dfe635ad"
 ...
 ```
 
-So, let's place an order again and get the order histories by customer ID `1`:
+Then, let's place another order and get the order history of customer ID `1`:
+
 ```shell
 $ ./gradlew run --args="PlaceOrder 1 5:1"
 ...
@@ -211,10 +228,10 @@ $ ./gradlew run --args="GetOrders 1"
 ...
 ```
 
-These histories are ordered by timestamp in a descending manner.
+This order history is shown in descending order by timestamp.
 
-The current `credit_total` is `10000`, so it has reached the `credit_limit`.
-So, the customer can't place an order anymore due to the limit.
+The customer's current `credit_total` is `10000`.
+Since the customer has now reached their `credit_limit`, which was shown when retrieving their information, they cannot place anymore orders.
 
 ```shell
 $ ./gradlew run --args="GetCustomerInfo 1"
@@ -237,7 +254,7 @@ java.lang.RuntimeException: Credit limit exceeded
 ...
 ```
 
-After repayment, the customer will be able to place an order again!
+After making a payment, the customer will be able to place orders again.
 
 ```shell
 $ ./gradlew run --args="Repayment 1 8000"
@@ -255,6 +272,7 @@ $ ./gradlew run --args="PlaceOrder 1 3:1,4:1"
 ## Clean up
 
 To stop Cassandra and MySQL, run the following command:
+
 ```shell
 $ docker-compose down
 ```

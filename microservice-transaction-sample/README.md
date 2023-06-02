@@ -1,9 +1,10 @@
 # Microservice Transaction Sample
 
-This is a sample application for Microservice Transaction that uses Two-phase Commit Transactions in ScalarDB.
+This tutorial describes how to create a sample application for Microservice Transaction that uses Two-phase Commit Transactions in ScalarDB.
 You can find more information about Two-phase Commit Transactions in ScalarDB [here](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md).
 
 ## Prerequisites
+
 - Java (OpenJDK 8 or higher)
 - Gradle
 - Docker, Docker Compose
@@ -12,7 +13,7 @@ You can find more information about Two-phase Commit Transactions in ScalarDB [h
 
 ### Overview
 
-This is a simple EC site where you can order items and pay them with a credit card.
+This tutorial describes how to create a sample application for Microservice Transaction for the same use case as [ScalarDB Sample](https://github.com/scalar-labs/scalardb-samples/tree/main/scalardb-sample) but by using Two-phase Commit Transactions in ScalarDB.
 
 There are two microservices called *Customer Service* and *Order Service* based on the [*Database-per-service* pattern](https://microservices.io/patterns/data/database-per-service.html) in this sample application.
 
@@ -57,9 +58,11 @@ Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/d
 }
 ```
 
-The `customer_service.customers` table manages customers' information.
-The `credit_limit` for a customer is the maximum amount of money a lender will allow the customer to spend using a credit card,
-and the `credit_total` is the amount of money that the customer has already spent by using the credit card.
+All the tables for Customer Service are created in the `customer_service` namespace.
+
+- `customer_service.customers`: a table that manages customers' information
+    - `credit_limit`: the maximum amount of money a lender will allow each customer to spend when using a credit card
+    - `credit_total`: the amount of money that each customer has already spent by using the credit card
 
 [The schema for Order Service](order-service-schema.json) is as follows:
 
@@ -110,10 +113,13 @@ and the `credit_total` is the amount of money that the customer has already spen
 }
 ```
 
-The `order_service.orders` table manages orders' information, and the `order_service.statements` table manages the statements' information of the orders.
-The `order_service.items` table manages items' information to be ordered.
+All the tables for Order Service are created in the `order_service` namespace.
 
-The ER diagram for the schema is as follows:
+- `order_service.orders`: a table that manages order information
+- `order_service.statements`: a table that manages order statement information
+- `order_service.items`: a table that manages information of items to be ordered
+
+The Entity Relationship Diagram for the schema is as follows:
 
 ![ERD](images/ERD.png)
 
@@ -122,10 +128,10 @@ The ER diagram for the schema is as follows:
 The following five transactions are implemented in this sample application:
 
 1. Getting customer information. It is a transaction in Customer Service
-2. Placing an order. It is a transaction that spans Order Service and Customer Service. An order is paid by a credit card. And it first checks if the amount of the money of the order exceeds the credit limit. And when the check is passed, it records order histories and updates the `credit_total`
+2. Placing an order (checks if the cost of the order is below the credit limit, then records order history and updates the `credit_total` if the check passes). It is a transaction that spans Order Service and Customer Service.
 3. Getting order information by order ID. It is a transaction in Order Service
 4. Getting order information by customer ID. It is a transaction in Order Service
-5. Repayment. It is a transaction in Customer Service. It reduces the amount of `credit_total`.
+5. Repayment (reduces the amount in the `credit_total`). It is a transaction in Customer Service.
 
 ### Service Endpoints
 
@@ -156,24 +162,54 @@ The `getOrder` of Order Service is for transaction #3, and The `getOrders` of Or
 
 And the `repayment` endpoint of Customer Service is for transaction #5.
 
-## Set up
+## Setup
+
+### Start Cassandra and MySQL
+
+To start Cassandra and MySQL, you need to run the following `docker-compose` command:
+
+```shell
+$ docker-compose up -d cassandra mysql
+```
+
+Please note that you need to wait around more than one minute for the containers to be fully started.
+
+### Load schema
+
+You then need to apply the schema with the following commands.
+To download the schema loader tool, `scalardb-schema-loader-<VERSION>.jar`, see the [Releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB and download the version that you want to use.
+
+For MySQL:
+
+```shell
+$ java -jar scalardb-schema-loader-<VERSION>.jar --config database-mysql.properties --schema-file customer-service-schema.json
+```
+
+For Cassandra:
+
+```shell
+$ java -jar scalardb-schema-loader-<VERSION>.jar --config database-cassandra.properties --schema-file order-service-schema.json --coordinator
+```
+
+### Start Microservices
 
 First, you need to build the docker images of the sample application with the following command:
+
 ```shell
 $ ./gradlew docker
 ```
 
-After that, you need to run the following `docker-compose` command:
-```shell
-$ docker-compose up -d
-```
+Then, you can start the microservices with the following `docker-compose` command:
 
-This command starts Cassandra and MySQL and loads the schema, and starts the microservices.
-Please note that you need to wait around more than one minute for the containers to be fully started.
+```shell
+$ docker-compose up -d customer-service order-service
+```
 
 ### Initial data
 
-When the microservices start, the initial data is loaded automatically as follows:
+When the microservices start, the initial data is loaded automatically.
+
+After the initial data has loaded, the following records should be stored in the tables:
 
 - For the `customer_service.customers` table:
 
@@ -195,7 +231,8 @@ When the microservices start, the initial data is loaded automatically as follow
 
 ## Run the sample application
 
-Let's start with getting the customer information whose ID is `1`:
+Let's start with getting information about the customer whose ID is `1`:
+
 ```shell
 $ ./gradlew :client:run --args="GetCustomerInfo 1"
 ...
@@ -205,7 +242,9 @@ $ ./gradlew :client:run --args="GetCustomerInfo 1"
 
 At this time, `credit_total` isn't shown, which means the current value of `credit_total` is `0`.
 
-Then, place an order for three apples and two oranges with customer ID `1`. Note that the format of order is `<Item ID>:<Count>,<Item ID>:<Count>,...`:
+Then, place an order for three apples and two oranges by using customer ID `1`.
+Note that the order format is `<Item ID>:<Count>,<Item ID>:<Count>,...`:
+
 ```shell
 $ ./gradlew :client:run --args="PlaceOrder 1 1:3,2:2"
 ...
@@ -213,9 +252,10 @@ $ ./gradlew :client:run --args="PlaceOrder 1 1:3,2:2"
 ...
 ```
 
-The command shows the order ID of the order. 
+You can see that running this command shows the order ID.
 
-Let's check the details of the order with the order ID:
+Let's check the details of the order by using the order ID:
+
 ```shell
 $ ./gradlew :client:run --args="GetOrder 4ccdb21c-ac03-4b48-bcb7-cad57eac1e79"
 ...
@@ -223,7 +263,8 @@ $ ./gradlew :client:run --args="GetOrder 4ccdb21c-ac03-4b48-bcb7-cad57eac1e79"
 ...
 ```
 
-So, let's place an order again and get the order histories by customer ID `1`:
+Then, let's place another order and get the order history of customer ID `1`:
+
 ```shell
 $ ./gradlew :client:run --args="PlaceOrder 1 5:1"
 ...
@@ -235,10 +276,10 @@ $ ./gradlew :client:run --args="GetOrders 1"
 ...
 ```
 
-These histories are ordered by timestamp in a descending manner.
+This order history is shown in descending order by timestamp.
 
-The current `credit_total` is `10000`, so it has reached the `credit_limit`.
-So, the customer can't place an order anymore due to the limit.
+The customer's current `credit_total` is `10000`.
+Since the customer has now reached their `credit_limit`, which was shown when retrieving their information, they cannot place anymore orders.
 
 ```shell
 $ ./gradlew :client:run --args="GetCustomerInfo 1"
@@ -248,23 +289,25 @@ $ ./gradlew :client:run --args="GetCustomerInfo 1"
 $ ./gradlew :client:run --args="PlaceOrder 1 3:1,4:1"
 ...
 io.grpc.StatusRuntimeException: FAILED_PRECONDITION: Credit limit exceeded
-        at io.grpc.stub.ClientCalls.toStatusRuntimeException(ClientCalls.java:262)
-        at io.grpc.stub.ClientCalls.getUnchecked(ClientCalls.java:243)
-        at io.grpc.stub.ClientCalls.blockingUnaryCall(ClientCalls.java:156)
-        at sample.rpc.OrderServiceGrpc$OrderServiceBlockingStub.placeOrder(OrderServiceGrpc.java:295)
+        at io.grpc.stub.ClientCalls.toStatusRuntimeException(ClientCalls.java:271)
+        at io.grpc.stub.ClientCalls.getUnchecked(ClientCalls.java:252)
+        at io.grpc.stub.ClientCalls.blockingUnaryCall(ClientCalls.java:165)
+        at sample.rpc.OrderServiceGrpc$OrderServiceBlockingStub.placeOrder(OrderServiceGrpc.java:296)
         at sample.client.command.PlaceOrderCommand.call(PlaceOrderCommand.java:38)
         at sample.client.command.PlaceOrderCommand.call(PlaceOrderCommand.java:12)
-        at picocli.CommandLine.executeUserObject(CommandLine.java:1783)
-        at picocli.CommandLine.access$900(CommandLine.java:145)
-        at picocli.CommandLine$RunLast.handle(CommandLine.java:2141)
-        at picocli.CommandLine$RunLast.handle(CommandLine.java:2108)
-        at picocli.CommandLine$AbstractParseResultHandler.execute(CommandLine.java:1975)
-        at picocli.CommandLine.execute(CommandLine.java:1904)
+        at picocli.CommandLine.executeUserObject(CommandLine.java:2041)
+        at picocli.CommandLine.access$1500(CommandLine.java:148)
+        at picocli.CommandLine$RunLast.executeUserObjectOfLastSubcommandWithSameParent(CommandLine.java:2461)
+        at picocli.CommandLine$RunLast.handle(CommandLine.java:2453)
+        at picocli.CommandLine$RunLast.handle(CommandLine.java:2415)
+        at picocli.CommandLine$AbstractParseResultHandler.execute(CommandLine.java:2273)
+        at picocli.CommandLine$RunLast.execute(CommandLine.java:2417)
+        at picocli.CommandLine.execute(CommandLine.java:2170)
         at sample.client.Client.main(Client.java:39)
 ...
 ```
 
-After repayment, the customer will be able to place an order again!
+After making a payment, the customer will be able to place orders again.
 
 ```shell
 $ ./gradlew :client:run --args="Repayment 1 8000"
@@ -282,6 +325,7 @@ $ ./gradlew :client:run --args="PlaceOrder 1 3:1,4:1"
 ## Clean up
 
 To stop Cassandra, MySQL and the Microservices, run the following command:
+
 ```shell
 $ docker-compose down
 ```
