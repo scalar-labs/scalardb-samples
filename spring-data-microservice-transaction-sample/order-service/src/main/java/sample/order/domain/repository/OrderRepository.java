@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import sample.order.domain.model.Order;
 
+// TODO: Check if EnableScalarDbRepositories.transactionManagerRef works instead
 @Transactional(transactionManager = "scalarDbSuspendableTransactionManager")
 @Repository
 public interface OrderRepository extends ScalarDbTwoPcRepository<Order, String> {
@@ -14,7 +15,7 @@ public interface OrderRepository extends ScalarDbTwoPcRepository<Order, String> 
 
   // TODO: Using mixed Datasources to use both normal and 2PC transaction modes would be better
   //       like https://github.com/scalar-labs/scalardb-sql/tree/main/spring-data/example/mixed-transaction-modes
-  //       so that we don't need to use this method
+  //       so that we don't need to use this method. Or check auto-commit configuration later
   //
   // TODO: Maybe This API should be moved to ScalarDbTwoPcRepository.
   default <T> T execOneshotOperation(Supplier<T> task) {
