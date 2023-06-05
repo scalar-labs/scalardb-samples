@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'org.sample'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/scalar-labs/scalardb-sql")
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.scalar-labs:scalardb-sql-jdbc:3.9.0'
+    implementation 'com.scalar-labs:scalardb-sql-direct-mode:3.9.0'
+    implementation 'info.picocli:picocli:4.7.1'
+}
+
+application {
+    mainClassName = 'sample.command.SampleCommand'
+}
+
+archivesBaseName = "sample"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
