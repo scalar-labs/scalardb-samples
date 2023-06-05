@@ -35,11 +35,11 @@ You need to wait for the Cassandra to start up. Checking the logs with the `dock
 ### Load schema
 
 In this step, you will load the database schema for the sample app (`emoney-schema.json`) to the Cassandra database.
-Please download the schema tool `scalardb-schema-loader-<version>.jar` that can be found in [releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB.
+To download the schema loader tool, `scalardb-schema-loader-<VERSION>.jar`, see the [Releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB and download the version that you want to use.
 You can load the schema to the database by the following command:
 
 ```shell
-$ java -jar scalardb-schema-loader-<version>.jar --config database.properties --schema-file emoney-schema.json --coordinator
+$ java -jar scalardb-schema-loader-<VERSION>.jar --config database.properties --schema-file emoney-schema.json --coordinator
 ```
 
 ### Start GraphQL server

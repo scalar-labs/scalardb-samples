@@ -14,9 +14,9 @@ This tutorial describes how to create a sample application by using ScalarDB.
 
 This tutorial illustrates the process of creating a sample e-commerce application, where items can be ordered and paid for with a credit card using ScalarDB.
 In this tutorial, you will build the application on Cassandra.
-Although Cassandra itself does not provide ACID transaction capabilities, it is possible to achieve ACID transactions on Cassandra by interfacing with it through ScalarDB.
-Please note that application-specific error handling, authentication processing, and the like are omitted in the sample application, as the focus is on demonstrating the use of ScalarDB.
-For detailed information on exception handling in ScalarDB, see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions).
+Although Cassandra does not provide ACID transaction capability, you can run ACID transactions on Cassandra if you interact with it through ScalarDB.
+Please note that application-specific error handling, authentication processing, and similar functions are not included in the sample application, as the focus is on demonstrating the use of ScalarDB.
+For detailed information on exception handling in ScalarDB, see [Handle SQLException](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions).
 
 ### Schema
 
@@ -117,7 +117,9 @@ scalar.db.password=cassandra
 
 Since this sample application uses Cassandra, as shown above, you need to configure your settings for Cassandra in this configuration.
 
-## Setup Cassandra
+## Setup
+
+### Start Cassandra
 
 To start Cassandra, you need to run the following `docker-compose` command:
 
@@ -127,16 +129,16 @@ $ docker-compose up -d
 
 Please note that starting the containers may take more than one minute.
 
-## Load schema
+### Load schema
 
 You then need to apply the schema with the following command.
-Please download the schema tool `scalardb-schema-loader-<version>.jar` that can be found in [releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB.
+To download the schema loader tool, `scalardb-schema-loader-<VERSION>.jar`, see the [Releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB and download the version that you want to use.
 
 ```shell
-$ java -jar scalardb-schema-loader-<version>.jar --config database.properties --schema-file schema.json --coordinator
+$ java -jar scalardb-schema-loader-<VERSION>.jar --config database.properties --schema-file schema.json --coordinator
 ```
 
-## Load initial data
+### Load initial data
 
 After the containers have started, you need to load the initial data by running the following command:
 
