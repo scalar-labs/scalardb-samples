@@ -14,7 +14,7 @@ This tutorial describes how to create a sample application by using ScalarDB.
 
 This tutorial illustrates the process of creating a sample e-commerce application, where items can be ordered and paid for with a credit card using ScalarDB.
 In this tutorial, you will build the application on Cassandra.
-Although Cassandra does not provide ACID transaction capabilities, Cassandra can support ACID transactions by interfacing through ScalarDB.
+Although Cassandra does not provide ACID transaction capability, you can run ACID transactions on Cassandra if you interact with it through ScalarDB.
 Please note that application-specific error handling, authentication processing, and similar functions are not included in the sample application, as the focus is on demonstrating the use of ScalarDB.
 For detailed information on exception handling in ScalarDB, see [Handle SQLException](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions).
 
