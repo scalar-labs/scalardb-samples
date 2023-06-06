@@ -18,7 +18,6 @@ import org.springframework.dao.TransientDataAccessException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import sample.customer.domain.model.Customer;
 import sample.customer.domain.repository.CustomerRepository;
 import sample.rpc.CommitRequest;
@@ -44,6 +43,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   private CustomerRepository customerRepository;
 
   public void init() {
+    // `customerRepository` is set up after the constructor of CustomerService is performed by
+    // Spring Framework. So, loading initial data should be executed outside the constructor.
     loadInitialData();
   }
 
@@ -60,16 +61,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   public void getCustomerInfo(
     GetCustomerInfoRequest request, StreamObserver<GetCustomerInfoResponse> responseObserver) {
     execNormalOperation(responseObserver, "Getting customer info", () -> {
-      // Retrieve the customer info for the specified customer ID from the customers table.
-      Optional<Customer> customerOpt = customerRepository.findById(request.getCustomerId());
-      if (!customerOpt.isPresent()) {
-        String message = "Customer not found: " + request.getCustomerId();
-        responseObserver.onError(
-            Status.NOT_FOUND.withDescription(message).asRuntimeException());
-        throw new ScalarDbNonTransientException(message);
-      }
-
-      Customer customer = customerOpt.get();
+      Customer customer = getCustomer(responseObserver, request.getCustomerId());
 
       return GetCustomerInfoResponse.newBuilder()
               .setId(customer.customerId)
@@ -83,16 +75,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   @Override
   public void repayment(RepaymentRequest request, StreamObserver<Empty> responseObserver) {
     execNormalOperation(responseObserver, "Repayment", () -> {
-      // Retrieve the customer info for the specified customer ID
-      Optional<Customer> customerOpt = customerRepository.findById(request.getCustomerId());
-      if (!customerOpt.isPresent()) {
-        String message = "Customer not found: " + request.getCustomerId();
-        responseObserver.onError(
-            Status.NOT_FOUND.withDescription(message).asRuntimeException());
-        throw new ScalarDbNonTransientException(message);
-      }
-
-      Customer customer = customerOpt.get();
+      Customer customer = getCustomer(responseObserver, request.getCustomerId());
 
       int updatedCreditTotal = customer.creditTotal - request.getAmount();
       // Check if over repayment or not
@@ -114,19 +97,9 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   @Override
   public void payment(PaymentRequest request, StreamObserver<Empty> responseObserver) {
     execTwoPcOperation(request.getTransactionId(), true, responseObserver, "Payment", () -> {
-      // Retrieve the customer info for the customer ID
-      Optional<Customer> customerOpt = customerRepository.findById(request.getCustomerId());
-      if (!customerOpt.isPresent()) {
-        String message = "Customer not found: " + request.getCustomerId();
-        responseObserver.onError(
-            Status.NOT_FOUND.withDescription(message).asRuntimeException());
-        throw new ScalarDbNonTransientException(message);
-      }
-
-      Customer customer = customerOpt.get();
+      Customer customer = getCustomer(responseObserver, request.getCustomerId());
 
       int updatedCreditTotal = customer.creditTotal + request.getAmount();
-
       // Check if the credit total exceeds the credit limit after payment
       if (updatedCreditTotal > customer.creditLimit) {
         String message = String.format(
@@ -135,6 +108,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
             Status.FAILED_PRECONDITION.withDescription(message).asRuntimeException());
         throw new ScalarDbNonTransientException(message);
       }
+
       // Reduce credit_total for the customer
       customerRepository.update(customer.withCreditTotal(updatedCreditTotal));
 
@@ -178,6 +152,18 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     });
   }
 
+  private Customer getCustomer(StreamObserver<?> responseObserver, int customerId) {
+    // Retrieve the customer info for the specified customer ID from the customers table.
+    Optional<Customer> customerOpt = customerRepository.findById(customerId);
+    if (!customerOpt.isPresent()) {
+      String message = "Customer not found: " + customerId;
+      responseObserver.onError(
+          Status.NOT_FOUND.withDescription(message).asRuntimeException());
+      throw new ScalarDbNonTransientException(message);
+    }
+    return customerOpt.get();
+  }
+
   private String logFailure(String funcName, Exception e) {
     String message = funcName + " failed";
     logger.error(message, e);
@@ -194,7 +180,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   }
 
   private <T> void execNormalOperation(StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
-    execOperation(responseObserver, funcName,
+    execAndReturnResponse(responseObserver, funcName,
         // BEGIN is called before the execution of a passed task,
         // and then PREPARE, VALIDATE, COMMIT will be executed
         () -> customerRepository.execOneshotOperation(task)
@@ -214,7 +200,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   }
 
   private <T> void execTwoPcOperation(String txId, boolean isJoin, StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
-    execOperation(responseObserver, funcName, () -> customerRepository.execBatchOperations(() -> {
+    execAndReturnResponse(responseObserver, funcName, () -> customerRepository.execBatchOperations(() -> {
           if (isJoin) {
             // Join the transaction
             customerRepository.join(txId);
@@ -233,7 +219,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     ));
   }
 
-  private <T> void execOperation(@Nullable StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
+  private <T> void execAndReturnResponse(@Nullable StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
     try {
       T result = task.get();
 

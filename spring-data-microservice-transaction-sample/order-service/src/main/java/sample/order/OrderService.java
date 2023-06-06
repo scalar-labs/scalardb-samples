@@ -10,6 +10,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import java.io.Closeable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -59,6 +60,15 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   // For gRPC connection to Customer service
   private final ManagedChannel channel;
   private final CustomerServiceGrpc.CustomerServiceBlockingStub stub;
+  private final Collection<RemotePrepareCommitPhaseOperations> remotePrepareCommitPhaseOperations =
+      Collections.singletonList(
+          RemotePrepareCommitPhaseOperations.createSerializable(
+              this::callPrepareEndpoint,
+              this::callValidateEndpoint,
+              this::callCommitEndpoint,
+              this::callRollbackEndpoint
+          )
+      );
 
   @Autowired
   private ItemRepository itemRepository;
@@ -74,6 +84,8 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   }
 
   public void init() {
+    // `itemRepository` is set up after the constructor of CustomerService is performed by
+    // Spring Framework. So, loading initial data should be executed outside the constructor.
     loadInitialData();
   }
 
@@ -93,7 +105,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   public void placeOrder(
       PlaceOrderRequest request, StreamObserver<PlaceOrderResponse> responseObserver) {
 
-    execOperation(responseObserver, "Placing an order", () -> {
+    execAndReturnResponse(responseObserver, "Placing an order", () -> {
       // Start a two-phase commit transaction
       TwoPcResult<String> result = orderRepository.executeTwoPcTransaction(txId -> {
             String orderId = UUID.randomUUID().toString();
@@ -128,14 +140,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
             callPaymentEndpoint(txId, request.getCustomerId(), amount.get());
             return orderId;
           },
-          Collections.singletonList(
-              RemotePrepareCommitPhaseOperations.createSerializable(
-                  this::callPrepareEndpoint,
-                  this::callValidateEndpoint,
-                  this::callCommitEndpoint,
-                  this::callRollbackEndpoint
-              )
-          )
+          remotePrepareCommitPhaseOperations
       );
       String orderId = result.executionPhaseReturnValue();
 
@@ -271,13 +276,13 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   }
 
   private <T> void execNormalOperation(StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
-    execOperation(responseObserver, funcName,
+    execAndReturnResponse(responseObserver, funcName,
         // BEGIN is called before the execution of a passed task,
         // and then PREPARE, VALIDATE, COMMIT will be executed
         () -> orderRepository.execOneshotOperation(task));
   }
 
-  private <T> void execOperation(@Nullable StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
+  private <T> void execAndReturnResponse(@Nullable StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
     try {
       T result = task.get();
 
