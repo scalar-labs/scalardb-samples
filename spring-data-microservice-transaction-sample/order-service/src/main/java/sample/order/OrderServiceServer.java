@@ -16,7 +16,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
 @SpringBootApplication
-@EnableScalarDbRepositories
+@EnableScalarDbRepositories(transactionManagerRef = "scalarDbSuspendableTransactionManager")
 @EnableRetry
 @Command(name = "order-service-server", description = "Starts Order Service server.")
 public class OrderServiceServer implements Callable<Integer>, CommandLineRunner, ExitCodeGenerator {

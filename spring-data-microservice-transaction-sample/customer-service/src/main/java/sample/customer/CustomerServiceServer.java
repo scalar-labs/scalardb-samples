@@ -17,7 +17,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.IFactory;
 
 @SpringBootApplication
-@EnableScalarDbRepositories
+@EnableScalarDbRepositories(transactionManagerRef = "scalarDbSuspendableTransactionManager")
 @EnableRetry
 @Command(name = "customer-service-server", description = "Starts Customer Service server.")
 public class CustomerServiceServer implements Callable<Integer>, CommandLineRunner, ExitCodeGenerator {

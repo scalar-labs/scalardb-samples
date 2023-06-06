@@ -5,7 +5,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import sample.order.domain.model.Item;
 
-@Transactional(transactionManager = "scalarDbSuspendableTransactionManager")
+@Transactional
 @Repository
 public interface ItemRepository extends ScalarDbTwoPcRepository<Item, Integer> {
   default void insertIfNotExists(Item item) {

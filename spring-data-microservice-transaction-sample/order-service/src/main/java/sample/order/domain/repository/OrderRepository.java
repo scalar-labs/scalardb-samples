@@ -7,8 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import sample.order.domain.model.Order;
 
-// TODO: Check if EnableScalarDbRepositories.transactionManagerRef works instead
-@Transactional(transactionManager = "scalarDbSuspendableTransactionManager")
+@Transactional
 @Repository
 public interface OrderRepository extends ScalarDbTwoPcRepository<Order, String> {
   List<Order> findAllByCustomerIdOrderByTimestampDesc(int customerId);

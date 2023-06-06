@@ -6,8 +6,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import sample.customer.domain.model.Customer;
 
-// TODO: Check if EnableScalarDbRepositories.transactionManagerRef works instead
-@Transactional(transactionManager = "scalarDbSuspendableTransactionManager")
+@Transactional
 @Repository
 public interface CustomerRepository extends ScalarDbTwoPcRepository<Customer, Integer> {
   default void insertIfNotExists(Customer customer) {
