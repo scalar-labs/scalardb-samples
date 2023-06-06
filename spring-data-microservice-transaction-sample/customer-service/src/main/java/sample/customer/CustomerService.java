@@ -184,18 +184,6 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
         // BEGIN is called before the execution of a passed task,
         // and then PREPARE, VALIDATE, COMMIT will be executed
         () -> customerRepository.execOneshotOperation(task)
-
-        // This doesn't work. It seems each method call is executed in a transaction.
-        /*
-        () -> {
-          customerRepository.begin();
-          T result = task.get();
-          customerRepository.prepare();
-          customerRepository.validate();
-          customerRepository.commit();
-          return result;
-        }
-         */
     );
   }
 
