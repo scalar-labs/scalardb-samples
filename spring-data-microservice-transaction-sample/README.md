@@ -1,7 +1,8 @@
 # Microservice Transaction Sample
 
-This tutorial describes how to create a sample application for Microservice Transaction that uses Two-phase Commit Transactions in ScalarDB.
-You can find more information about Two-phase Commit Transactions in ScalarDB [here](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md).
+This tutorial describes how to create a sample Spring Boot application for microservices by using Spring Data JDBC for ScalarDB with Two-phase Commit Transactions of ScalarDB.
+
+For details, please see [Two-phase Commit Transactions in ScalarDB](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md) and [Guide of Spring Data JDBC for ScalarDB](https://github.com/scalar-labs/scalardb-sql/blob/main/docs/spring-data-guide.md).
 
 ## Prerequisites
 
@@ -9,11 +10,24 @@ You can find more information about Two-phase Commit Transactions in ScalarDB [h
 - Gradle
 - Docker, Docker Compose
 
+In addition, you need access to the [ScalarDB SQL GitHub repository](https://github.com/scalar-labs/scalardb-sql) and [Packages in ScalarDB SQL repository](https://github.com/orgs/scalar-labs/packages?repo_name=scalardb-sql).
+These repositories are available only to users with a commercial license and permission.
+To get a license and permission, please [contact us](https://scalar-labs.com/contact_us/).
+
+You also need the `gpr.user` property for your GitHub username and the `gpr.key` property for your personal access token.
+You must either add these properties in `~/.gradle/gradle.properties` or specify the properties by using the `-P` option when running the `./gradlew` command as follows:
+
+```shell
+$ ./gradlew run ... -Pgpr.user=<YOUR_GITHUB_USERNAME> -Pgpr.key=<YOUR_PERSONAL_ACCESS_TOKEN>
+````
+
+For more details, please see [Install - ScalarDB SQL](https://github.com/scalar-labs/scalardb-sql#install).
+
 ## Sample application
 
 ### Overview
 
-This tutorial describes how to create a sample application for Microservice Transaction for the same use case as [ScalarDB Sample](https://github.com/scalar-labs/scalardb-samples/tree/main/scalardb-sample) but by using Two-phase Commit Transactions in ScalarDB.
+This tutorial describes how to create a Spring Boot sample application for Microservice Transaction for the same use case as [ScalarDB Sample](https://github.com/scalar-labs/scalardb-samples/tree/main/scalardb-sample) but by using Two-phase Commit Transactions in ScalarDB.
 
 There are two microservices called *Customer Service* and *Order Service* based on the [*Database-per-service* pattern](https://microservices.io/patterns/data/database-per-service.html) in this sample application.
 
@@ -25,7 +39,7 @@ Customer Service and Order Service uses MySQL and Cassandra through ScalarDB, re
 ![Overview](images/overview.png)
 
 Note that both services access a small coordinator database used for the Consensus Commit protocol.
-The database is service-independent and exists for managing transaction metadata for Consensus Commit in a highly available manner, so we don't think it is violating the database-per-service pattern. 
+The database is service-independent and exists for managing transaction metadata for Consensus Commit in a highly available manner, so we don't think it is violating the database-per-service pattern.
 *NOTE: We also plan to create a microservice container for the coordinator database to truly achieve the database-per-service pattern.*
 
 In this sample application, for ease of setup and explanation, we co-locate the coordinator database in the same Cassandra instance of the Order Service, but of course, the coordinator database can be managed as a separate database.
@@ -39,82 +53,50 @@ Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/d
 
 ### Schema
 
-[The schema for Customer Service](customer-service-schema.json) is as follows:
+[The schema](schema.sql) is as follows:
 
-```json
-{
-  "customer_service.customers": {
-    "transaction": true,
-    "partition-key": [
-      "customer_id"
-    ],
-    "columns": {
-      "customer_id": "INT",
-      "name": "TEXT",
-      "credit_limit": "INT",
-      "credit_total": "INT"
-    }
-  }
-}
+```sql
+CREATE COORDINATOR TABLES IF NOT EXIST;
+
+CREATE NAMESPACE IF NOT EXISTS customer_service;
+
+CREATE TABLE IF NOT EXISTS customer_service.customers (
+  customer_id INT PRIMARY KEY,
+  name TEXT,
+  credit_limit INT,
+  credit_total INT
+);
+
+CREATE NAMESPACE IF NOT EXISTS order_service;
+
+CREATE TABLE IF NOT EXISTS order_service.orders (
+  customer_id INT,
+  timestamp BIGINT,
+  order_id TEXT,
+  PRIMARY KEY (customer_id, timestamp)
+);
+
+CREATE INDEX IF NOT EXISTS ON order_service.orders (order_id);
+
+CREATE TABLE IF NOT EXISTS order_service.statements (
+  order_id TEXT,
+  item_id INT,
+  count INT,
+  PRIMARY KEY (order_id, item_id)
+);
+
+CREATE TABLE IF NOT EXISTS order_service.items (
+  item_id INT PRIMARY KEY,
+  name TEXT,
+  price INT
+);
 ```
 
-All the tables for Customer Service are created in the `customer_service` namespace.
+All the tables are created in the `customer_service` and `order_service` namespaces.
 
 - `customer_service.customers`: a table that manages customers' information
-    - `credit_limit`: the maximum amount of money a lender will allow each customer to spend when using a credit card
-    - `credit_total`: the amount of money that each customer has already spent by using the credit card
-
-[The schema for Order Service](order-service-schema.json) is as follows:
-
-```json
-{
-  "order_service.orders": {
-    "transaction": true,
-    "partition-key": [
-      "customer_id"
-    ],
-    "clustering-key": [
-      "timestamp"
-    ],
-    "secondary-index": [
-      "order_id"
-    ],
-    "columns": {
-      "order_id": "TEXT",
-      "customer_id": "INT",
-      "timestamp": "BIGINT"
-    }
-  },
-  "order_service.statements": {
-    "transaction": true,
-    "partition-key": [
-      "order_id"
-    ],
-    "clustering-key": [
-      "item_id"
-    ],
-    "columns": {
-      "order_id": "TEXT",
-      "item_id": "INT",
-      "count": "INT"
-    }
-  },
-  "order_service.items": {
-    "transaction": true,
-    "partition-key": [
-      "item_id"
-    ],
-    "columns": {
-      "item_id": "INT",
-      "name": "TEXT",
-      "price": "INT"
-    }
-  }
-}
-```
-
-All the tables for Order Service are created in the `order_service` namespace.
-
+  - `credit_limit`: the maximum amount of money a lender will allow each customer to spend when using a credit card
+  - `credit_total`: the amount of money that each customer has already spent by using the credit card
 - `order_service.orders`: a table that manages order information
 - `order_service.statements`: a table that manages order statement information
 - `order_service.items`: a table that manages information of items to be ordered
@@ -135,7 +117,7 @@ The following five transactions are implemented in this sample application:
 
 ### Service Endpoints
 
-The endpoints defined in the services are as follows: 
+The endpoints defined in the services are as follows:
 
 Customer Service:
 
@@ -162,6 +144,65 @@ The `getOrder` of Order Service is for transaction #3, and The `getOrders` of Or
 
 And the `repayment` endpoint of Customer Service is for transaction #5.
 
+## Configuration
+
+[The configuration for Customer Service](customer-service/src/main/resources/application.properties) is as follows:
+
+```application.properties
+spring.datasource.driver-class-name=com.scalar.db.sql.jdbc.SqlJdbcDriver
+spring.datasource.url=jdbc:scalardb:\
+?scalar.db.sql.connection_mode=direct\
+&scalar.db.storage=multi-storage\
+&scalar.db.multi_storage.storages=cassandra,mysql\
+&scalar.db.multi_storage.storages.cassandra.storage=cassandra\
+&scalar.db.multi_storage.storages.cassandra.contact_points=cassandra\
+&scalar.db.multi_storage.storages.cassandra.username=cassandra\
+&scalar.db.multi_storage.storages.cassandra.password=cassandra\
+&scalar.db.multi_storage.storages.mysql.storage=jdbc\
+&scalar.db.multi_storage.storages.mysql.contact_points=jdbc:mysql://mysql:3306/\
+&scalar.db.multi_storage.storages.mysql.username=root\
+&scalar.db.multi_storage.storages.mysql.password=mysql\
+&scalar.db.multi_storage.namespace_mapping=customer_service:mysql,order_service:cassandra,coordinator:cassandra\
+&scalar.db.multi_storage.default_storage=mysql\
+&scalar.db.sql.default_transaction_mode=two_phase_commit_transaction\
+&scalar.db.consensus_commit.isolation_level=SERIALIZABLE
+```
+
+- `scalar.db.sql.connection_mode`: This configuration decides how to connect to ScalarDB.
+- `scalar.db.storage`: Specifying `multi-storage` is necessary to use Multi-storage Transactions in ScalarDB.
+- `scalar.db.multi_storage.storages`: Your storage names must be defined here.
+- `scalar.db.multi_storage.storages.cassandra.*`: These configurations are for the `cassandra` storage, which is one of the storage names defined in `scalar.db.multi_storage.storages`. You can configure all the `scalar.db.*` properties for the `cassandra` storage here.
+- `scalar.db.multi_storage.storages.mysql.*`: These configurations are for the `mysql` storage, which is one of the storage names defined in `scalar.db.multi_storage.storages`. You can configure all the `scalar.db.*` properties for the `mysql` storage here.
+- `scalar.db.multi_storage.namespace_mapping`: This configuration maps the namespaces to the storage. In this sample application, operations for `customer_service` namespace tables are mapped to the `mysql` storage and operations for `order_service` namespace tables are mapped to the `cassandra` storage. You can also define which storage is mapped for the `coordinator` namespace that is used in Consensus Commit transactions.
+- `scalar.db.multi_storage.default_storage`: This configuration sets the default storage that is used for operations on unmapped namespace tables.
+- `scalar.db.sql.default_transaction_mode`: Specifying `two_phase_commit_transaction` is necessary to use Two-Phase Commit Transactions mode in ScalarDB.
+- `scalar.db.consensus_commit.isolation_level`: This configuration decides the isolation level used for ConsensusCommit.
+
+For details, please see [Configuration - Multi-storage Transactions](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md#configuration).
+
+[The configuration for Order Service](order-service/src/main/resources/application.properties) is as follows:
+
+```application.properties
+spring.datasource.driver-class-name=com.scalar.db.sql.jdbc.SqlJdbcDriver
+spring.datasource.url=jdbc:scalardb:\
+?scalar.db.sql.connection_mode=direct\
+&scalar.db.storage=cassandra\
+&scalar.db.contact_points=cassandra\
+&scalar.db.username=cassandra\
+&scalar.db.password=cassandra\
+&scalar.db.sql.default_namespace_name=order_service\
+&scalar.db.sql.default_transaction_mode=two_phase_commit_transaction\
+&scalar.db.consensus_commit.isolation_level=SERIALIZABLE
+```
+
+- `scalar.db.storage`: `cassandra` is specified since this servcise uses only Cassandra as an underlying database.
+- `scalar.db.contact_points`: This configuration specifies the contact points (e.g., host) for connecting to Cassandra.
+- `scalar.db.username`: This configuration specifies the username for connecting to Cassandra.
+- `scalar.db.password`: This configuration specifies the password for connecting to Cassandra.
+- `scalar.db.sql.default_namespace_name`: This configuration sets the default namespace to `order_service`, eliminating the need for the application to specify namespaces.
+- `scalar.db.sql.default_transaction_mode`: Specifying `two_phase_commit_transaction` is necessary to use Two-Phase Commit Transactions mode in ScalarDB.
+- `scalar.db.consensus_commit.isolation_level`: This configuration decides the isolation level used for ConsensusCommit.
+
 ## Setup
 
 ### Start Cassandra and MySQL
@@ -176,19 +217,11 @@ Please note that you need to wait around more than one minute for the containers
 
 ### Load schema
 
-You then need to apply the schema with the following commands.
-To download the schema loader tool, `scalardb-schema-loader-<VERSION>.jar`, see the [Releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB and download the version that you want to use.
-
-For MySQL:
+You then need to apply the schema with the following command.
+To download the CLI tool, `scalardb-sql-cli-<VERSION>-all.jar`, see the [Releases](https://github.com/scalar-labs/scalardb-sql/releases) of ScalarDB SQL and download the version that you want to use.
 
 ```shell
-$ java -jar scalardb-schema-loader-<VERSION>.jar --config database-mysql.properties --schema-file customer-service-schema.json
-```
-
-For Cassandra:
-
-```shell
-$ java -jar scalardb-schema-loader-<VERSION>.jar --config database-cassandra.properties --schema-file order-service-schema.json --coordinator
+$ java -jar scalardb-sql-cli-<VERSION>-all.jar --config scalardb-sql.properties --file schema.sql
 ```
 
 ### Start Microservices
@@ -281,6 +314,8 @@ This order history is shown in descending order by timestamp.
 The customer's current `credit_total` is `10000`.
 Since the customer has now reached their `credit_limit`, which was shown when retrieving their information, they cannot place anymore orders.
 
+TODO: Check the stack trace
+
 ```shell
 $ ./gradlew :client:run --args="GetCustomerInfo 1"
 ...
@@ -344,6 +379,8 @@ The sequence diagram of transaction #2 is as follows:
 </p>
 
 ### 1. Start a two-phase commit transaction
+
+TODO: Update the example code and so on
 
 When a client sends `Place an order` request to Order Service, [OrderService.placeOrder()](order-service/src/main/java/sample/order/OrderService.java#L102-L103) is called, and the microservice transaction starts.
 
