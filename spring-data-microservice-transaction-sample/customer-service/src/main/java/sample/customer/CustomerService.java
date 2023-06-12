@@ -110,7 +110,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
         throw new ScalarDbNonTransientException(message);
       }
 
-      // Reduce credit_total for the customer
+      // Increase credit_total for the customer
       customerRepository.update(customer.withCreditTotal(updatedCreditTotal));
 
       return Empty.getDefaultInstance();
