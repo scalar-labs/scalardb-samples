@@ -119,7 +119,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
 
   @Override
   public void prepare(PrepareRequest request, StreamObserver<Empty> responseObserver) {
-    execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Payment", () -> {
+    execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Prepare", () -> {
       // Prepare the transaction
       customerRepository.prepare();
       return Empty.getDefaultInstance();
