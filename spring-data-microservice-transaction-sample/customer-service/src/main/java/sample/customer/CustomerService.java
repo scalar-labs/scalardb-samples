@@ -168,8 +168,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   private <T> void execNormalOperation(StreamObserver<T> responseObserver, String funcName,
       Supplier<T> task) {
     execAndReturnResponse(responseObserver, funcName,
-        // BEGIN is called before the execution of a passed task,
-        // and then PREPARE, VALIDATE, COMMIT will be executed
+        // BEGIN is called before the execution of this passed CRUD operations `task`,
+        // and then PREPARE, VALIDATE and COMMIT will be executed after the CRUD operations
         () -> customerRepository.execOneshotOperation(task)
     );
   }
