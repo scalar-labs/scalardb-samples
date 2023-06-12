@@ -20,6 +20,7 @@ import picocli.CommandLine.Command;
 @EnableRetry
 @Command(name = "order-service-server", description = "Starts Order Service server.")
 public class OrderServiceServer implements Callable<Integer>, CommandLineRunner, ExitCodeGenerator {
+
   private static final Logger logger = LoggerFactory.getLogger(OrderServiceServer.class);
 
   private static final int PORT = 10020;
@@ -32,6 +33,12 @@ public class OrderServiceServer implements Callable<Integer>, CommandLineRunner,
 
   @Autowired
   private CommandLine.IFactory factory;
+
+  public static void main(String[] args) {
+    // Invoke this application via org.springframework.boot.CommandLineRunner.run
+    int exitCode = SpringApplication.exit(SpringApplication.run(OrderServiceServer.class, args));
+    System.exit(exitCode);
+  }
 
   @Override
   public Integer call() throws Exception {
@@ -89,11 +96,5 @@ public class OrderServiceServer implements Callable<Integer>, CommandLineRunner,
   @Override
   public int getExitCode() {
     return exitCode;
-  }
-
-  public static void main(String[] args) {
-    // Invoke this application via org.springframework.boot.CommandLineRunner.run
-    int exitCode = SpringApplication.exit(SpringApplication.run(OrderServiceServer.class, args));
-    System.exit(exitCode);
   }
 }

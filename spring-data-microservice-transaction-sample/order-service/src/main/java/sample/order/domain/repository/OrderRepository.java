@@ -10,6 +10,7 @@ import sample.order.domain.model.Order;
 @Transactional
 @Repository
 public interface OrderRepository extends ScalarDbTwoPcRepository<Order, String> {
+
   List<Order> findAllByCustomerIdOrderByTimestampDesc(int customerId);
 
   default <T> T execOneshotOperation(Supplier<T> task) {

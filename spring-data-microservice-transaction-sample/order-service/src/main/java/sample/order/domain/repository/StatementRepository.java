@@ -9,5 +9,6 @@ import sample.order.domain.model.Statement;
 @Transactional
 @Repository
 public interface StatementRepository extends ScalarDbTwoPcRepository<Statement, Integer> {
+
   List<Statement> findAllByOrderId(String orderId);
 }

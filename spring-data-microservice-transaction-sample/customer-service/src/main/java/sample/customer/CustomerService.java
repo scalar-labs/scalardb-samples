@@ -35,6 +35,7 @@ import sample.rpc.ValidateRequest;
     backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
 public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase implements
     Closeable {
+
   private static final Logger logger = LoggerFactory.getLogger(CustomerService.class);
 
   @Autowired
@@ -57,16 +58,16 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
 
   @Override
   public void getCustomerInfo(
-    GetCustomerInfoRequest request, StreamObserver<GetCustomerInfoResponse> responseObserver) {
+      GetCustomerInfoRequest request, StreamObserver<GetCustomerInfoResponse> responseObserver) {
     execNormalOperation(responseObserver, "Getting customer info", () -> {
       Customer customer = getCustomer(responseObserver, request.getCustomerId());
 
       return GetCustomerInfoResponse.newBuilder()
-              .setId(customer.customerId)
-              .setName(customer.name)
-              .setCreditLimit(customer.creditLimit)
-              .setCreditTotal(customer.creditTotal)
-              .build();
+          .setId(customer.customerId)
+          .setName(customer.name)
+          .setCreditLimit(customer.creditLimit)
+          .setCreditTotal(customer.creditTotal)
+          .build();
     });
   }
 
@@ -79,7 +80,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       // Check if over repayment or not
       if (updatedCreditTotal < 0) {
         String message = String.format(
-            "Over repayment. creditTotal:%d, payment:%d", customer.creditTotal, request.getAmount());
+            "Over repayment. creditTotal:%d, payment:%d", customer.creditTotal,
+            request.getAmount());
         responseObserver.onError(
             Status.FAILED_PRECONDITION.withDescription(message).asRuntimeException());
         throw new ScalarDbNonTransientException(message);
@@ -101,7 +103,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       // Check if the credit total exceeds the credit limit after payment
       if (updatedCreditTotal > customer.creditLimit) {
         String message = String.format(
-            "Credit limit exceeded. creditTotal:%d, payment:%d", customer.creditTotal, request.getAmount());
+            "Credit limit exceeded. creditTotal:%d, payment:%d", customer.creditTotal,
+            request.getAmount());
         responseObserver.onError(
             Status.FAILED_PRECONDITION.withDescription(message).asRuntimeException());
         throw new ScalarDbNonTransientException(message);
@@ -162,7 +165,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     return customerOpt.get();
   }
 
-  private <T> void execNormalOperation(StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
+  private <T> void execNormalOperation(StreamObserver<T> responseObserver, String funcName,
+      Supplier<T> task) {
     execAndReturnResponse(responseObserver, funcName,
         // BEGIN is called before the execution of a passed task,
         // and then PREPARE, VALIDATE, COMMIT will be executed
@@ -170,24 +174,26 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     );
   }
 
-  private <T> void execTwoPcOperation(String txId, boolean isJoin, StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
-    execAndReturnResponse(responseObserver, funcName, () -> customerRepository.execBatchOperations(() -> {
-          if (isJoin) {
-            // Join the transaction
-            customerRepository.join(txId);
-          } else {
-            // Resume the transaction
-            customerRepository.resume(txId);
-          }
+  private <T> void execTwoPcOperation(String txId, boolean isJoin,
+      StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
+    execAndReturnResponse(responseObserver, funcName,
+        () -> customerRepository.execBatchOperations(() -> {
+              if (isJoin) {
+                // Join the transaction
+                customerRepository.join(txId);
+              } else {
+                // Resume the transaction
+                customerRepository.resume(txId);
+              }
 
-          // Prepare, validate and commit are supposed to be invoked later
-          T result = task.get();
+              // Prepare, validate and commit are supposed to be invoked later
+              T result = task.get();
 
-          customerRepository.suspend();
+              customerRepository.suspend();
 
-          return result;
-        }
-    ));
+              return result;
+            }
+        ));
   }
 
   @Nullable
@@ -202,7 +208,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     return null;
   }
 
-  private <T> void execAndReturnResponse(StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
+  private <T> void execAndReturnResponse(StreamObserver<T> responseObserver, String funcName,
+      Supplier<T> task) {
     try {
       T result = task.get();
 
@@ -214,8 +221,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       StatusRuntimeException sre = extractStatusRuntimeException(e);
       if (sre != null) {
         responseObserver.onError(e);
-      }
-      else {
+      } else {
         String message = funcName + " failed";
         logger.error(message, e);
         responseObserver.onError(

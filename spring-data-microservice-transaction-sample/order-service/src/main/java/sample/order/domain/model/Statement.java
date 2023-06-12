@@ -5,6 +5,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Table("statements")
 public class Statement {
+
   // This model is actually accessed via a multi-column index, but Spring Data doesn't support it
   // while @Id is always required. So, this @Id annotation is a dummy
   @Id

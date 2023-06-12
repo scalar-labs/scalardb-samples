@@ -5,6 +5,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Table("orders")
 public class Order {
+
   @Id
   public final String orderId;
   public final int customerId;

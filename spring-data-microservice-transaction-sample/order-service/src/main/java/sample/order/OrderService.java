@@ -53,6 +53,7 @@ import sample.rpc.ValidateRequest;
     maxAttempts = 8,
     backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
 public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implements Closeable {
+
   private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
   // For gRPC connection to Customer service
@@ -89,7 +90,9 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     });
   }
 
-  /** Place an order. It's a transaction that spans OrderService and CustomerService */
+  /**
+   * Place an order. It's a transaction that spans OrderService and CustomerService
+   */
   @Override
   public void placeOrder(
       PlaceOrderRequest request, StreamObserver<PlaceOrderResponse> responseObserver) {
@@ -168,7 +171,9 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     stub.rollback(RollbackRequest.newBuilder().setTransactionId(transactionId).build());
   }
 
-  /** Get Order information by order ID */
+  /**
+   * Get Order information by order ID
+   */
   @Override
   public void getOrder(GetOrderRequest request, StreamObserver<GetOrderResponse> responseObserver) {
     execNormalOperation(responseObserver, "Getting an order", () -> {
@@ -189,14 +194,17 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     });
   }
 
-  /** Get Order information by customer ID */
+  /**
+   * Get Order information by customer ID
+   */
   @Override
   public void getOrders(
       GetOrdersRequest request, StreamObserver<GetOrdersResponse> responseObserver) {
     execNormalOperation(responseObserver, "Getting an order", () -> {
       // Retrieve the order info for the specified order ID
       GetOrdersResponse.Builder builder = GetOrdersResponse.newBuilder();
-      for (Order order : orderRepository.findAllByCustomerIdOrderByTimestampDesc(request.getCustomerId())) {
+      for (Order order : orderRepository.findAllByCustomerIdOrderByTimestampDesc(
+          request.getCustomerId())) {
         builder.addOrder(getOrderResult(responseObserver, order));
       }
 
@@ -255,7 +263,8 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     return customerInfo.getName();
   }
 
-  private <T> void execNormalOperation(StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
+  private <T> void execNormalOperation(StreamObserver<T> responseObserver, String funcName,
+      Supplier<T> task) {
     execAndReturnResponse(responseObserver, funcName,
         // BEGIN is called before the execution of a passed task,
         // and then PREPARE, VALIDATE, COMMIT will be executed
@@ -274,7 +283,8 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     return null;
   }
 
-  private <T> void execAndReturnResponse(StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
+  private <T> void execAndReturnResponse(StreamObserver<T> responseObserver, String funcName,
+      Supplier<T> task) {
     try {
       T result = task.get();
 
@@ -284,8 +294,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
       StatusRuntimeException sre = extractStatusRuntimeException(e);
       if (sre != null) {
         responseObserver.onError(e);
-      }
-      else {
+      } else {
         String message = funcName + " failed";
         logger.error(message, e);
         responseObserver.onError(

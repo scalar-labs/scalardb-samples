@@ -9,6 +9,7 @@ import sample.customer.domain.model.Customer;
 @Transactional
 @Repository
 public interface CustomerRepository extends ScalarDbTwoPcRepository<Customer, Integer> {
+
   default void insertIfNotExists(Customer customer) {
     if (!findById(customer.customerId).isPresent()) {
       insert(customer);

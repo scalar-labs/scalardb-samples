@@ -10,7 +10,8 @@ public final class Utils {
 
   private static final JsonFormat JSON_FORMAT = new JsonFormat();
 
-  private Utils() {}
+  private Utils() {
+  }
 
   public static ManagedChannel getCustomerServiceChannel() {
     return NettyChannelBuilder.forAddress("localhost", 10010).usePlaintext().build();

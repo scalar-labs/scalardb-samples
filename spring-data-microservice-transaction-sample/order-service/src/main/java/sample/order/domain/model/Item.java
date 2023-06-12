@@ -5,6 +5,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Table("items")
 public class Item {
+
   @Id
   public final int itemId;
   public final String name;

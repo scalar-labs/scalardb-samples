@@ -20,7 +20,9 @@ import picocli.CommandLine.IFactory;
 @EnableScalarDbRepositories(transactionManagerRef = "scalarDbSuspendableTransactionManager")
 @EnableRetry
 @Command(name = "customer-service-server", description = "Starts Customer Service server.")
-public class CustomerServiceServer implements Callable<Integer>, CommandLineRunner, ExitCodeGenerator {
+public class CustomerServiceServer implements Callable<Integer>, CommandLineRunner,
+    ExitCodeGenerator {
+
   private static final Logger logger = LoggerFactory.getLogger(CustomerServiceServer.class);
 
   private static final int PORT = 10010;
@@ -34,6 +36,12 @@ public class CustomerServiceServer implements Callable<Integer>, CommandLineRunn
 
   @Autowired
   private IFactory factory;
+
+  public static void main(String[] args) {
+    // Invoke this application via org.springframework.boot.CommandLineRunner.run
+    int exitCode = SpringApplication.exit(SpringApplication.run(CustomerServiceServer.class, args));
+    System.exit(exitCode);
+  }
 
   @Override
   public Integer call() throws Exception {
@@ -91,11 +99,5 @@ public class CustomerServiceServer implements Callable<Integer>, CommandLineRunn
   @Override
   public int getExitCode() {
     return exitCode;
-  }
-
-  public static void main(String[] args) {
-    // Invoke this application via org.springframework.boot.CommandLineRunner.run
-    int exitCode = SpringApplication.exit(SpringApplication.run(CustomerServiceServer.class, args));
-    System.exit(exitCode);
   }
 }
