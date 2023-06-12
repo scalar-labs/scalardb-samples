@@ -2,7 +2,6 @@ package sample.customer;
 
 import com.google.protobuf.Empty;
 import com.scalar.db.sql.springdata.exception.ScalarDbNonTransientException;
-import com.scalar.db.sql.springdata.exception.ScalarDbTransientException;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
@@ -13,7 +12,6 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.NonTransientDataAccessException;
 import org.springframework.dao.TransientDataAccessException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;

@@ -281,7 +281,7 @@ Note that the order format is `<Item ID>:<Count>,<Item ID>:<Count>,...`:
 ```shell
 $ ./gradlew :client:run --args="PlaceOrder 1 1:3,2:2"
 ...
-{"order_id": "4ccdb21c-ac03-4b48-bcb7-cad57eac1e79"}
+{"order_id": "415a453b-cfee-4c48-b8f6-d103d3e10bdb"}
 ...
 ```
 
@@ -290,9 +290,10 @@ You can see that running this command shows the order ID.
 Let's check the details of the order by using the order ID:
 
 ```shell
-$ ./gradlew :client:run --args="GetOrder 4ccdb21c-ac03-4b48-bcb7-cad57eac1e79"
+$ ./gradlew :client:run --args="GetOrder 415a453b-cfee-4c48-b8f6-d103d3e10bdb"
 ...
-{"order": {"order_id": "4ccdb21c-ac03-4b48-bcb7-cad57eac1e79","timestamp": 1631605253126,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 1,"item_name": "Apple","price": 1000,"count": 3,"total": 3000},{"item_id": 2,"item_name": "Orange","price": 2000,"count": 2,"total": 4000}],"total": 7000}}
+{"order": {"order_id": "415a453b-cfee-4c48-b8f6-d103d3e10bdb","timestamp": 1686555272435,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 1,"item_name": "Apple","price": 1000,"count": $
+,"total": 3000},{"item_id": 2,"item_name": "Orange","price": 2000,"count": 2,"total": 4000}],"total": 7000}}
 ...
 ```
 
@@ -301,11 +302,13 @@ Then, let's place another order and get the order history of customer ID `1`:
 ```shell
 $ ./gradlew :client:run --args="PlaceOrder 1 5:1"
 ...
-{"order_id": "0b10db66-faa6-4323-8a7a-474e8534a7ee"}
+{"order_id": "069be075-98f7-428c-b2e0-6820693fc41b"}
 ...
 $ ./gradlew :client:run --args="GetOrders 1"
 ...
 {"order": [{"order_id": "0b10db66-faa6-4323-8a7a-474e8534a7ee","timestamp": 1631605501485,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 5,"item_name": "Melon","price": 3000,"count": 1,"total": 3000}],"total": 3000},{"order_id": "4ccdb21c-ac03-4b48-bcb7-cad57eac1e79","timestamp": 1631605253126,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 1,"item_name": "Apple","price": 1000,"count": 3,"total": 3000},{"item_id": 2,"item_name": "Orange","price": 2000,"count": 2,"total": 4000}],"total": 7000}]}
+
+{"order": [{"order_id": "069be075-98f7-428c-b2e0-6820693fc41b","timestamp": 1686555279366,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 5,"item_name": "Melon","price": 3000,"count": 1,"total": 3000}],"total": 3000},{"order_id": "415a453b-cfee-4c48-b8f6-d103d3e10bdb","timestamp": 1686555272435,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 1,"item_name": "Apple","price": 1000,"count": 3,"total": 3000},{"item_id": 2,"item_name": "Orange","price": 2000,"count": 2,"total": 4000}],"total": 7000}]}
 ...
 ```
 
@@ -323,7 +326,7 @@ $ ./gradlew :client:run --args="GetCustomerInfo 1"
 ...
 $ ./gradlew :client:run --args="PlaceOrder 1 3:1,4:1"
 ...
-io.grpc.StatusRuntimeException: FAILED_PRECONDITION: Credit limit exceeded
+io.grpc.StatusRuntimeException: FAILED_PRECONDITION: Credit limit exceeded. creditTotal:10000, payment:7500
         at io.grpc.stub.ClientCalls.toStatusRuntimeException(ClientCalls.java:271)
         at io.grpc.stub.ClientCalls.getUnchecked(ClientCalls.java:252)
         at io.grpc.stub.ClientCalls.blockingUnaryCall(ClientCalls.java:165)
@@ -353,7 +356,7 @@ $ ./gradlew :client:run --args="GetCustomerInfo 1"
 ...
 $ ./gradlew :client:run --args="PlaceOrder 1 3:1,4:1"
 ...
-{"order_id": "dd53dd9d-aaf4-41db-84b2-56951fed6425"}
+{"order_id": "b6adabd8-0a05-4109-9618-3420fea3161f"}
 ...
 ```
 
@@ -380,135 +383,163 @@ The sequence diagram of transaction #2 is as follows:
 
 ### 1. Start a two-phase commit transaction
 
-TODO: Update the example code and so on
+When a client sends `Place an order` request to Order Service, [OrderService.placeOrder()](order-service/src/main/java/sample/order/OrderService.java#L103) is called, and the microservice transaction starts.
 
-When a client sends `Place an order` request to Order Service, [OrderService.placeOrder()](order-service/src/main/java/sample/order/OrderService.java#L102-L103) is called, and the microservice transaction starts.
+At first, Order Service starts a two-phase commit transaction by calling the repository class's [executeTwoPcTransaction()](order-service/src/main/java/sample/order/OrderService.java#L97-L99):
 
-At first, Order Service starts a two-phase commit transaction with [start()](order-service/src/main/java/sample/order/OrderService.java#L109):
 ```java
-transaction = twoPhaseCommitTransactionManager.start();
+execAndReturnResponse(responseObserver, "Placing an order", () -> {
+  // Start a two-phase commit transaction
+  TwoPcResult<String> result = orderRepository.executeTwoPcTransaction(txId -> {
 ```
+
+The following `Execute CRUD operations`, `Two-phase Commit` and `Error handling` are automatically performed inside the API.
 
 ### 2. Execute CRUD operations
 
-After that, CRUD operations happen.
+After the transaction is started, the CRUD operations are executed.
 
-Order Service puts the order information to the `order_service.orders` table also the detailed information to `order_service.statements` (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L111-L129)):
+Order Service puts the order information to the `order_service.orders` table also the detailed information to `order_service.statements` (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L103-L125)):
+
 ```java
 // Put the order info into the orders table
-Order.put(transaction, orderId, request.getCustomerId(), System.currentTimeMillis());
+orderRepository.insert(order);
 
-int amount = 0;
+AtomicInteger amount = new AtomicInteger();
 for (ItemOrder itemOrder : request.getItemOrderList()) {
-  // Put the order statement into the statements table
-  Statement.put(transaction, orderId, itemOrder.getItemId(), itemOrder.getCount());
-
+  int itemId = itemOrder.getItemId();
+  int count = itemOrder.getCount();
   // Retrieve the item info from the items table
-  Optional<Item> item = Item.get(transaction, itemOrder.getItemId());
-  if (!item.isPresent()) {
+  Optional<Item> itemOpt = itemRepository.findById(itemId);
+  if (!itemOpt.isPresent()) {
+    String message = "Item not found: " + itemId;
     responseObserver.onError(
-        Status.NOT_FOUND.withDescription("Item not found").asRuntimeException());
-    return;
+        Status.NOT_FOUND.withDescription(message).asRuntimeException());
+    throw new ScalarDbNonTransientException(message);
   }
+  Item item = itemOpt.get();
 
+  int cost = item.price * count;
+  // Put the order statement into the statements table
+  statementRepository.insert(new Statement(itemId, orderId, count));
   // Calculate the total amount
-  amount += item.get().price * itemOrder.getCount();
+  amount.addAndGet(cost);
 }
 ```
 
-And, Order Service calls the `payment` gRPC endpoint of Customer Service along with the transaction ID (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L132)).
+And, Order Service calls the `payment` gRPC endpoint of Customer Service along with the transaction ID (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L128)).
 
-This endpoint first joins the transaction with [join()](customer-service/src/main/java/sample/customer/CustomerService.java#L173):
+This endpoint first joins the transaction with [join()](customer-service/src/main/java/sample/customer/CustomerService.java#L177):
 
 ```java
-twoPhaseCommitTransactionManager.join(request.getTransactionId());
+if (isJoin) {
+  // Join the transaction
+  customerRepository.join(txId);
+} else {
+  // Resume the transaction
+  customerRepository.resume(txId);
+}
+```
+
+`join()` is called via [execTwoPcOperation()](customer-service/src/main/java/sample/customer/CustomerService.java#L97):
+
+```java
+public void payment(PaymentRequest request, StreamObserver<Empty> responseObserver) {
+  execTwoPcOperation(request.getTransactionId(), true, responseObserver, "Payment", () -> {
 ```
 
 It then gets the customer information, and checks if the customer's credit total exceeds the credit limit after the payment.
-And if the check is okay, it updates the customer's credit total (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L172-L195)):
+And if the check is okay, it updates the customer's credit total (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L98-L113)):
+
 ```java
-// Join the transaction that the order service started
-transaction = twoPhaseCommitTransactionManager.join(request.getTransactionId());
+Customer customer = getCustomer(responseObserver, request.getCustomerId());
 
-// Retrieve the customer info for the customer ID
-Optional<Customer> result = Customer.get(transaction, request.getCustomerId());
-if (!result.isPresent()) {
-  responseObserver.onError(
-      Status.NOT_FOUND.withDescription("Customer not found").asRuntimeException());
-  return;
-}
-
-int updatedCreditTotal = result.get().creditTotal + request.getAmount();
-
+int updatedCreditTotal = customer.creditTotal + request.getAmount();
 // Check if the credit total exceeds the credit limit after payment
-if (updatedCreditTotal > result.get().creditLimit) {
+if (updatedCreditTotal > customer.creditLimit) {
+  String message = String.format(
+      "Credit limit exceeded. creditTotal:%d, payment:%d", customer.creditTotal, request.getAmount());
   responseObserver.onError(
-      Status.FAILED_PRECONDITION
-          .withDescription("Credit limit exceeded")
-          .asRuntimeException());
-  return;
+      Status.FAILED_PRECONDITION.withDescription(message).asRuntimeException());
+  throw new ScalarDbNonTransientException(message);
 }
 
-// Update credit_total for the customer
-Customer.updateCreditTotal(transaction, request.getCustomerId(), updatedCreditTotal);
+// Reduce credit_total for the customer
+customerRepository.update(customer.withCreditTotal(updatedCreditTotal));
 ```
 
 ### 3. Two-phase Commit
 
-Once Order Service receives that the payment succeeded, Order Service tries to commit the transaction.
+Once Order Service receives a response that the payment succeeded, Order Service tries to commit the transaction.
 
-To do that, Order Service starts with preparing the transaction.
-Order Service calls `prepare()` of its transaction object and calls the `prepare` gRPC endpoint of Customer Service (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L135-L136)):
+`executeTwoPcTransaction()` API, called on Order Service, automatically performs preparations, validations and commits of both the local Order Service and the remote Customer Serivice. These steps are executed sequentially after the above CRUD operations successfully finish. The implementations to invoke `prepare`, `validate` and `commit` gRPC endpoints of Customer Service need to be passed as parameters to the API (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L131-L138)):
+
 ```java
-transaction.prepare();
-callPrepareEndpoint(transaction.getId());
+Collections.singletonList(
+  RemotePrepareCommitPhaseOperations.createSerializable(
+    this::callPrepareEndpoint,
+    this::callValidateEndpoint,
+    this::callCommitEndpoint,
+    this::callRollbackEndpoint
+  )
+)
 ```
 
-In this endpoint, Customer Service resumes the transaction and calls `prepare()` of its transaction object, as well (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L211-L215)):
-```java
-// Resume the transaction
-transaction = twoPhaseCommitTransactionManager.resume(request.getTransactionId());
+In the `prepare` endpoint of Customer Service, it resumes and prepares the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L119-L122)):
 
-// Prepare the transaction
-transaction.prepare();
+```java
+execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Payment", () -> {
+  // Prepare the transaction
+  customerRepository.prepare();
+});
 ```
 
-Similarly, Order Service and Customer Service call `validate()` of their transaction objects (the codes are [here](order-service/src/main/java/sample/order/OrderService.java#L142-L143) and [here](customer-service/src/main/java/sample/customer/CustomerService.java#L231-L235)).
-For the details of `validate()`, see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#validate-the-transaction).
+The transaction is resumed in `execTwoPcOperation()` as shown above.
 
-When preparing (and validating) the transaction succeeds in both Order Service and Customer Service, you can commit the transaction.
-Order Service calls `commit()` of its transaction object, and then calls the `commit` gRPC endpoint of Customer Service (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L146-L147)):
+
+In the `validate` endpoint of Customer Service, it resumes and validates the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L129-L130)):
+
 ```java
-transaction.commit();
-callCommitEndpoint(transaction.getId());
+execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Validate", () -> {
+  // Validate the transaction
+  customerRepository.validate();
+  return Empty.getDefaultInstance();
+});
 ```
 
-In this endpoint, Customer Service resumes the transaction and calls `commit()` of its transaction object, as well (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L251-L255)):
-```java
-// Resume the transaction
-transaction = twoPhaseCommitTransactionManager.resume(request.getTransactionId());
+In the `commit` endpoint of Customer Service, it resumes and commits the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L129-L130)):
 
-// Commit the transaction
-transaction.commit();
+```java
+execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Commit", () -> {
+  // Commit the transaction
+  customerRepository.commit();
+  return Empty.getDefaultInstance();
+});
 ```
 
 #### Error handling
 
-When some error happens during the transaction, you need to rollback the transaction.
-In this case, Order Service calls `rollback()` of its transaction object, and then calls the `rollback` gRPC endpoint of Customer Service (the codes are [here](order-service/src/main/java/sample/order/OrderService.java#L160-L161), [here](order-service/src/main/java/sample/order/OrderService.java#L176-L177), and [here](order-service/src/main/java/sample/order/OrderService.java#L191-L192)):
+When some error happens during the transaction, the transaction will be automatically rolled back by `executeTwoPcTransaction()`. The implementation to invoke `rollback` gRPC endpoint of Customer Service also needs to be passed as a parameter to the API with other ones (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L131-L138)):
+
 ```java
-transaction.rollback();
-callRollbackEndpoint(transaction.getId());
+Collections.singletonList(
+  RemotePrepareCommitPhaseOperations.createSerializable(
+    this::callPrepareEndpoint,
+    this::callValidateEndpoint,
+    this::callCommitEndpoint,
+    this::callRollbackEndpoint
+  )
+)
 ```
 
-In this endpoint, Customer Service resumes the transaction and calls `rollback()` of its transaction object, as well (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L270-L275)):
-```java
-// Resume the transaction
-TwoPhaseCommitTransaction transaction =
-    twoPhaseCommitTransactionManager.resume(request.getTransactionId());
+In the `rollback` endpoint of Customer Service, it resumes and rolls back the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L146-L150)):
 
-// Rollback the transaction
-transaction.rollback();
+```java
+execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Rollback", () -> {
+  // Rollback the transaction
+  customerRepository.rollback();
+  return Empty.getDefaultInstance();
+});
 ```
 
 Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions) for the details of how to handle exceptions in ScalarDB.
