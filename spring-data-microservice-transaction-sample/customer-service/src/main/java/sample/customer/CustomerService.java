@@ -49,7 +49,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   }
 
   private void loadInitialData() {
-    execNormalOperation(null, "Loading initial data", () -> {
+    customerRepository.execOneshotOperation(() -> {
       customerRepository.insertIfNotExists(new Customer(1, "Yamada Taro", 10000, 0));
       customerRepository.insertIfNotExists(new Customer(2, "Yamada Hanako", 10000, 0));
       customerRepository.insertIfNotExists(new Customer(3, "Suzuki Ichiro", 10000, 0));
@@ -103,7 +103,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       // Check if the credit total exceeds the credit limit after payment
       if (updatedCreditTotal > customer.creditLimit) {
         String message = String.format(
-            "Over repayment. creditTotal:%d, payment:%d", customer.creditTotal, request.getAmount());
+            "Credit limit exceeded. creditTotal:%d, payment:%d", customer.creditTotal, request.getAmount());
         responseObserver.onError(
             Status.FAILED_PRECONDITION.withDescription(message).asRuntimeException());
         throw new ScalarDbNonTransientException(message);
@@ -164,21 +164,6 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     return customerOpt.get();
   }
 
-  private String logFailure(String funcName, Exception e) {
-    String message = funcName + " failed";
-    logger.error(message, e);
-    return message;
-  }
-
-  private String handleError(@Nullable StreamObserver<?> responseObserver, String funcName, Exception e) {
-    String message = logFailure(funcName, e);
-    if (responseObserver != null) {
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
-    }
-    return message;
-  }
-
   private <T> void execNormalOperation(StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
     execAndReturnResponse(responseObserver, funcName,
         // BEGIN is called before the execution of a passed task,
@@ -207,7 +192,19 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     ));
   }
 
-  private <T> void execAndReturnResponse(@Nullable StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
+  @Nullable
+  private StatusRuntimeException extractStatusRuntimeException(Throwable e) {
+    Throwable current = e;
+    while (current != null) {
+      if (current instanceof StatusRuntimeException) {
+        return (StatusRuntimeException) current;
+      }
+      current = current.getCause();
+    }
+    return null;
+  }
+
+  private <T> void execAndReturnResponse(StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
     try {
       T result = task.get();
 
@@ -215,24 +212,17 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
         responseObserver.onNext(result);
         responseObserver.onCompleted();
       }
-    } catch (ScalarDbNonTransientException e) {
-      String message = handleError(responseObserver, funcName, e);
-      throw new ScalarDbNonTransientException(message, e, e.getTransactionId());
-    } catch (ScalarDbTransientException e) {
-      String message = handleError(responseObserver, funcName, e);
-      throw new ScalarDbTransientException(message, e, e.getTransactionId());
-    } catch (NonTransientDataAccessException e) {
-      String message = handleError(responseObserver, funcName, e);
-      throw new ScalarDbNonTransientException(message, e, null);
-    } catch (StatusRuntimeException e) {
-      String message = logFailure(funcName, e);
-      if (responseObserver != null) {
+    } catch (Exception e) {
+      StatusRuntimeException sre = extractStatusRuntimeException(e);
+      if (sre != null) {
         responseObserver.onError(e);
       }
-      throw new ScalarDbNonTransientException(message, e, null);
-    } catch (Exception e) {
-      String message = handleError(responseObserver, funcName, e);
-      throw new ScalarDbTransientException(message, e, null);
+      else {
+        String message = funcName + " failed";
+        logger.error(message, e);
+        responseObserver.onError(
+            Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
+      }
     }
   }
 

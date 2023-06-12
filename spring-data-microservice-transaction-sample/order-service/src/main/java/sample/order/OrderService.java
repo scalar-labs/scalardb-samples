@@ -90,7 +90,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   }
 
   private void loadInitialData() {
-    execNormalOperation(null, "Loading initial data", () -> {
+    itemRepository.execOneshotOperation(() -> {
       itemRepository.insertIfNotExists(new Item(1, "Apple", 1000));
       itemRepository.insertIfNotExists(new Item(2, "Orange", 2000));
       itemRepository.insertIfNotExists(new Item(3, "Grape", 2500));
@@ -260,21 +260,6 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     return customerInfo.getName();
   }
 
-  private String logFailure(String funcName, Exception e) {
-    String message = funcName + " failed";
-    logger.error(message, e);
-    return message;
-  }
-
-  private String handleError(@Nullable StreamObserver<?> responseObserver, String funcName, Exception e) {
-    String message = logFailure(funcName, e);
-    if (responseObserver != null) {
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
-    }
-    return message;
-  }
-
   private <T> void execNormalOperation(StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
     execAndReturnResponse(responseObserver, funcName,
         // BEGIN is called before the execution of a passed task,
@@ -282,32 +267,35 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
         () -> orderRepository.execOneshotOperation(task));
   }
 
-  private <T> void execAndReturnResponse(@Nullable StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
+  @Nullable
+  private StatusRuntimeException extractStatusRuntimeException(Throwable e) {
+    Throwable current = e;
+    while (current != null) {
+      if (current instanceof StatusRuntimeException) {
+        return (StatusRuntimeException) current;
+      }
+      current = current.getCause();
+    }
+    return null;
+  }
+
+  private <T> void execAndReturnResponse(StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
     try {
       T result = task.get();
 
-      if (responseObserver != null) {
-        responseObserver.onNext(result);
-        responseObserver.onCompleted();
-      }
-    } catch (ScalarDbNonTransientException e) {
-      String message = handleError(responseObserver, funcName, e);
-      throw new ScalarDbNonTransientException(message, e, e.getTransactionId());
-    } catch (ScalarDbTransientException e) {
-      String message = handleError(responseObserver, funcName, e);
-      throw new ScalarDbTransientException(message, e, e.getTransactionId());
-    } catch (NonTransientDataAccessException e) {
-      String message = handleError(responseObserver, funcName, e);
-      throw new ScalarDbNonTransientException(message, e, null);
-    } catch (StatusRuntimeException e) {
-      String message = logFailure(funcName, e);
-      if (responseObserver != null) {
+      responseObserver.onNext(result);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      StatusRuntimeException sre = extractStatusRuntimeException(e);
+      if (sre != null) {
         responseObserver.onError(e);
       }
-      throw new ScalarDbNonTransientException(message, e, null);
-    } catch (Exception e) {
-      String message = handleError(responseObserver, funcName, e);
-      throw new ScalarDbTransientException(message, e, null);
+      else {
+        String message = funcName + " failed";
+        logger.error(message, e);
+        responseObserver.onError(
+            Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
+      }
     }
   }
 

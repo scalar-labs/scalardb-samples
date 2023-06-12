@@ -1,6 +1,7 @@
 package sample.order.domain.repository;
 
 import com.scalar.db.sql.springdata.twopc.ScalarDbTwoPcRepository;
+import java.util.function.Supplier;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import sample.order.domain.model.Item;
@@ -12,5 +13,14 @@ public interface ItemRepository extends ScalarDbTwoPcRepository<Item, Integer> {
     if (!findById(item.itemId).isPresent()) {
       insert(item);
     }
+  }
+
+  default <T> T execOneshotOperation(Supplier<T> task) {
+    begin();
+    T result = task.get();
+    prepare();
+    validate();
+    commit();
+    return result;
   }
 }
