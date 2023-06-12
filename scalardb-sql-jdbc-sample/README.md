@@ -17,7 +17,14 @@ You must either add these properties in `~/.gradle/gradle.properties` or specify
 
 ```shell
 $ ./gradlew run ... -Pgpr.user=<YOUR_GITHUB_USERNAME> -Pgpr.key=<YOUR_PERSONAL_ACCESS_TOKEN>
-````
+```
+
+Or you can also use environment variables, `USERNAME` for your GitHub username and `TOKEN` for your personal access token.
+
+```shell
+$ export USERNAME=<YOUR_GITHUB_USERNAME>
+$ export TOKEN=<YOUR_PERSONAL_ACCESS_TOKEN>
+```
 
 For more details, see [Install - ScalarDB SQL](https://github.com/scalar-labs/scalardb-sql#install).
 
