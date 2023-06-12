@@ -27,7 +27,8 @@ public class OrderServiceServer implements Callable<Integer>, CommandLineRunner,
 
   @Autowired
   private OrderService service;
-  private Server server;
+
+  private volatile Server server;
 
   private int exitCode;
 

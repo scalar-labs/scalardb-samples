@@ -30,7 +30,7 @@ public class CustomerServiceServer implements Callable<Integer>, CommandLineRunn
   @Autowired
   private CustomerService service;
 
-  private Server server;
+  private volatile Server server;
 
   private int exitCode;
 
