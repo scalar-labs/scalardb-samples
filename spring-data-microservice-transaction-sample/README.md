@@ -402,7 +402,7 @@ The following `Execute CRUD operations`, `Two-phase Commit` and `Error handling`
 
 ### 2. Execute CRUD operations
 
-After the transaction is started, the CRUD operations are executed.
+After the transaction is started, the CRUD operations are executed by `executeTwoPcTransaction()`.
 
 Order Service puts the order information to the `order_service.orders` table also the detailed information to `order_service.statements` (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L106-L128)):
 
@@ -490,6 +490,8 @@ Collections.singletonList(
 )
 ```
 
+![Sequence Diagram of High Level 2PC API](images/seq-diagram-high-level-2pc-api.png)
+
 In the `prepare` endpoint of Customer Service, it resumes and prepares the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L122-L126)):
 
 ```java
@@ -522,7 +524,7 @@ execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Commit"
 });
 ```
 
-#### Error handling
+### Error handling
 
 When some error happens during the transaction, the transaction will be automatically rolled back by `executeTwoPcTransaction()`. The implementation to invoke `rollback` gRPC endpoint of Customer Service also needs to be passed as a parameter to the API with other ones (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L134-L141)):
 
