@@ -15,13 +15,4 @@ public interface ItemRepository extends ScalarDbTwoPcRepository<Item, Integer> {
       insert(item);
     }
   }
-
-  default <T> T execOneshotOperation(Supplier<T> task) {
-    begin();
-    T result = task.get();
-    prepare();
-    validate();
-    commit();
-    return result;
-  }
 }

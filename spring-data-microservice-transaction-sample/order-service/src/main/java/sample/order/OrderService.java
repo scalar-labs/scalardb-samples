@@ -80,7 +80,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   }
 
   private void loadInitialData() {
-    itemRepository.execOneshotOperation(() -> {
+    orderRepository.execOneshotOperation(() -> {
       itemRepository.insertIfNotExists(new Item(1, "Apple", 1000));
       itemRepository.insertIfNotExists(new Item(2, "Orange", 2000));
       itemRepository.insertIfNotExists(new Item(3, "Grape", 2500));
@@ -266,8 +266,8 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   private <T> void execNormalOperation(StreamObserver<T> responseObserver, String funcName,
       Supplier<T> task) {
     execAndReturnResponse(responseObserver, funcName,
-        // BEGIN is called before the execution of a passed task,
-        // and then PREPARE, VALIDATE, COMMIT will be executed
+        // BEGIN is called before the execution of this passed CRUD operations `task`,
+        // and then PREPARE, VALIDATE and COMMIT will be executed after the CRUD operations
         () -> orderRepository.execOneshotOperation(task));
   }
 
