@@ -21,6 +21,13 @@ You must either add these properties in `~/.gradle/gradle.properties` or specify
 $ ./gradlew run ... -Pgpr.user=<YOUR_GITHUB_USERNAME> -Pgpr.key=<YOUR_PERSONAL_ACCESS_TOKEN>
 ````
 
+Or you can also use environment variables, `USERNAME` for your GitHub username and `TOKEN` for your personal access token.
+
+```shell
+$ export USERNAME=<YOUR_GITHUB_USERNAME>
+$ export TOKEN=<YOUR_PERSONAL_ACCESS_TOKEN>
+```
+
 For more details, please see [Install - ScalarDB SQL](https://github.com/scalar-labs/scalardb-sql#install).
 
 ## Sample application
@@ -377,15 +384,13 @@ Transaction #2 (Placing an order) achieves the microservice transaction, so we f
 
 The sequence diagram of transaction #2 is as follows:
 
-<p align="center">
-<img src="images/sequence_diagram.png" width="400" />
-</p>
+![Sequence Diagram](images/sequence_diagram.png)
 
 ### 1. Start a two-phase commit transaction
 
-When a client sends `Place an order` request to Order Service, [OrderService.placeOrder()](order-service/src/main/java/sample/order/OrderService.java#L103) is called, and the microservice transaction starts.
+When a client sends `Place an order` request to Order Service, [OrderService.placeOrder()](order-service/src/main/java/sample/order/OrderService.java#L97) is called, and the microservice transaction starts.
 
-At first, Order Service starts a two-phase commit transaction by calling the repository class's [executeTwoPcTransaction()](order-service/src/main/java/sample/order/OrderService.java#L97-L99):
+At first, Order Service starts a two-phase commit transaction by calling the repository class's [executeTwoPcTransaction()](order-service/src/main/java/sample/order/OrderService.java#L100-L102):
 
 ```java
 execAndReturnResponse(responseObserver, "Placing an order", () -> {
@@ -399,7 +404,7 @@ The following `Execute CRUD operations`, `Two-phase Commit` and `Error handling`
 
 After the transaction is started, the CRUD operations are executed.
 
-Order Service puts the order information to the `order_service.orders` table also the detailed information to `order_service.statements` (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L103-L125)):
+Order Service puts the order information to the `order_service.orders` table also the detailed information to `order_service.statements` (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L106-L128)):
 
 ```java
 // Put the order info into the orders table
@@ -427,9 +432,9 @@ for (ItemOrder itemOrder : request.getItemOrderList()) {
 }
 ```
 
-And, Order Service calls the `payment` gRPC endpoint of Customer Service along with the transaction ID (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L128)).
+And, Order Service calls the `payment` gRPC endpoint of Customer Service along with the transaction ID (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L131)).
 
-This endpoint first joins the transaction with [join()](customer-service/src/main/java/sample/customer/CustomerService.java#L177):
+This endpoint first joins the transaction with [join()](customer-service/src/main/java/sample/customer/CustomerService.java#L183):
 
 ```java
 if (isJoin) {
@@ -441,7 +446,7 @@ if (isJoin) {
 }
 ```
 
-`join()` is called via [execTwoPcOperation()](customer-service/src/main/java/sample/customer/CustomerService.java#L97):
+`join()` is called via [execTwoPcOperation()](customer-service/src/main/java/sample/customer/CustomerService.java#L99):
 
 ```java
 public void payment(PaymentRequest request, StreamObserver<Empty> responseObserver) {
@@ -449,7 +454,7 @@ public void payment(PaymentRequest request, StreamObserver<Empty> responseObserv
 ```
 
 It then gets the customer information, and checks if the customer's credit total exceeds the credit limit after the payment.
-And if the check is okay, it updates the customer's credit total (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L98-L113)):
+And if the check is okay, it updates the customer's credit total (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L100-L114)):
 
 ```java
 Customer customer = getCustomer(responseObserver, request.getCustomerId());
@@ -472,7 +477,7 @@ customerRepository.update(customer.withCreditTotal(updatedCreditTotal));
 
 Once Order Service receives a response that the payment succeeded, Order Service tries to commit the transaction.
 
-`executeTwoPcTransaction()` API, called on Order Service, automatically performs preparations, validations and commits of both the local Order Service and the remote Customer Serivice. These steps are executed sequentially after the above CRUD operations successfully finish. The implementations to invoke `prepare`, `validate` and `commit` gRPC endpoints of Customer Service need to be passed as parameters to the API (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L131-L138)):
+`executeTwoPcTransaction()` API, called on Order Service, automatically performs preparations, validations and commits of both the local Order Service and the remote Customer Serivice. These steps are executed sequentially after the above CRUD operations successfully finish. The implementations to invoke `prepare`, `validate` and `commit` gRPC endpoints of Customer Service need to be passed as parameters to the API (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L134-L141)):
 
 ```java
 Collections.singletonList(
@@ -485,7 +490,7 @@ Collections.singletonList(
 )
 ```
 
-In the `prepare` endpoint of Customer Service, it resumes and prepares the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L119-L122)):
+In the `prepare` endpoint of Customer Service, it resumes and prepares the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L122-L126)):
 
 ```java
 execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Payment", () -> {
@@ -497,7 +502,7 @@ execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Payment
 The transaction is resumed in `execTwoPcOperation()` as shown above.
 
 
-In the `validate` endpoint of Customer Service, it resumes and validates the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L129-L130)):
+In the `validate` endpoint of Customer Service, it resumes and validates the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L131-L135)):
 
 ```java
 execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Validate", () -> {
@@ -507,7 +512,7 @@ execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Validat
 });
 ```
 
-In the `commit` endpoint of Customer Service, it resumes and commits the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L129-L130)):
+In the `commit` endpoint of Customer Service, it resumes and commits the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L140-L144)):
 
 ```java
 execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Commit", () -> {
@@ -519,7 +524,7 @@ execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Commit"
 
 #### Error handling
 
-When some error happens during the transaction, the transaction will be automatically rolled back by `executeTwoPcTransaction()`. The implementation to invoke `rollback` gRPC endpoint of Customer Service also needs to be passed as a parameter to the API with other ones (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L131-L138)):
+When some error happens during the transaction, the transaction will be automatically rolled back by `executeTwoPcTransaction()`. The implementation to invoke `rollback` gRPC endpoint of Customer Service also needs to be passed as a parameter to the API with other ones (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L134-L141)):
 
 ```java
 Collections.singletonList(
@@ -532,7 +537,7 @@ Collections.singletonList(
 )
 ```
 
-In the `rollback` endpoint of Customer Service, it resumes and rolls back the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L146-L150)):
+In the `rollback` endpoint of Customer Service, it resumes and rolls back the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L149-L153)):
 
 ```java
 execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Rollback", () -> {
