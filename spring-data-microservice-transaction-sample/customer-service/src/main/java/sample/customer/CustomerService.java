@@ -213,10 +213,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     try {
       T result = task.get();
 
-      if (responseObserver != null) {
-        responseObserver.onNext(result);
-        responseObserver.onCompleted();
-      }
+      responseObserver.onNext(result);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       StatusRuntimeException sre = extractStatusRuntimeException(e);
       if (sre != null) {
