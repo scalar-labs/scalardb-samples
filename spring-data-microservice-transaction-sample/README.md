@@ -39,7 +39,7 @@ This tutorial describes how to create a Spring Boot sample application for Micro
 There are two microservices called *Customer Service* and *Order Service* based on the [*Database-per-service* pattern](https://microservices.io/patterns/data/database-per-service.html) in this sample application.
 
 The Customer Service manages customers' information including credit card information like a credit limit and a credit total.
-Order Service is responsible for order operations like placing an order and getting order histories.
+The Order Service is responsible for order operations like placing an order and getting order histories.
 Each service has gRPC endpoints. Clients call the endpoints, and the services call the endpoints each other as well.
 The Customer Service and Order Service use MySQL and Cassandra through ScalarDB, respectively.
 
