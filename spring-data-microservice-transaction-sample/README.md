@@ -41,7 +41,7 @@ There are two microservices called *Customer Service* and *Order Service* based 
 Customer Service manages customers' information including credit card information like a credit limit and a credit total.
 Order Service is responsible for order operations like placing an order and getting order histories.
 Each service has gRPC endpoints. Clients call the endpoints, and the services call the endpoints each other as well.
-Customer Service and Order Service uses MySQL and Cassandra through ScalarDB, respectively.
+The Customer Service and Order Service use MySQL and Cassandra through ScalarDB, respectively.
 
 ![Overview](images/overview.png)
 
