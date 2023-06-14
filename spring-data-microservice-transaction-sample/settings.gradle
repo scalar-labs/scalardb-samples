@@ -1,4 +1,4 @@
-rootProject.name = 'microservice-transaction-sample'
+rootProject.name = 'spring-data-microservice-transaction-sample'
 include 'customer-service'
 include 'order-service'
 include 'rpc'
