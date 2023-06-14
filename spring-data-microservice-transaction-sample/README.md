@@ -324,8 +324,6 @@ This order history is shown in descending order by timestamp.
 The customer's current `credit_total` is `10000`.
 Since the customer has now reached their `credit_limit`, which was shown when retrieving their information, they cannot place anymore orders.
 
-TODO: Check the stack trace
-
 ```shell
 $ ./gradlew :client:run --args="GetCustomerInfo 1"
 ...
