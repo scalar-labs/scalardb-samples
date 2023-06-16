@@ -36,7 +36,7 @@ For more details, please see [Install - ScalarDB SQL](https://github.com/scalar-
 
 This tutorial describes how to create a Spring Boot sample application for Microservice Transaction for the same use case as [ScalarDB Sample](https://github.com/scalar-labs/scalardb-samples/tree/main/scalardb-sample) but by using Two-phase Commit Transactions in ScalarDB.
 
-There are two microservices called *Customer Service* and *Order Service* based on the [*Database-per-service* pattern](https://microservices.io/patterns/data/database-per-service.html) in this sample application.
+There are two microservices called the *Customer Service* and the *Order Service* based on the [*Database-per-service* pattern](https://microservices.io/patterns/data/database-per-service.html) in this sample application.
 
 The Customer Service manages customers' information including credit card information like a credit limit and a credit total.
 The Order Service is responsible for order operations like placing an order and getting order histories.
