@@ -55,7 +55,7 @@ Also, note that application-specific error handling, authentication processing, 
 Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#handle-exceptions) for the details of how to handle exceptions in ScalarDB.
 
 Additionally, you assume each service has one container in this sample application to avoid considering request routing between the services.
-However, for production, because each service typically has multiple servers (or hosts) for scalability and availability, you should consider request routing between the services in Two-phase Commit Transactions.
+However, for production, because each service typically has multiple servers (or hosts) for scalability and availability, please consider to use ScalarDB Cluster which easily addresses request routing between the services in Two-phase Commit Transactions.
 Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#request-routing-in-two-phase-commit-transactions) for the details of Request Routing in Two-phase Commit Transactions.
 
 ### Schema
