@@ -500,7 +500,7 @@ execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Payment
 The transaction is resumed in `execTwoPcOperation()` as shown above.
 
 
-In the `validate` endpoint of Customer Service, it resumes and validates the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L131-L135)):
+In the `validate` endpoint of Customer Service, the microservice resumes and validates the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L131-L135)):
 
 ```java
 execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Validate", () -> {
