@@ -34,7 +34,7 @@ For more details, see [Install - ScalarDB SQL](https://github.com/scalar-labs/sc
 
 ### Overview
 
-This tutorial describes how to create a Spring Boot sample application for Microservice Transaction for the same use case as [ScalarDB Sample](https://github.com/scalar-labs/scalardb-samples/tree/main/scalardb-sample) but by using Two-phase Commit Transactions in ScalarDB.
+This tutorial describes how to create a Spring Boot sample application for microservice transactions for the same use case as [ScalarDB Sample](https://github.com/scalar-labs/scalardb-samples/tree/main/scalardb-sample) but by using Two-phase Commit Transactions in ScalarDB.
 
 There are two microservices called the *Customer Service* and the *Order Service* based on the [*Database-per-service* pattern](https://microservices.io/patterns/data/database-per-service.html) in this sample application.
 
