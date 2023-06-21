@@ -2,7 +2,7 @@
 
 This tutorial describes how to create a sample Spring Boot application for microservice transactions by using Spring Data JDBC for ScalarDB with Two-phase Commit Transactions in ScalarDB.
 
-For details, please see [Two-phase Commit Transactions in ScalarDB](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md) and [Guide of Spring Data JDBC for ScalarDB](https://github.com/scalar-labs/scalardb-sql/blob/main/docs/spring-data-guide.md).
+For details about these features, see [Two-phase Commit Transactions](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md) and [Guide of Spring Data JDBC for ScalarDB](https://github.com/scalar-labs/scalardb-sql/blob/main/docs/spring-data-guide.md).
 
 ## Prerequisites
 
