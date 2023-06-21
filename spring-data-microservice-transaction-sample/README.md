@@ -510,7 +510,7 @@ execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Validat
 });
 ```
 
-In the `commit` endpoint of Customer Service, it resumes and commits the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L140-L144)):
+In the `commit` endpoint of Customer Service, the microservice resumes and commits the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L140-L144)):
 
 ```java
 execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Commit", () -> {
