@@ -1,4 +1,4 @@
-# Microservice Transaction Sample
+# Sample application of Spring Data JDBC for ScalarDB with Microservice Transactions
 
 This tutorial describes how to create a sample Spring Boot application for microservice transactions by using Spring Data JDBC for ScalarDB with Two-phase Commit Transactions in ScalarDB.
 
