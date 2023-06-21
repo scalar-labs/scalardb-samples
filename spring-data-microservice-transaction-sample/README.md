@@ -535,7 +535,7 @@ Collections.singletonList(
 )
 ```
 
-In the `rollback` endpoint of Customer Service, it resumes and rolls back the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L149-L153)):
+In the `rollback` endpoint of Customer Service, the microservice resumes and rolls back the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L149-L153)):
 
 ```java
 execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Rollback", () -> {
