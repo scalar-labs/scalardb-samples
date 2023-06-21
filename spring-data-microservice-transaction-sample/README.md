@@ -522,7 +522,7 @@ execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Commit"
 
 ### Error handling
 
-When some error happens during the transaction, the transaction will be automatically rolled back by `executeTwoPcTransaction()`. The implementation to invoke `rollback` gRPC endpoint of Customer Service also needs to be passed as a parameter to the API with other ones (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L134-L141)):
+If an error occurs during the transaction, the transaction will be automatically rolled back by using `executeTwoPcTransaction()`. The implementation to invoke the `rollback` gRPC endpoint of Customer Service also needs to be passed as a parameter to the API with other ones (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L134-L141)):
 
 ```java
 Collections.singletonList(
