@@ -28,7 +28,7 @@ $ export USERNAME=<YOUR_GITHUB_USERNAME>
 $ export TOKEN=<YOUR_PERSONAL_ACCESS_TOKEN>
 ```
 
-For more details, please see [Install - ScalarDB SQL](https://github.com/scalar-labs/scalardb-sql#install).
+For more details, see [Install - ScalarDB SQL](https://github.com/scalar-labs/scalardb-sql#install).
 
 ## Sample application
 
