@@ -41,7 +41,7 @@ There are two microservices called the *Customer Service* and the *Order Service
 The Customer Service manages customers' information including credit card information like a credit limit and a credit total.
 The Order Service is responsible for order operations like placing an order and getting order histories.
 Each service has gRPC endpoints. Clients call the endpoints, and the services call the endpoints each other as well.
-The Customer Service and Order Service use MySQL and Cassandra through ScalarDB, respectively.
+The Customer Service and the Order Service use MySQL and Cassandra through ScalarDB, respectively.
 
 ![Overview](images/overview.png)
 
@@ -116,11 +116,11 @@ The Entity Relationship Diagram for the schema is as follows:
 
 The following five transactions are implemented in this sample application:
 
-1. Getting customer information. It is a transaction in Customer Service
-2. Placing an order (checks if the cost of the order is below the credit limit, then records order history and updates the `credit_total` if the check passes). It is a transaction that spans Order Service and Customer Service.
-3. Getting order information by order ID. It is a transaction in Order Service
-4. Getting order information by customer ID. It is a transaction in Order Service
-5. Repayment (reduces the amount in the `credit_total`). It is a transaction in Customer Service.
+1. Getting customer information. It is a transaction in the Customer Service
+2. Placing an order (checks if the cost of the order is below the credit limit, then records order history and updates the `credit_total` if the check passes). It is a transaction that spans the Order Service and the Customer Service.
+3. Getting order information by order ID. It is a transaction in the Order Service
+4. Getting order information by customer ID. It is a transaction in the Order Service
+5. Repayment (reduces the amount in the `credit_total`). It is a transaction in the Customer Service.
 
 ### Service Endpoints
 
@@ -142,14 +142,14 @@ Order Service:
 - getOrder
 - getOrders
 
-The `getCustomerInfo` endpoint of Customer Service is for transaction #1 (Getting customer information).
+The `getCustomerInfo` endpoint of the Customer Service is for transaction #1 (Getting customer information).
 
-And the `placeOrder` endpoint of Order Service and the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of Customer Service are for transaction #2 (Placing an order) that spans Order Service and Customer Service.
+And the `placeOrder` endpoint of the Order Service and the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service are for transaction #2 (Placing an order) that spans the Order Service and the Customer Service.
 The Order Service starts the transaction with the `placeOrder` endpoint, which calls the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
 
-The `getOrder` of Order Service is for transaction #3, and The `getOrders` of Order Service is for transaction #4.
+The `getOrder` of the Order Service is for transaction #3, and The `getOrders` of the Order Service is for transaction #4.
 
-And the `repayment` endpoint of Customer Service is for transaction #5.
+And the `repayment` endpoint of the Customer Service is for transaction #5.
 
 ## Configuration
 
@@ -384,9 +384,9 @@ The sequence diagram of transaction #2 is as follows:
 
 ### 1. Start a two-phase commit transaction
 
-When a client sends `Place an order` request to Order Service, [OrderService.placeOrder()](order-service/src/main/java/sample/order/OrderService.java#L97) is called, and the microservice transaction starts.
+When a client sends `Place an order` request to the Order Service, [OrderService.placeOrder()](order-service/src/main/java/sample/order/OrderService.java#L97) is called, and the microservice transaction starts.
 
-At first, Order Service starts a two-phase commit transaction by calling the repository class's [executeTwoPcTransaction()](order-service/src/main/java/sample/order/OrderService.java#L100-L102):
+At first, the Order Service starts a two-phase commit transaction by calling the repository class's [executeTwoPcTransaction()](order-service/src/main/java/sample/order/OrderService.java#L100-L102):
 
 ```java
 execAndReturnResponse(responseObserver, "Placing an order", () -> {
@@ -400,7 +400,7 @@ The following `Execute CRUD operations`, `Two-phase Commit` and `Error handling`
 
 After the transaction is started, the CRUD operations are executed by `executeTwoPcTransaction()`.
 
-Order Service puts the order information to the `order_service.orders` table also the detailed information to `order_service.statements` (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L106-L128)):
+The Order Service puts the order information to the `order_service.orders` table also the detailed information to `order_service.statements` (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L106-L128)):
 
 ```java
 // Put the order info into the orders table
@@ -473,7 +473,7 @@ customerRepository.update(customer.withCreditTotal(updatedCreditTotal));
 
 Once the Order Service receives a response that the payment succeeded, the Order Service tries to commit the transaction.
 
-`executeTwoPcTransaction()` API, called on Order Service, automatically performs preparations, validations and commits of both the local Order Service and the remote Customer Serivice. These steps are executed sequentially after the above CRUD operations successfully finish. The implementations to invoke `prepare`, `validate` and `commit` gRPC endpoints of Customer Service need to be passed as parameters to the API (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L134-L141)):
+`executeTwoPcTransaction()` API, called on the Order Service, automatically performs preparations, validations and commits of both the local Order Service and the remote Customer Serivice. These steps are executed sequentially after the above CRUD operations successfully finish. The implementations to invoke `prepare`, `validate` and `commit` gRPC endpoints of the Customer Service need to be passed as parameters to the API (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L134-L141)):
 
 ```java
 Collections.singletonList(
@@ -488,7 +488,7 @@ Collections.singletonList(
 
 ![Sequence Diagram of High Level 2PC API](images/seq-diagram-high-level-2pc-api.png)
 
-In the `prepare` endpoint of Customer Service, it resumes and prepares the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L122-L126)):
+In the `prepare` endpoint of the Customer Service, it resumes and prepares the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L122-L126)):
 
 ```java
 execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Payment", () -> {
