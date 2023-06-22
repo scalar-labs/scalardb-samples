@@ -1,0 +1,46 @@
+version: "3.5"
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+    container_name: "mysql-1"
+    ports:
+      - "3306:3306"
+    networks:
+      - sample-network
+  cassandra:
+    image: cassandra:3.11
+    container_name: "cassandra-1"
+    ports:
+      - "9042:9042"
+    networks:
+      - sample-network
+  customer-service:
+    image: sample-customer-service:1.0
+    container_name: "customer-service-1"
+    depends_on:
+      - mysql
+      - cassandra
+    entrypoint: /bin/bash
+    command: ./bin/customer-service
+    restart: "always"
+    ports:
+      - "10010:10010"
+    networks:
+      - sample-network
+  order-service:
+    image: sample-order-service:1.0
+    container_name: "order-service-1"
+    depends_on:
+      - cassandra
+    entrypoint: /bin/bash
+    command: ./bin/order-service
+    restart: "always"
+    ports:
+      - "10020:10020"
+    networks:
+      - sample-network
+networks:
+  sample-network:
+    name: sample-network
