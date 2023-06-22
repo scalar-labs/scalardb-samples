@@ -145,7 +145,7 @@ Order Service:
 The `getCustomerInfo` endpoint of Customer Service is for transaction #1 (Getting customer information).
 
 And the `placeOrder` endpoint of Order Service and the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of Customer Service are for transaction #2 (Placing an order) that spans Order Service and Customer Service.
-Order Service starts the transaction with the `placeOrder` endpoint, which calls the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of Customer Service.
+The Order Service starts the transaction with the `placeOrder` endpoint, which calls the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
 
 The `getOrder` of Order Service is for transaction #3, and The `getOrders` of Order Service is for transaction #4.
 
@@ -153,7 +153,7 @@ And the `repayment` endpoint of Customer Service is for transaction #5.
 
 ## Configuration
 
-[The configuration for Customer Service](customer-service/src/main/resources/application.properties) is as follows:
+[The configuration for the Customer Service](customer-service/src/main/resources/application.properties) is as follows:
 
 ```application.properties
 spring.datasource.driver-class-name=com.scalar.db.sql.jdbc.SqlJdbcDriver
@@ -187,7 +187,7 @@ spring.datasource.url=jdbc:scalardb:\
 
 For details, please see [Configuration - Multi-storage Transactions](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md#configuration).
 
-[The configuration for Order Service](order-service/src/main/resources/application.properties) is as follows:
+[The configuration for the Order Service](order-service/src/main/resources/application.properties) is as follows:
 
 ```application.properties
 spring.datasource.driver-class-name=com.scalar.db.sql.jdbc.SqlJdbcDriver
@@ -428,7 +428,7 @@ for (ItemOrder itemOrder : request.getItemOrderList()) {
 }
 ```
 
-And, Order Service calls the `payment` gRPC endpoint of Customer Service along with the transaction ID (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L131)).
+And, the Order Service calls the `payment` gRPC endpoint of the Customer Service along with the transaction ID (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L131)).
 
 This endpoint first joins the transaction with [join()](customer-service/src/main/java/sample/customer/CustomerService.java#L183):
 
@@ -471,7 +471,7 @@ customerRepository.update(customer.withCreditTotal(updatedCreditTotal));
 
 ### 3. Two-phase Commit
 
-Once Order Service receives a response that the payment succeeded, Order Service tries to commit the transaction.
+Once the Order Service receives a response that the payment succeeded, the Order Service tries to commit the transaction.
 
 `executeTwoPcTransaction()` API, called on Order Service, automatically performs preparations, validations and commits of both the local Order Service and the remote Customer Serivice. These steps are executed sequentially after the above CRUD operations successfully finish. The implementations to invoke `prepare`, `validate` and `commit` gRPC endpoints of Customer Service need to be passed as parameters to the API (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L134-L141)):
 
@@ -500,7 +500,7 @@ execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Payment
 The transaction is resumed in `execTwoPcOperation()` as shown above.
 
 
-In the `validate` endpoint of Customer Service, the microservice resumes and validates the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L131-L135)):
+In the `validate` endpoint of the Customer Service, the microservice resumes and validates the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L131-L135)):
 
 ```java
 execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Validate", () -> {
@@ -510,7 +510,7 @@ execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Validat
 });
 ```
 
-In the `commit` endpoint of Customer Service, the microservice resumes and commits the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L140-L144)):
+In the `commit` endpoint of the Customer Service, the microservice resumes and commits the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L140-L144)):
 
 ```java
 execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Commit", () -> {
@@ -522,7 +522,7 @@ execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Commit"
 
 ### Error handling
 
-If an error occurs during the transaction, the transaction will be automatically rolled back by using `executeTwoPcTransaction()`. The implementation to invoke the `rollback` gRPC endpoint of Customer Service also needs to be passed as a parameter to the API with other ones (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L134-L141)):
+If an error occurs during the transaction, the transaction will be automatically rolled back by using `executeTwoPcTransaction()`. The implementation to invoke the `rollback` gRPC endpoint of the Customer Service also needs to be passed as a parameter to the API with other ones (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L134-L141)):
 
 ```java
 Collections.singletonList(
@@ -535,7 +535,7 @@ Collections.singletonList(
 )
 ```
 
-In the `rollback` endpoint of Customer Service, the microservice resumes and rolls back the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L149-L153)):
+In the `rollback` endpoint of the Customer Service, the microservice resumes and rolls back the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L149-L153)):
 
 ```java
 execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Rollback", () -> {
