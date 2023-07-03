@@ -72,7 +72,6 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
         }));
   }
 
-  // TODO: Try @Transactional
   @Override
   public void repayment(RepaymentRequest request, StreamObserver<Empty> responseObserver) {
     execAndReturnResponse(responseObserver, "Repayment", () ->
