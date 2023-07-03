@@ -48,7 +48,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   }
 
   private void loadInitialData() {
-    customerRepository.execOneshotOperation(() -> {
+    customerRepository.executeOneshotOperations(() -> {
       customerRepository.insertIfNotExists(new Customer(1, "Yamada Taro", 10000, 0));
       customerRepository.insertIfNotExists(new Customer(2, "Yamada Hanako", 10000, 0));
       customerRepository.insertIfNotExists(new Customer(3, "Suzuki Ichiro", 10000, 0));
@@ -59,96 +59,97 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   @Override
   public void getCustomerInfo(
       GetCustomerInfoRequest request, StreamObserver<GetCustomerInfoResponse> responseObserver) {
-    execNormalOperation(responseObserver, "Getting customer info", () -> {
-      Customer customer = getCustomer(responseObserver, request.getCustomerId());
+    execAndReturnResponse(responseObserver, "Getting customer info", () ->
+        customerRepository.executeOneshotOperations(() -> {
+          Customer customer = getCustomer(responseObserver, request.getCustomerId());
 
-      return GetCustomerInfoResponse.newBuilder()
-          .setId(customer.customerId)
-          .setName(customer.name)
-          .setCreditLimit(customer.creditLimit)
-          .setCreditTotal(customer.creditTotal)
-          .build();
-    });
+          return GetCustomerInfoResponse.newBuilder()
+              .setId(customer.customerId)
+              .setName(customer.name)
+              .setCreditLimit(customer.creditLimit)
+              .setCreditTotal(customer.creditTotal)
+              .build();
+        }));
   }
 
+  // TODO: Try @Transactional
   @Override
   public void repayment(RepaymentRequest request, StreamObserver<Empty> responseObserver) {
-    execNormalOperation(responseObserver, "Repayment", () -> {
-      Customer customer = getCustomer(responseObserver, request.getCustomerId());
+    execAndReturnResponse(responseObserver, "Repayment", () ->
+        customerRepository.executeOneshotOperations(() -> {
+              Customer customer = getCustomer(responseObserver, request.getCustomerId());
 
-      int updatedCreditTotal = customer.creditTotal - request.getAmount();
-      // Check if over repayment or not
-      if (updatedCreditTotal < 0) {
-        String message = String.format(
-            "Over repayment. creditTotal:%d, payment:%d", customer.creditTotal,
-            request.getAmount());
-        responseObserver.onError(
-            Status.FAILED_PRECONDITION.withDescription(message).asRuntimeException());
-        throw new ScalarDbNonTransientException(message);
-      }
+              int updatedCreditTotal = customer.creditTotal - request.getAmount();
+              // Check if over repayment or not
+              if (updatedCreditTotal < 0) {
+                String message = String.format(
+                    "Over repayment. creditTotal:%d, payment:%d", customer.creditTotal,
+                    request.getAmount());
+                responseObserver.onError(
+                    Status.FAILED_PRECONDITION.withDescription(message).asRuntimeException());
+                throw new ScalarDbNonTransientException(message);
+              }
 
-      // Reduce credit_total for the customer
-      customerRepository.update(customer.withCreditTotal(updatedCreditTotal));
+              // Reduce credit_total for the customer
+              customerRepository.update(customer.withCreditTotal(updatedCreditTotal));
 
-      return Empty.getDefaultInstance();
-    });
+              return Empty.getDefaultInstance();
+            }
+        ));
   }
 
   @Override
   public void payment(PaymentRequest request, StreamObserver<Empty> responseObserver) {
-    execTwoPcOperation(request.getTransactionId(), true, responseObserver, "Payment", () -> {
-      Customer customer = getCustomer(responseObserver, request.getCustomerId());
+    execAndReturnResponse(responseObserver, "Payment", () ->
+        customerRepository.joinTransactionOnParticipant(request.getTransactionId(), () -> {
+          Customer customer = getCustomer(responseObserver, request.getCustomerId());
 
-      int updatedCreditTotal = customer.creditTotal + request.getAmount();
-      // Check if the credit total exceeds the credit limit after payment
-      if (updatedCreditTotal > customer.creditLimit) {
-        String message = String.format(
-            "Credit limit exceeded. creditTotal:%d, payment:%d", customer.creditTotal,
-            request.getAmount());
-        responseObserver.onError(
-            Status.FAILED_PRECONDITION.withDescription(message).asRuntimeException());
-        throw new ScalarDbNonTransientException(message);
-      }
+          int updatedCreditTotal = customer.creditTotal + request.getAmount();
+          // Check if the credit total exceeds the credit limit after payment
+          if (updatedCreditTotal > customer.creditLimit) {
+            String message = String.format(
+                "Credit limit exceeded. creditTotal:%d, payment:%d", customer.creditTotal,
+                request.getAmount());
+            responseObserver.onError(
+                Status.FAILED_PRECONDITION.withDescription(message).asRuntimeException());
+            throw new ScalarDbNonTransientException(message);
+          }
 
-      // Increase credit_total for the customer
-      customerRepository.update(customer.withCreditTotal(updatedCreditTotal));
+          // Increase credit_total for the customer
+          customerRepository.update(customer.withCreditTotal(updatedCreditTotal));
 
-      return Empty.getDefaultInstance();
-    });
+          return Empty.getDefaultInstance();
+        }));
   }
 
   @Override
   public void prepare(PrepareRequest request, StreamObserver<Empty> responseObserver) {
-    execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Prepare", () -> {
-      // Prepare the transaction
-      customerRepository.prepare();
+    execAndReturnResponse(responseObserver, "Prepare", () -> {
+      customerRepository.prepareTransactionOnParticipant(request.getTransactionId());
       return Empty.getDefaultInstance();
     });
   }
 
   @Override
   public void validate(ValidateRequest request, StreamObserver<Empty> responseObserver) {
-    execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Validate", () -> {
-      // Validate the transaction
-      customerRepository.validate();
+    execAndReturnResponse(responseObserver, "Validate", () -> {
+      customerRepository.validateTransactionOnParticipant(request.getTransactionId());
       return Empty.getDefaultInstance();
     });
   }
 
   @Override
   public void commit(CommitRequest request, StreamObserver<Empty> responseObserver) {
-    execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Commit", () -> {
-      // Commit the transaction
-      customerRepository.commit();
+    execAndReturnResponse(responseObserver, "Commit", () -> {
+      customerRepository.commitTransactionOnParticipant(request.getTransactionId());
       return Empty.getDefaultInstance();
     });
   }
 
   @Override
   public void rollback(RollbackRequest request, StreamObserver<Empty> responseObserver) {
-    execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Rollback", () -> {
-      // Rollback the transaction
-      customerRepository.rollback();
+    execAndReturnResponse(responseObserver, "Rollback", () -> {
+      customerRepository.rollbackTransactionOnParticipant(request.getTransactionId());
       return Empty.getDefaultInstance();
     });
   }
@@ -163,37 +164,6 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       throw new ScalarDbNonTransientException(message);
     }
     return customerOpt.get();
-  }
-
-  private <T> void execNormalOperation(StreamObserver<T> responseObserver, String funcName,
-      Supplier<T> task) {
-    execAndReturnResponse(responseObserver, funcName,
-        // BEGIN is called before the execution of this passed CRUD operations `task`,
-        // and then PREPARE, VALIDATE and COMMIT will be executed after the CRUD operations
-        () -> customerRepository.execOneshotOperation(task)
-    );
-  }
-
-  private <T> void execTwoPcOperation(String txId, boolean isJoin,
-      StreamObserver<T> responseObserver, String funcName, Supplier<T> task) {
-    execAndReturnResponse(responseObserver, funcName,
-        () -> customerRepository.execBatchOperations(() -> {
-              if (isJoin) {
-                // Join the transaction
-                customerRepository.join(txId);
-              } else {
-                // Resume the transaction
-                customerRepository.resume(txId);
-              }
-
-              // Prepare, validate and commit are supposed to be invoked later
-              T result = task.get();
-
-              customerRepository.suspend();
-
-              return result;
-            }
-        ));
   }
 
   @Nullable
