@@ -19,8 +19,8 @@ repositories {
 }
 
 dependencies {
-    implementation "com.scalar-labs:scalardb-sql-spring-data:3.9.0"
-    implementation "com.scalar-labs:scalardb-sql-direct-mode:3.9.0"
+    implementation "com.scalar-labs:scalardb-sql-spring-data:3.9.1"
+    implementation "com.scalar-labs:scalardb-sql-direct-mode:3.9.1"
     // This includes dependencies to `spring-boot-starter` and `picocli`
     implementation "info.picocli:picocli-spring-boot-starter:4.7.1"
     // For retry
