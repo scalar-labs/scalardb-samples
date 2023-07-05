@@ -5,7 +5,7 @@ subprojects {
     ext {
         grpcVersion = '1.53.0'
         protocVersion = '3.23.1'
-        scalarDbVersion = '3.9.0'
+        scalarDbVersion = '3.9.1'
         picoCliVersion = '4.7.1'
         protobufJavaFormatVersion = '1.4'
         log4jVersion = '2.20.0'
