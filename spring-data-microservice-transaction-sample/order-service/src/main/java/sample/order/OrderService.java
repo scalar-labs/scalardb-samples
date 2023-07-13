@@ -48,10 +48,6 @@ import sample.rpc.RollbackRequest;
 import sample.rpc.ValidateRequest;
 
 @Service
-@Retryable(
-    include = TransientDataAccessException.class,
-    maxAttempts = 8,
-    backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
 public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implements Closeable {
 
   private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
@@ -93,6 +89,10 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   /**
    * Place an order. It's a transaction that spans OrderService and CustomerService
    */
+  @Retryable(
+      include = TransientDataAccessException.class,
+      maxAttempts = 8,
+      backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
   @Override
   public void placeOrder(
       PlaceOrderRequest request, StreamObserver<PlaceOrderResponse> responseObserver) {
@@ -174,6 +174,10 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   /**
    * Get Order information by order ID
    */
+  @Retryable(
+      include = TransientDataAccessException.class,
+      maxAttempts = 8,
+      backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
   @Override
   public void getOrder(GetOrderRequest request, StreamObserver<GetOrderResponse> responseObserver) {
     execAndReturnResponse(responseObserver, "Getting an order", () ->
@@ -198,6 +202,10 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   /**
    * Get Order information by customer ID
    */
+  @Retryable(
+      include = TransientDataAccessException.class,
+      maxAttempts = 8,
+      backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
   @Override
   public void getOrders(
       GetOrdersRequest request, StreamObserver<GetOrdersResponse> responseObserver) {

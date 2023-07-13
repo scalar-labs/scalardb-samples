@@ -29,10 +29,6 @@ import sample.rpc.RollbackRequest;
 import sample.rpc.ValidateRequest;
 
 @Service
-@Retryable(
-    include = TransientDataAccessException.class,
-    maxAttempts = 8,
-    backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
 public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase implements
     Closeable {
 
@@ -56,6 +52,10 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     });
   }
 
+  @Retryable(
+      include = TransientDataAccessException.class,
+      maxAttempts = 8,
+      backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
   @Override
   public void getCustomerInfo(
       GetCustomerInfoRequest request, StreamObserver<GetCustomerInfoResponse> responseObserver) {
@@ -72,6 +72,10 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
         }));
   }
 
+  @Retryable(
+      include = TransientDataAccessException.class,
+      maxAttempts = 8,
+      backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
   @Override
   public void repayment(RepaymentRequest request, StreamObserver<Empty> responseObserver) {
     execAndReturnResponse(responseObserver, "Repayment", () ->
@@ -97,6 +101,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
         ));
   }
 
+  // @Retryable shouldn't be used here as this is used as a participant API and
+  // will be retried by the coordinator service if needed
   @Override
   public void payment(PaymentRequest request, StreamObserver<Empty> responseObserver) {
     execAndReturnResponse(responseObserver, "Payment", () ->
@@ -121,6 +127,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
         }));
   }
 
+  // @Retryable shouldn't be put as this is used as a participant API and
+  // will be retried by the coordinator service if needed
   @Override
   public void prepare(PrepareRequest request, StreamObserver<Empty> responseObserver) {
     execAndReturnResponse(responseObserver, "Prepare", () -> {
@@ -129,6 +137,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     });
   }
 
+  // @Retryable shouldn't be put as this is used as a participant API and
+  // will be retried by the coordinator service if needed
   @Override
   public void validate(ValidateRequest request, StreamObserver<Empty> responseObserver) {
     execAndReturnResponse(responseObserver, "Validate", () -> {
@@ -137,6 +147,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     });
   }
 
+  // @Retryable shouldn't be put as this is used as a participant API and
+  // will be retried by the coordinator service if needed
   @Override
   public void commit(CommitRequest request, StreamObserver<Empty> responseObserver) {
     execAndReturnResponse(responseObserver, "Commit", () -> {
@@ -145,6 +157,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     });
   }
 
+  // @Retryable shouldn't be put as this is used as a participant API and
+  // will be retried by the coordinator service if needed
   @Override
   public void rollback(RollbackRequest request, StreamObserver<Empty> responseObserver) {
     execAndReturnResponse(responseObserver, "Rollback", () -> {

@@ -28,10 +28,6 @@ import sample.domain.repository.StatementRepository;
 
 @EnableScalarDbRepositories
 @Service
-@Retryable(
-    include = TransientDataAccessException.class,
-    maxAttempts = 8,
-    backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
 public class SampleService {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -60,6 +56,10 @@ public class SampleService {
     }
   }
 
+  @Retryable(
+      include = TransientDataAccessException.class,
+      maxAttempts = 8,
+      backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
   @Transactional
   public String getCustomerInfo(int customerId) {
     try {
@@ -71,6 +71,10 @@ public class SampleService {
     }
   }
 
+  @Retryable(
+      include = TransientDataAccessException.class,
+      maxAttempts = 8,
+      backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
   @Transactional
   public String placeOrder(int customerId, List<ItemOrder> itemOrders) {
     String orderId = UUID.randomUUID().toString();
@@ -134,6 +138,10 @@ public class SampleService {
         orderId, customerId, customer.name, order.timestamp, statementDetails, total.get());
   }
 
+  @Retryable(
+      include = TransientDataAccessException.class,
+      maxAttempts = 8,
+      backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
   @Transactional
   public String getOrderByOrderId(String orderId) {
     // Get an order JSON for the specified order ID.
@@ -141,6 +149,10 @@ public class SampleService {
     return asJson(getOrderDetail(orderId));
   }
 
+  @Retryable(
+      include = TransientDataAccessException.class,
+      maxAttempts = 8,
+      backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
   @Transactional
   public String getOrdersByCustomerId(int customerId) {
     // Retrieve the order info for the customer ID from the orders table.
@@ -151,6 +163,10 @@ public class SampleService {
             .collect(Collectors.toList()));
   }
 
+  @Retryable(
+      include = TransientDataAccessException.class,
+      maxAttempts = 8,
+      backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
   @Transactional
   public void repayment(int customerId, int amount) {
     Customer customer = customerRepository.getById(customerId);
