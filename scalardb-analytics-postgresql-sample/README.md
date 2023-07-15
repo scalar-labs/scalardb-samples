@@ -9,7 +9,7 @@ This tutorial describes how to create a sample application for ScalarDB Analytic
 
 ## Set up the database
 
-First, you must set up the database to run analytical queries with ScalarDB Analytics with PostgreSQL. If you have not set up the database yet, please follow the instructions in [Getting Started](https://scalardb.scalar-labs.com/docs/3.9/scalardb-analytics-postgresql/getting-started.md).
+First, you must set up the database to run analytical queries with ScalarDB Analytics with PostgreSQL. If you have not set up the database yet, please follow the instructions in [Getting Started](https://scalardb.scalar-labs.com/docs/latest/scalardb-analytics-postgresql/getting-started).
 
 ## Schema in ScalarDB
 
@@ -147,7 +147,7 @@ Password for user postgres:
  c_comment    | text             |           |          |
 ```
 
-The column definitions are the same as the original table in the ScalarDB database. Type mapping between ScalarDB and PostgreSQL is explained in [Data type mapping between ScalarDB and the other databases](https://scalardb.scalar-labs.com/docs/3.9/schema-loader/#data-type-mapping-between-scalardb-and-the-other-databases). Internally, this view is based on the foreign table explained above and interprets the transaction metadata to expose only the valid data with the Read Committed isolation level.
+The column definitions are the same as the original table in the ScalarDB database. Type mapping between ScalarDB and PostgreSQL is explained in [Data type mapping between ScalarDB and the other databases](https://scalardb.scalar-labs.com/docs/latest/schema-loader/#data-type-mapping-between-scalardb-and-the-other-databases). Internally, this view is based on the foreign table explained above and interprets the transaction metadata to expose only the valid data with the Read Committed isolation level.
 
 Normally, you don't need to access the foreign tables directly. You can equate the views with the tables in the ScalarDB database.
 
