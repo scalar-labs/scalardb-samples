@@ -8,8 +8,10 @@ import com.scalar.db.api.TwoPhaseCommitTransactionManager;
 import com.scalar.db.exception.transaction.AbortException;
 import com.scalar.db.exception.transaction.CrudException;
 import com.scalar.db.exception.transaction.TransactionException;
+import com.scalar.db.exception.transaction.TransactionNotFoundException;
 import com.scalar.db.service.TransactionFactory;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import java.io.Closeable;
 import java.io.IOException;
@@ -83,11 +85,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       Optional<Customer> result = Customer.get(transaction, request.getCustomerId());
 
       if (!result.isPresent()) {
-        abortTransaction(transaction);
         // If the customer info the specified customer ID doesn't exist, throw an exception
-        responseObserver.onError(
-            Status.NOT_FOUND.withDescription("Customer not found").asRuntimeException());
-        return;
+        throw Status.NOT_FOUND.withDescription("Customer not found").asRuntimeException();
       }
 
       // Commit the transaction (even when the transaction is read-only, we need to commit)
@@ -102,7 +101,11 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
               .setCreditTotal(result.get().creditTotal)
               .build());
       responseObserver.onCompleted();
-    } catch (TransactionException e) {
+    } catch (StatusRuntimeException e) {
+      logger.error("getting customer info failed", e);
+      abortTransaction(transaction);
+      responseObserver.onError(e);
+    } catch (Exception e) {
       String message = "getting customer info failed";
       logger.error(message, e);
       abortTransaction(transaction);
@@ -121,20 +124,15 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       // Retrieve the customer info for the specified customer ID
       Optional<Customer> result = Customer.get(transaction, request.getCustomerId());
       if (!result.isPresent()) {
-        abortTransaction(transaction);
-        responseObserver.onError(
-            Status.NOT_FOUND.withDescription("Customer not found").asRuntimeException());
-        return;
+        // If the customer info the specified customer ID doesn't exist, throw an exception
+        throw Status.NOT_FOUND.withDescription("Customer not found").asRuntimeException();
       }
 
       int updatedCreditTotal = result.get().creditTotal - request.getAmount();
 
       // Check if over repayment or not
       if (updatedCreditTotal < 0) {
-        abortTransaction(transaction);
-        responseObserver.onError(
-            Status.FAILED_PRECONDITION.withDescription("Over repayment").asRuntimeException());
-        return;
+        throw Status.FAILED_PRECONDITION.withDescription("Over repayment").asRuntimeException();
       }
 
       // Reduce credit_total for the customer
@@ -145,7 +143,11 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
 
       responseObserver.onNext(Empty.getDefaultInstance());
       responseObserver.onCompleted();
-    } catch (TransactionException e) {
+    } catch (StatusRuntimeException e) {
+      logger.error("repayment failed", e);
+      abortTransaction(transaction);
+      responseObserver.onError(e);
+    } catch (Exception e) {
       String message = "repayment failed";
       logger.error(message, e);
       abortTransaction(transaction);
@@ -167,28 +169,24 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
 
   @Override
   public void payment(PaymentRequest request, StreamObserver<Empty> responseObserver) {
-    TwoPhaseCommitTransaction transaction = null;
     try {
       // Join the transaction that the order service started
-      transaction = twoPhaseCommitTransactionManager.join(request.getTransactionId());
+      TwoPhaseCommitTransaction transaction =
+          twoPhaseCommitTransactionManager.join(request.getTransactionId());
 
       // Retrieve the customer info for the customer ID
       Optional<Customer> result = Customer.get(transaction, request.getCustomerId());
       if (!result.isPresent()) {
-        responseObserver.onError(
-            Status.NOT_FOUND.withDescription("Customer not found").asRuntimeException());
-        return;
+        throw Status.NOT_FOUND.withDescription("Customer not found").asRuntimeException();
       }
 
       int updatedCreditTotal = result.get().creditTotal + request.getAmount();
 
       // Check if the credit total exceeds the credit limit after payment
       if (updatedCreditTotal > result.get().creditLimit) {
-        responseObserver.onError(
-            Status.FAILED_PRECONDITION
-                .withDescription("Credit limit exceeded")
-                .asRuntimeException());
-        return;
+        throw Status.FAILED_PRECONDITION
+            .withDescription("Credit limit exceeded")
+            .asRuntimeException();
       }
 
       // Update credit_total for the customer
@@ -196,7 +194,10 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
 
       responseObserver.onNext(Empty.getDefaultInstance());
       responseObserver.onCompleted();
-    } catch (TransactionException e) {
+    } catch (StatusRuntimeException e) {
+      logger.error("payment failed", e);
+      responseObserver.onError(e);
+    } catch (Exception e) {
       String message = "payment failed";
       logger.error(message, e);
       responseObserver.onError(
@@ -206,17 +207,17 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
 
   @Override
   public void prepare(PrepareRequest request, StreamObserver<Empty> responseObserver) {
-    TwoPhaseCommitTransaction transaction = null;
     try {
       // Resume the transaction
-      transaction = twoPhaseCommitTransactionManager.resume(request.getTransactionId());
+      TwoPhaseCommitTransaction transaction =
+          twoPhaseCommitTransactionManager.resume(request.getTransactionId());
 
       // Prepare the transaction
       transaction.prepare();
 
       responseObserver.onNext(Empty.getDefaultInstance());
       responseObserver.onCompleted();
-    } catch (TransactionException e) {
+    } catch (Exception e) {
       String message = "prepare failed";
       logger.error(message, e);
       responseObserver.onError(
@@ -226,17 +227,17 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
 
   @Override
   public void validate(ValidateRequest request, StreamObserver<Empty> responseObserver) {
-    TwoPhaseCommitTransaction transaction = null;
     try {
       // Resume the transaction
-      transaction = twoPhaseCommitTransactionManager.resume(request.getTransactionId());
+      TwoPhaseCommitTransaction transaction =
+          twoPhaseCommitTransactionManager.resume(request.getTransactionId());
 
       // Validate the transaction
       transaction.validate();
 
       responseObserver.onNext(Empty.getDefaultInstance());
       responseObserver.onCompleted();
-    } catch (TransactionException e) {
+    } catch (Exception e) {
       String message = "validate failed";
       logger.error(message, e);
       responseObserver.onError(
@@ -246,17 +247,17 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
 
   @Override
   public void commit(CommitRequest request, StreamObserver<Empty> responseObserver) {
-    TwoPhaseCommitTransaction transaction = null;
     try {
       // Resume the transaction
-      transaction = twoPhaseCommitTransactionManager.resume(request.getTransactionId());
+      TwoPhaseCommitTransaction transaction =
+          twoPhaseCommitTransactionManager.resume(request.getTransactionId());
 
       // Commit the transaction
       transaction.commit();
 
       responseObserver.onNext(Empty.getDefaultInstance());
       responseObserver.onCompleted();
-    } catch (TransactionException e) {
+    } catch (Exception e) {
       String message = "commit failed";
       logger.error(message, e);
       responseObserver.onError(
@@ -276,7 +277,11 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
 
       responseObserver.onNext(Empty.getDefaultInstance());
       responseObserver.onCompleted();
-    } catch (TransactionException e) {
+    } catch (TransactionNotFoundException e) {
+      // If the transaction is not found, ignore it
+      responseObserver.onNext(Empty.getDefaultInstance());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
       String message = "rollback failed";
       logger.error(message, e);
       responseObserver.onError(
