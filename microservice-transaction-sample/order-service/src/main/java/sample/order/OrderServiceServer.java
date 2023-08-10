@@ -47,7 +47,7 @@ public class OrderServiceServer implements Callable<Integer> {
                   shutdown();
                   blockUntilShutdown();
                   service.close();
-                  logger.info("The server shut down.");
+                  logger.info("The server shut down");
                 }));
   }
 

@@ -64,7 +64,7 @@ public class OrderServiceServer implements Callable<Integer>, CommandLineRunner,
                   shutdown();
                   blockUntilShutdown();
                   service.close();
-                  logger.info("The server shut down.");
+                  logger.info("The server shut down");
                 }));
   }
 
@@ -84,7 +84,7 @@ public class OrderServiceServer implements Callable<Integer>, CommandLineRunner,
       try {
         server.shutdown();
       } catch (Exception e) {
-        logger.warn("shutdown() failed", e);
+        logger.warn("Shutdown() failed", e);
       }
     }
   }

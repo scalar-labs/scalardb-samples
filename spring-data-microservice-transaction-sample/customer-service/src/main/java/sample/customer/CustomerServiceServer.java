@@ -66,7 +66,7 @@ public class CustomerServiceServer implements Callable<Integer>, CommandLineRunn
                   shutdown();
                   blockUntilShutdown();
                   service.close();
-                  logger.info("The server shut down.");
+                  logger.info("The server shut down");
                 }));
   }
 
@@ -86,7 +86,7 @@ public class CustomerServiceServer implements Callable<Integer>, CommandLineRunn
       try {
         server.shutdown();
       } catch (Exception e) {
-        logger.warn("shutdown() failed", e);
+        logger.warn("Shutdown() failed", e);
       }
     }
   }
