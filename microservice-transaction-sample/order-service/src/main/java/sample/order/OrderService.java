@@ -80,7 +80,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
       loadItemIfNotExists(transaction, 5, "Melon", 3000);
       transaction.commit();
     } catch (TransactionException e) {
-      logger.error("loading initial data failed", e);
+      logger.error("Loading initial data failed", e);
       abortTransaction(transaction);
       throw e;
     }
@@ -161,11 +161,11 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
       responseObserver.onNext(PlaceOrderResponse.newBuilder().setOrderId(orderId).build());
       responseObserver.onCompleted();
     } catch (StatusRuntimeException e) {
-      logger.error("placing an order failed", e);
+      logger.error("Placing an order failed", e);
       rollbackTransaction(transaction);
       responseObserver.onError(e);
     } catch (Exception e) {
-      String message = "placing an order failed";
+      String message = "Placing an order failed";
       logger.error(message, e);
       rollbackTransaction(transaction);
       responseObserver.onError(
@@ -181,12 +181,12 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     try {
       transaction.rollback();
     } catch (RollbackException ex) {
-      logger.warn("rollback failed", ex);
+      logger.warn("Rollback failed", ex);
     }
     try {
       callRollbackEndpoint(transaction.getId());
     } catch (StatusRuntimeException ex) {
-      logger.warn("rollback failed", ex);
+      logger.warn("Rollback failed", ex);
     }
   }
 
@@ -241,11 +241,11 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
       responseObserver.onNext(GetOrderResponse.newBuilder().setOrder(rpcOrder).build());
       responseObserver.onCompleted();
     } catch (StatusRuntimeException e) {
-      logger.error("getting an order failed", e);
+      logger.error("Getting an order failed", e);
       abortTransaction(transaction);
       responseObserver.onError(e);
     } catch (Exception e) {
-      String message = "getting an order failed";
+      String message = "Getting an order failed";
       logger.error(message, e);
       abortTransaction(transaction);
       responseObserver.onError(
@@ -278,11 +278,11 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
       responseObserver.onNext(builder.build());
       responseObserver.onCompleted();
     } catch (StatusRuntimeException e) {
-      logger.error("getting orders failed", e);
+      logger.error("Getting orders failed", e);
       abortTransaction(transaction);
       responseObserver.onError(e);
     } catch (Exception e) {
-      String message = "getting orders failed";
+      String message = "Getting orders failed";
       logger.error(message, e);
       abortTransaction(transaction);
       responseObserver.onError(
@@ -346,7 +346,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     try {
       transaction.abort();
     } catch (AbortException e) {
-      logger.warn("abort failed", e);
+      logger.warn("Abort failed", e);
     }
   }
 
@@ -355,7 +355,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     try {
       channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
-      logger.warn("failed to shutdown the channel", e);
+      logger.warn("Failed to shutdown the channel", e);
     }
 
     transactionManager.close();

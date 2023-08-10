@@ -58,7 +58,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       loadCustomerIfNotExists(transaction, 3, "Suzuki Ichiro", 10000, 0);
       transaction.commit();
     } catch (TransactionException e) {
-      logger.error("loading initial data failed", e);
+      logger.error("Loading initial data failed", e);
       abortTransaction(transaction);
       throw e;
     }
@@ -102,11 +102,11 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
               .build());
       responseObserver.onCompleted();
     } catch (StatusRuntimeException e) {
-      logger.error("getting customer info failed", e);
+      logger.error("Getting customer info failed", e);
       abortTransaction(transaction);
       responseObserver.onError(e);
     } catch (Exception e) {
-      String message = "getting customer info failed";
+      String message = "Getting customer info failed";
       logger.error(message, e);
       abortTransaction(transaction);
       responseObserver.onError(
@@ -144,11 +144,11 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       responseObserver.onNext(Empty.getDefaultInstance());
       responseObserver.onCompleted();
     } catch (StatusRuntimeException e) {
-      logger.error("repayment failed", e);
+      logger.error("Repayment failed", e);
       abortTransaction(transaction);
       responseObserver.onError(e);
     } catch (Exception e) {
-      String message = "repayment failed";
+      String message = "Repayment failed";
       logger.error(message, e);
       abortTransaction(transaction);
       responseObserver.onError(
@@ -163,7 +163,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     try {
       transaction.abort();
     } catch (AbortException e) {
-      logger.warn("abort failed", e);
+      logger.warn("Abort failed", e);
     }
   }
 
@@ -195,10 +195,10 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       responseObserver.onNext(Empty.getDefaultInstance());
       responseObserver.onCompleted();
     } catch (StatusRuntimeException e) {
-      logger.error("payment failed", e);
+      logger.error("Payment failed", e);
       responseObserver.onError(e);
     } catch (Exception e) {
-      String message = "payment failed";
+      String message = "Payment failed";
       logger.error(message, e);
       responseObserver.onError(
           Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
@@ -218,7 +218,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       responseObserver.onNext(Empty.getDefaultInstance());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      String message = "prepare failed";
+      String message = "Prepare failed";
       logger.error(message, e);
       responseObserver.onError(
           Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
@@ -238,7 +238,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       responseObserver.onNext(Empty.getDefaultInstance());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      String message = "validate failed";
+      String message = "Validate failed";
       logger.error(message, e);
       responseObserver.onError(
           Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
@@ -258,7 +258,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       responseObserver.onNext(Empty.getDefaultInstance());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      String message = "commit failed";
+      String message = "Commit failed";
       logger.error(message, e);
       responseObserver.onError(
           Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
@@ -282,7 +282,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       responseObserver.onNext(Empty.getDefaultInstance());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      String message = "rollback failed";
+      String message = "Rollback failed";
       logger.error(message, e);
       responseObserver.onError(
           Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());

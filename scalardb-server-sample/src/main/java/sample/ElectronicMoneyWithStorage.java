@@ -76,7 +76,7 @@ public class ElectronicMoneyWithStorage {
     int newFromBalance = fromResult.get().getInt(BALANCE) - amount;
     int newToBalance = toResult.get().getInt(BALANCE) + amount;
     if (newFromBalance < 0) {
-      throw new RuntimeException(fromId + " doesn't have enough balance.");
+      throw new RuntimeException(fromId + " doesn't have enough balance");
     }
 
     // Update the balances
