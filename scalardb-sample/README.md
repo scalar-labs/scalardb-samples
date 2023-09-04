@@ -1,154 +1,117 @@
-# ScalarDB Sample
+# Create a Sample Application by Using ScalarDB
 
-This tutorial describes how to create a sample application by using ScalarDB.
+This tutorial describes how to create a sample e-commerce application by using ScalarDB.
+
+## Overview
+
+The sample e-commerce application shows how users can order and pay for items by using a line of credit.
+
+The database that you will be using in the sample application is Cassandra. Although Cassandra does not provide ACID transaction capabilities, you can make transactions ACID compliant by having your application connect to the database through ScalarDB.
+
+{% capture notice--info %}
+**Note**
+
+Since the focus of the sample application is to demonstrate using ScalarDB, application-specific error handling, authentication processing, and similar functions are not included in the sample application. For details about exception handling in ScalarDB, see [Handle exceptions](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions).
+{% endcapture %}
+
+<div class="notice--info">{{ notice--info | markdownify }}</div>
+
+### What you can do in this sample application
+
+The sample application supports the following types of transactions:
+
+- Get customer information.
+- Place an order by using a line of credit.
+  - Checks if the cost of the order is below the customer's credit limit.
+  - If the check passes, records the order history and updates the amount the customer has spent.
+- Get order information by order ID.
+- Get order information by customer ID.
+- Make a payment.
+  - Reduces the amount the customer has spent.
 
 ## Prerequisites
 
-- Java (OpenJDK 8 or higher)
-- Gradle
-- Docker, Docker Compose
+- One of the following Java Development Kits (JDKs):
+  - [Oracle JDK 8](https://www.oracle.com/java/technologies/downloads/#java8)
+  - [Oracle JDK 11](https://www.oracle.com/java/technologies/downloads/#java11)
+  - [OpenJDK 8](https://openjdk.org/install/)
+- [Gradle](https://gradle.org/install/)
+- [Docker](https://www.docker.com/get-started/) with [Docker Compose](https://docs.docker.com/compose/install/)
 
-## Sample application
+## Set up ScalarDB
 
-### Overview
+The following sections describe how to set up the sample e-commerce application.
 
-This tutorial illustrates the process of creating a sample e-commerce application, where items can be ordered and paid for with a credit card using ScalarDB.
-In this tutorial, you will build the application on Cassandra.
-Although Cassandra does not provide ACID transaction capability, you can run ACID transactions on Cassandra if you interact with it through ScalarDB.
-Please note that application-specific error handling, authentication processing, and similar functions are not included in the sample application, as the focus is on demonstrating the use of ScalarDB.
-For detailed information on exception handling in ScalarDB, see [Handle SQLException](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions).
+### Clone the ScalarDB samples repository
 
-### Schema
+Open **Terminal**, then clone the ScalarDB samples repository by running the following command:
 
-[The schema](schema.json) is as follows:
-
-```json
-{
-  "sample.customers": {
-    "transaction": true,
-    "partition-key": [
-      "customer_id"
-    ],
-    "columns": {
-      "customer_id": "INT",
-      "name": "TEXT",
-      "credit_limit": "INT",
-      "credit_total": "INT"
-    }
-  },
-  "sample.orders": {
-    "transaction": true,
-    "partition-key": [
-      "customer_id"
-    ],
-    "clustering-key": [
-      "timestamp"
-    ],
-    "secondary-index": [
-      "order_id"
-    ],
-    "columns": {
-      "order_id": "TEXT",
-      "customer_id": "INT",
-      "timestamp": "BIGINT"
-    }
-  },
-  "sample.statements": {
-    "transaction": true,
-    "partition-key": [
-      "order_id"
-    ],
-    "clustering-key": [
-      "item_id"
-    ],
-    "columns": {
-      "order_id": "TEXT",
-      "item_id": "INT",
-      "count": "INT"
-    }
-  },
-  "sample.items": {
-    "transaction": true,
-    "partition-key": [
-      "item_id"
-    ],
-    "columns": {
-      "item_id": "INT",
-      "name": "TEXT",
-      "price": "INT"
-    }
-  }
-}
+```console
+$ git clone https://github.com/scalar-labs/scalardb-samples
 ```
 
-All the tables are created in the `sample` namespace.
+Then, go to the directory that contains the sample application by running the following command:
 
-- `sample.customers`: a table that manages customers' information
-    - `credit_limit`: the maximum amount of money a lender will allow each customer to spend when using a credit card
-    - `credit_total`: the amount of money that each customer has already spent by using the credit card
+```console
+$ cd scalardb-samples/scalardb-sample
+```
+
+### Start Cassandra
+
+Cassandra is already configured for the sample application, as shown in [**database.properties**](database.properties).
+
+To start Cassandra, which is included in the Docker container for the sample application, run the following command:
+
+```console
+$ docker-compose up -d
+```
+
+{% capture notice--info %}
+**Note**
+
+Starting the Docker container may take more than one minute depending on your development environment.
+{% endcapture %}
+
+<div class="notice--info">{{ notice--info | markdownify }}</div>
+
+### Load the schema
+
+The database schema (the method in which the data will be organized) for the sample application has already been defined in [**schema.json**](schema.json).
+
+To apply the schema, go to the [`scalardb` Releases](https://github.com/scalar-labs/scalardb/releases) page and download the ScalarDB Schema Loader that matches the version of ScalarDB that you want to use to the `scalardb-samples/scalardb-sample` folder.
+
+Then, run the following command, replacing `<VERSION>` with the version of the ScalarDB Schema Loader that you downloaded:
+
+```console
+$ java -jar scalardb-schema-loader-<VERSION>.jar --config database.properties --schema-file schema.json --coordinator
+```
+
+#### Schema reference
+
+As shown in [**schema.json**](schema.json) for the sample application, all the tables are created in the `sample` namespace.
+
+- `sample.customers`: a table that manages customer information
+  - `credit_limit`: the maximum amount of money that the lender will allow the customer to spend from their line of credit
+  - `credit_total`: the amount of money that the customer has spent from their line of credit
 - `sample.orders`: a table that manages order information
 - `sample.statements`: a table that manages order statement information
-- `sample.items`: a table that manages information of items to be ordered
+- `sample.items`: a table that manages information for items to be ordered
 
 The Entity Relationship Diagram for the schema is as follows:
 
 ![ERD](images/ERD.png)
 
-### Transactions
+### Load the initial data
 
-The following five transactions are implemented in this sample application:
+After the Docker container has started, load the initial data by running the following command:
 
-1. Getting customer information
-2. Placing an order by credit card (checks if the cost of the order is below the credit limit, then records order history and updates the `credit_total` if the check passes)
-3. Getting order information by order ID
-4. Getting order information by customer ID
-5. Repayment (reduces the amount in the `credit_total`)
-
-## Configuration
-
-Configurations for the sample application are as follows:
-
-```properties
-scalar.db.storage=cassandra
-scalar.db.contact_points=localhost
-scalar.db.username=cassandra
-scalar.db.password=cassandra
-```
-
-Since this sample application uses Cassandra, as shown above, you need to configure your settings for Cassandra in this configuration.
-
-## Setup
-
-### Start Cassandra
-
-To start Cassandra, you need to run the following `docker-compose` command:
-
-```shell
-$ docker-compose up -d
-```
-
-Please note that starting the containers may take more than one minute.
-
-### Load schema
-
-You then need to apply the schema with the following command.
-To download the schema loader tool, `scalardb-schema-loader-<VERSION>.jar`, see the [Releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB and download the version that you want to use.
-
-```shell
-$ java -jar scalardb-schema-loader-<VERSION>.jar --config database.properties --schema-file schema.json --coordinator
-```
-
-### Load initial data
-
-After the containers have started, you need to load the initial data by running the following command:
-
-```shell
+```console
 $ ./gradlew run --args="LoadInitialData"
 ```
 
-After the initial data has loaded, the following records should be stored in the tables:
+After the initial data has loaded, the following records should be stored in the tables.
 
-- For the `sample.customers` table:
+**`sample.customers` table**
 
 | customer_id | name          | credit_limit | credit_total |
 |-------------|---------------|--------------|--------------|
@@ -156,7 +119,7 @@ After the initial data has loaded, the following records should be stored in the
 | 2           | Yamada Hanako | 10000        | 0            |
 | 3           | Suzuki Ichiro | 10000        | 0            |
 
-- For the `sample.items` table:
+**`sample.items` table**
 
 | item_id | name   | price |
 |---------|--------|-------|
@@ -166,62 +129,123 @@ After the initial data has loaded, the following records should be stored in the
 | 4       | Mango  | 5000  |
 | 5       | Melon  | 3000  |
 
-## Run the sample application
+## Execute transactions and retrieve data in the sample application
 
-Let's start with getting information about the customer whose ID is `1`:
+The following sections describe how to execute transactions and retrieve data in the sample e-commerce application.
 
-```shell
+### Get customer information
+
+Start with getting information about the customer whose ID is `1` by running the following command:
+
+```console
 $ ./gradlew run --args="GetCustomerInfo 1"
+```
+
+You should see the following output:
+
+```console
 ...
 {"id": 1, "name": "Yamada Taro", "credit_limit": 10000, "credit_total": 0}
 ...
 ```
 
-Then, place an order for three apples and two oranges by using customer ID `1`.
-Note that the order format is `<Item ID>:<Count>,<Item ID>:<Count>,...`:
+### Place an order
 
-```shell
+Then, have customer ID `1` place an order for three apples and two oranges by running the following command:
+
+```console
 $ ./gradlew run --args="PlaceOrder 1 1:3,2:2"
+```
+
+{% capture notice--info %}
+**Note**
+
+The order format in this command is `./gradlew run --args="PlaceOrder <CUSTOMER_ID> <ITEM_ID>:<COUNT>,<ITEM_ID>:<COUNT>,..."`:
+{% endcapture %}
+
+<div class="notice--info">{{ notice--info | markdownify }}</div>
+
+You should see the following output, which confirms that the order was successful:
+
+```console
 ...
 {"order_id": "dea4964a-ff50-4ecf-9201-027981a1566e"}
 ...
 ```
 
-You can see that running this command shows the order ID.
+### Check order details
 
-Let's check the details of the order by using the order ID:
+Check details about the order by running the following command:
 
-```shell
+```console
 $ ./gradlew run --args="GetOrder dea4964a-ff50-4ecf-9201-027981a1566e"
+```
+
+You should see the following output:
+
+```console
 ...
 {"order": {"order_id": "dea4964a-ff50-4ecf-9201-027981a1566e","timestamp": 1650948340914,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 1,"item_name": "Apple","price": 1000,"count": 3,"total": 3000},{"item_id": 2,"item_name": "Orange","price": 2000,"count": 2,"total": 4000}],"total": 7000}}
 ...
 ```
 
-Then, let's place another order and get the order history of customer ID `1`:
+### Place another order
 
-```shell
+Place an order for one melon that uses the remaining amount in `credit_total` for customer ID `1` by running the following command:
+
+```console
 $ ./gradlew run --args="PlaceOrder 1 5:1"
+```
+
+You should see the following output, which confirms that the order was successful:
+
+```console
 ...
 {"order_id": "bcc34150-91fa-4bea-83db-d2dbe6f0f30d"}
 ...
+```
+
+### Check order history
+
+Get the history of all orders for customer ID `1` by running the following command:
+
+```console
 $ ./gradlew run --args="GetOrders 1"
+```
+
+You should see the following output, which shows the history of all orders for customer ID `1` in descending order by timestamp:
+
+```console
 ...
 {"order": [{"order_id": "dea4964a-ff50-4ecf-9201-027981a1566e","timestamp": 1650948340914,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 1,"item_name": "Apple","price": 1000,"count": 3,"total": 3000},{"item_id": 2,"item_name": "Orange","price": 2000,"count": 2,"total": 4000}],"total": 7000},{"order_id": "bcc34150-91fa-4bea-83db-d2dbe6f0f30d","timestamp": 1650948412766,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 5,"item_name": "Melon","price": 3000,"count": 1,"total": 3000}],"total": 3000}]}
 ...
 ```
 
-This order history is shown in descending order by timestamp.
+### Check credit total
 
-The customer's current `credit_total` is `10000`.
-Since the customer has now reached their `credit_limit`, which was shown when retrieving their information, they cannot place anymore orders.
+Get the credit total for customer ID `1` by running the following command:
 
-```shell
+```console
 $ ./gradlew run --args="GetCustomerInfo 1"
+```
+
+You should see the following output, which shows that customer ID `1` has reached their `credit_limit` in `credit_total` and cannot place anymore orders:
+
+```console
 ...
 {"id": 1, "name": "Yamada Taro", "credit_limit": 10000, "credit_total": 10000}
 ...
+```
+
+Try to place an order for one grape and one mango by running the following command:
+
+```console
 $ ./gradlew run --args="PlaceOrder 1 3:1,4:1"
+```
+
+You should see the following output, which shows that the order failed because the `credit_total` amount would exceed the `credit_limit` amount.
+
+```console
 ...
 java.lang.RuntimeException: Credit limit exceeded
         at sample.Sample.placeOrder(Sample.java:205)
@@ -237,25 +261,49 @@ java.lang.RuntimeException: Credit limit exceeded
 ...
 ```
 
-After making a payment, the customer will be able to place orders again.
+### Make a payment
 
-```shell
+To continue making orders, customer ID `1` must make a payment to reduce the `credit_total` amount.
+
+Make a payment by running the following command:
+
+```console
 $ ./gradlew run --args="Repayment 1 8000"
-...
+```
+
+Then, check the `credit_total` amount for customer ID `1` by running the following command:
+
+```console
 $ ./gradlew run --args="GetCustomerInfo 1"
+```
+
+You should see the following output, which shows that a payment was applied to customer ID `1`, reducing the `credit_total` amount:
+
+```console
 ...
 {"id": 1, "name": "Yamada Taro", "credit_limit": 10000, "credit_total": 2000}
 ...
+```
+
+Now that customer ID `1` has made a payment, place an order for one grape and one melon by running the following command:
+
+```console
 $ ./gradlew run --args="PlaceOrder 1 3:1,4:1"
+```
+
+You should see the following output, which confirms that the order was successful:
+
+```
 ...
 {"order_id": "8911cab3-1c2b-4322-9386-adb1c024e078"}
+The balance for merchant1 is 100
 ...
 ```
 
-## Clean up
+## Stop the sample application
 
-To stop Cassandra, run the following command:
+To stop the sample application, stop the Docker container by running the following command:
 
-```shell
+```console
 $ docker-compose down
 ```
