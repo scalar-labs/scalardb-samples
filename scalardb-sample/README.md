@@ -60,7 +60,7 @@ $ cd scalardb-samples/scalardb-sample
 
 Cassandra is already configured for the sample application, as shown in [**database.properties**](database.properties).
 
-To start Cassandra, which is included in the Docker container for the sample application, run the following command:
+To start Cassandra, which is included in the Docker container for the sample application, make sure Docker is running and then run the following command:
 
 ```console
 $ docker-compose up -d
