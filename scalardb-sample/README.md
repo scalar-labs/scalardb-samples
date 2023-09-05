@@ -153,19 +153,19 @@ You should see the following output:
 
 Then, have customer ID `1` place an order for three apples and two oranges by running the following command:
 
-```console
-$ ./gradlew run --args="PlaceOrder 1 1:3,2:2"
-```
-
 {% capture notice--info %}
 **Note**
 
-The order format in this command is `./gradlew run --args="PlaceOrder <CUSTOMER_ID> <ITEM_ID>:<COUNT>,<ITEM_ID>:<COUNT>,..."`:
+The order format in this command is `./gradlew run --args="PlaceOrder <CUSTOMER_ID> <ITEM_ID>:<COUNT>,<ITEM_ID>:<COUNT>,..."`.
 {% endcapture %}
 
 <div class="notice--info">{{ notice--info | markdownify }}</div>
 
-You should see the following output, which confirms that the order was successful:
+```console
+$ ./gradlew run --args="PlaceOrder 1 1:3,2:2"
+```
+
+You should see a similar output as below, with a different UUID for `order_id`, which confirms that the order was successful:
 
 ```console
 ...
@@ -175,13 +175,13 @@ You should see the following output, which confirms that the order was successfu
 
 ### Check order details
 
-Check details about the order by running the following command:
+Check details about the order by running the following command, replacing `<ORDER_ID_UUID>` with the UUID for the `order_id` that was shown after running the previous command:
 
 ```console
-$ ./gradlew run --args="GetOrder dea4964a-ff50-4ecf-9201-027981a1566e"
+$ ./gradlew run --args="GetOrder <ORDER_ID_UUID>"
 ```
 
-You should see the following output:
+You should see a similar output as below, with different UUIDs for `order_id` and `timestamp`:
 
 ```console
 ...
@@ -197,7 +197,7 @@ Place an order for one melon that uses the remaining amount in `credit_total` fo
 $ ./gradlew run --args="PlaceOrder 1 5:1"
 ```
 
-You should see the following output, which confirms that the order was successful:
+You should see a similar output as below, with a different UUID for `order_id`, which confirms that the order was successful:
 
 ```console
 ...
@@ -213,7 +213,7 @@ Get the history of all orders for customer ID `1` by running the following comma
 $ ./gradlew run --args="GetOrders 1"
 ```
 
-You should see the following output, which shows the history of all orders for customer ID `1` in descending order by timestamp:
+You should see a similar output as below, with different UUIDs for `order_id` and `timestamp`, which shows the history of all orders for customer ID `1` in descending order by timestamp:
 
 ```console
 ...
@@ -291,7 +291,7 @@ Now that customer ID `1` has made a payment, place an order for one grape and on
 $ ./gradlew run --args="PlaceOrder 1 3:1,4:1"
 ```
 
-You should see the following output, which confirms that the order was successful:
+You should see a similar output as below, with a different UUID for `order_id`, which confirms that the order was successful:
 
 ```
 ...
