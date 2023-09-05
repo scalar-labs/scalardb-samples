@@ -35,7 +35,6 @@ The sample application supports the following types of transactions:
   - [Oracle JDK 8](https://www.oracle.com/java/technologies/downloads/#java8)
   - [Oracle JDK 11](https://www.oracle.com/java/technologies/downloads/#java11)
   - [OpenJDK 8](https://openjdk.org/install/)
-- [Gradle](https://gradle.org/install/)
 - [Docker](https://www.docker.com/get-started/) with [Docker Compose](https://docs.docker.com/compose/install/)
 
 ## Set up ScalarDB
