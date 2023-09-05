@@ -8,6 +8,8 @@ The sample e-commerce application shows how users can order and pay for items by
 
 The database that you will be using in the sample application is Cassandra. Although Cassandra does not provide ACID transaction capabilities, you can make transactions ACID compliant by having your application connect to the database through ScalarDB.
 
+To reference the sample application source code, see [scalardb-sample/src/main/java/sample/Sample.java](scalardb-sample/src/main/java/sample/Sample.java).
+
 {% capture notice--info %}
 **Note**
 
