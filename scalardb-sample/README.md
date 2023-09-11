@@ -39,6 +39,14 @@ The sample application supports the following types of transactions:
   - [OpenJDK 8](https://openjdk.org/install/)
 - [Docker](https://www.docker.com/get-started/) 20.10 or later with [Docker Compose](https://docs.docker.com/compose/install/) V2 or later
 
+{% capture notice--info %}
+**Note**
+
+Other JDKs should work with ScalarDB, but we haven't tested them.
+{% endcapture %}
+
+<div class="notice--info">{{ notice--info | markdownify }}</div>
+
 ## Set up ScalarDB
 
 The following sections describe how to set up the sample e-commerce application.
