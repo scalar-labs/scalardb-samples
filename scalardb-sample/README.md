@@ -34,9 +34,8 @@ The sample application supports the following types of transactions:
 ## Prerequisites
 
 - One of the following Java Development Kits (JDKs):
-  - [Oracle JDK 8](https://www.oracle.com/java/technologies/downloads/#java8)
-  - [Oracle JDK 11](https://www.oracle.com/java/technologies/downloads/#java11)
-  - [OpenJDK 8](https://openjdk.org/install/)
+  - [Oracle JDK](https://www.oracle.com/java/technologies/downloads/) 8 or later
+  - [OpenJDK](https://openjdk.org/install/) 8 or later
 - [Docker](https://www.docker.com/get-started/) 20.10 or later with [Docker Compose](https://docs.docker.com/compose/install/) V2 or later
 
 {% capture notice--info %}
