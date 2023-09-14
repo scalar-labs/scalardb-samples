@@ -34,14 +34,16 @@ The sample application supports the following types of transactions:
 ## Prerequisites
 
 - One of the following Java Development Kits (JDKs):
-  - [Oracle JDK](https://www.oracle.com/java/technologies/downloads/) 8 or later
-  - [OpenJDK](https://openjdk.org/install/) 8 or later
+  - [Oracle JDK](https://www.oracle.com/java/technologies/downloads/) LTS version (8, 11, or 17)
+  - [OpenJDK](https://openjdk.org/install/) LTS version (8, 11, or 17)
 - [Docker](https://www.docker.com/get-started/) 20.10 or later with [Docker Compose](https://docs.docker.com/compose/install/) V2 or later
 
 {% capture notice--info %}
 **Note**
 
-Other JDKs should work with ScalarDB, but we haven't tested them.
+We recommend using the LTS versions mentioned above, but other non-LTS versions may work.
+
+In addition, other JDKs should work with ScalarDB, but we haven't tested them.
 {% endcapture %}
 
 <div class="notice--info">{{ notice--info | markdownify }}</div>
