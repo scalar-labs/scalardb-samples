@@ -1,119 +1,151 @@
-# Microservice Transaction Sample
+# Create a Sample Application That Supports Microservice Transactions
 
-This tutorial describes how to create a sample application for Microservice Transaction that uses Two-phase Commit Transactions in ScalarDB.
-You can find more information about Two-phase Commit Transactions in ScalarDB [here](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md).
+This tutorial describes how to create a sample application that supports microservice transactions in ScalarDB.
 
-## Prerequisites
+## Overview
 
-- Java (OpenJDK 8 or higher)
-- Gradle
-- Docker, Docker Compose
+The sample e-commerce application shows how users can order and pay for items by using a line of credit. The use case described in this tutorial is the same as the [basic ScalarDB sample](../scalardb-sample) but takes advantage of [two-phase commit transactions](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md) when using ScalarDB.
 
-## Sample application
+The sample application has two microservices called *Customer Service* and *Order Service* based on the [database-per-service pattern](https://microservices.io/patterns/data/database-per-service.html).
 
-### Overview
+- **Customer Service** manages customer information, including line-of-credit information, credit limit, and credit total.
+- **Order Service** is responsible for order operations like placing an order and getting order histories.
 
-This tutorial describes how to create a sample application for Microservice Transaction for the same use case as [ScalarDB Sample](https://github.com/scalar-labs/scalardb-samples/tree/main/scalardb-sample) but by using Two-phase Commit Transactions in ScalarDB.
+Each service has gRPC endpoints. Clients call the endpoints, and the services call each endpoint as well.
 
-There are two microservices called *Customer Service* and *Order Service* based on the [*Database-per-service* pattern](https://microservices.io/patterns/data/database-per-service.html) in this sample application.
-
-Customer Service manages customers' information including credit card information like a credit limit and a credit total.
-Order Service is responsible for order operations like placing an order and getting order histories.
-Each service has gRPC endpoints. Clients call the endpoints, and the services call the endpoints each other as well.
-Customer Service and Order Service uses MySQL and Cassandra through ScalarDB, respectively.
+The databases that you will be using in the sample application are Cassandra and MySQL. Customer Service and Order Service use Cassandra and MySQL, respectively, through ScalarDB.
 
 ![Overview](images/overview.png)
 
-Note that both services access a small coordinator database used for the Consensus Commit protocol.
-The database is service-independent and exists for managing transaction metadata for Consensus Commit in a highly available manner, so we don't think it is violating the database-per-service pattern. 
-*NOTE: We also plan to create a microservice container for the coordinator database to truly achieve the database-per-service pattern.*
+As shown in the diagram, both services access a small coordinator database used for the Consensus Commit protocol. The database is service-independent and exists for managing transaction metadata for Consensus Commit in a highly available manner.
 
-In this sample application, for ease of setup and explanation, we co-locate the coordinator database in the same Cassandra instance of the Order Service, but of course, the coordinator database can be managed as a separate database.
+In the sample application, for ease of setup and explanation, we co-locate the coordinator database in the same Cassandra instance of Order Service. Alternatively, you can manage the coordinator database as a separate database.
 
-Also, note that application-specific error handling, authentication processing, etc., are omitted in the sample application since it focuses on explaining how to use ScalarDB.
-Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions) for the details of how to handle exceptions in ScalarDB.
+{% capture notice--info %}
+**Note**
 
-Additionally, you assume each service has one container in this sample application to avoid considering request routing between the services.
-However, for production, because each service typically has multiple servers (or hosts) for scalability and availability, you should consider request routing between the services in Two-phase Commit Transactions.
-Please see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#request-routing-in-two-phase-commit-transactions) for the details of Request Routing in Two-phase Commit Transactions.
+Since the focus of the sample application is to demonstrate using ScalarDB, application-specific error handling, authentication processing, and similar functions are not included in the sample application. For details about exception handling in ScalarDB, see [Handle exceptions](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions).
 
-### Schema
+Additionally, for the purpose of the sample application, each service has one container so that you can avoid using request routing between the services. However, for production use, because each service typically has multiple servers or hosts for scalability and availability, you should consider request routing between the services in two-phase commit transactions. For details about request routing, see [Request routing in two-phase commit transactions](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#request-routing-in-two-phase-commit-transactions).
+{% endcapture %}
 
-[The schema for Customer Service](customer-service-schema.json) is as follows:
+<div class="notice--info">{{ notice--info | markdownify }}</div>
 
-```json
-{
-  "customer_service.customers": {
-    "transaction": true,
-    "partition-key": [
-      "customer_id"
-    ],
-    "columns": {
-      "customer_id": "INT",
-      "name": "TEXT",
-      "credit_limit": "INT",
-      "credit_total": "INT"
-    }
-  }
-}
+### Service endpoints
+
+The endpoints defined in the services are as follows:
+
+- Customer Service
+  - `getCustomerInfo`
+  - `payment`
+  - `prepare`
+  - `validate`
+  - `commit`
+  - `rollback`
+  - `repayment`
+
+- Order Service
+  - `placeOrder`
+  - `getOrder`
+  - `getOrders`
+
+### What you can do in this sample application
+
+The sample application supports the following types of transactions:
+
+- Get customer information through the `getCustomerInfo` endpoint of Customer Service.
+- Place an order by using a line of credit through the `placeOrder` endpoint of Order Service and the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of Customer Service.
+  - Checks if the cost of the order is below the customer's credit limit.
+  - If the check passes, records the order history and updates the amount the customer has spent.
+- Get order information by order ID through the `getOrder` of Order Service.
+- Get order information by customer ID through the `getOrders` of Order Service.
+- Make a payment through the `repayment` endpoint of Customer Service.
+  - Reduces the amount the customer has spent.
+
+## Prerequisites
+
+- One of the following Java Development Kits (JDKs):
+  - [Oracle JDK](https://www.oracle.com/java/technologies/downloads/) LTS version (8, 11, or 17)
+  - [OpenJDK](https://openjdk.org/install/) LTS version (8, 11, or 17)
+- [Docker](https://www.docker.com/get-started/) 20.10 or later with [Docker Compose](https://docs.docker.com/compose/install/) V2 or later
+
+{% capture notice--info %}
+**Note**
+
+We recommend using the LTS versions mentioned above, but other non-LTS versions may work.
+
+In addition, other JDKs should work with ScalarDB, but we haven't tested them.
+{% endcapture %}
+
+<div class="notice--info">{{ notice--info | markdownify }}</div>
+
+## Set up ScalarDB
+
+The following sections describe how to set up the sample application that supports microservices transactions in ScalarDB.
+
+### Clone the ScalarDB samples repository
+
+Open **Terminal**, then clone the ScalarDB samples repository by running the following command:
+
+```console
+$ git clone https://github.com/scalar-labs/scalardb-samples
 ```
 
-All the tables for Customer Service are created in the `customer_service` namespace.
+Then, go to the directory that contains the sample application by running the following command:
+
+```console
+$ cd scalardb-samples/microservice-transaction-sample
+```
+
+### Start Cassandra and MySQL
+
+Cassandra and MySQL are already configured for the sample application, as shown in [database.properties](database.properties). For details about configuring the multi-storage transactions feature in ScalarDB, see [Configuration](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md#configuration).
+
+To start Cassandra and MySQL, which are included in the Docker container for the sample application, run the following command:
+
+```console
+$ docker-compose up -d
+```
+
+{% capture notice--info %}
+**Note**
+
+Starting the Docker container may take more than one minute depending on your development environment.
+{% endcapture %}
+
+<div class="notice--info">{{ notice--info | markdownify }}</div>
+
+### Load the schema
+
+The database schema (the method in which the data will be organized) for the sample application has already been defined in [customer-service-schema.json](customer-service-schema.json) for Customer Service and [order-service-schema.json](order-service-schema.json) for Order Service.
+
+To apply the schema, go to the [`scalardb` Releases](https://github.com/scalar-labs/scalardb/releases) page and download the ScalarDB Schema Loader that matches the version of ScalarDB that you want to use to the `scalardb-samples/microservice-transaction-sample` folder.
+
+#### MySQL
+
+To load the schema for [customer-service-schema.json](customer-service-schema.json) into MySQL, run the following command, replacing `<VERSION>` with the version of the ScalarDB Schema Loader that you downloaded:
+
+```console
+$ java -jar scalardb-schema-loader-<VERSION>.jar --config database-mysql.properties --schema-file customer-service-schema.json
+```
+
+#### Cassandra
+
+To load the schema for [order-service-schema.json](order-service-schema.json) into Cassandra, run the following command, replacing `<VERSION>` with the version of the ScalarDB Schema Loader that you downloaded:
+
+```console
+$ java -jar scalardb-schema-loader-<VERSION>.jar --config database-cassandra.properties --schema-file order-service-schema.json --coordinator
+```
+
+#### Schema reference
+
+As shown in [customer-service-schema.json](customer-service-schema.json) for the sample application, all the tables for Customer Service are created in the `customer_service` namespace.
 
 - `customer_service.customers`: a table that manages customers' information
-    - `credit_limit`: the maximum amount of money a lender will allow each customer to spend when using a credit card
-    - `credit_total`: the amount of money that each customer has already spent by using the credit card
+  - `credit_limit`: the maximum amount of money a lender will allow each customer to spend when using a line of credit
+  - `credit_total`: the amount of money that each customer has already spent by using their line of credit
 
-[The schema for Order Service](order-service-schema.json) is as follows:
-
-```json
-{
-  "order_service.orders": {
-    "transaction": true,
-    "partition-key": [
-      "customer_id"
-    ],
-    "clustering-key": [
-      "timestamp"
-    ],
-    "secondary-index": [
-      "order_id"
-    ],
-    "columns": {
-      "order_id": "TEXT",
-      "customer_id": "INT",
-      "timestamp": "BIGINT"
-    }
-  },
-  "order_service.statements": {
-    "transaction": true,
-    "partition-key": [
-      "order_id"
-    ],
-    "clustering-key": [
-      "item_id"
-    ],
-    "columns": {
-      "order_id": "TEXT",
-      "item_id": "INT",
-      "count": "INT"
-    }
-  },
-  "order_service.items": {
-    "transaction": true,
-    "partition-key": [
-      "item_id"
-    ],
-    "columns": {
-      "item_id": "INT",
-      "name": "TEXT",
-      "price": "INT"
-    }
-  }
-}
-```
-
-All the tables for Order Service are created in the `order_service` namespace.
+As shown in [order-service-schema.json](order-service-schema.json) for the sample application, all the tables for Order Service are created in the `order_service` namespace.
 
 - `order_service.orders`: a table that manages order information
 - `order_service.statements`: a table that manages order statement information
@@ -123,95 +155,21 @@ The Entity Relationship Diagram for the schema is as follows:
 
 ![ERD](images/ERD.png)
 
-### Transactions
+## Load the initial data by starting the microservices
 
-The following five transactions are implemented in this sample application:
+Before starting the microservices, build the Docker images of the sample application by running the following command:
 
-1. Getting customer information. It is a transaction in Customer Service
-2. Placing an order (checks if the cost of the order is below the credit limit, then records order history and updates the `credit_total` if the check passes). It is a transaction that spans Order Service and Customer Service.
-3. Getting order information by order ID. It is a transaction in Order Service
-4. Getting order information by customer ID. It is a transaction in Order Service
-5. Repayment (reduces the amount in the `credit_total`). It is a transaction in Customer Service.
-
-### Service Endpoints
-
-The endpoints defined in the services are as follows: 
-
-Customer Service:
-
-- getCustomerInfo
-- payment
-- prepare
-- validate
-- commit
-- rollback
-- repayment
-
-Order Service:
-
-- placeOrder
-- getOrder
-- getOrders
-
-The `getCustomerInfo` endpoint of Customer Service is for transaction #1 (Getting customer information).
-
-And the `placeOrder` endpoint of Order Service and the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of Customer Service are for transaction #2 (Placing an order) that spans Order Service and Customer Service.
-Order Service starts the transaction with the `placeOrder` endpoint, which calls the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of Customer Service.
-
-The `getOrder` of Order Service is for transaction #3, and The `getOrders` of Order Service is for transaction #4.
-
-And the `repayment` endpoint of Customer Service is for transaction #5.
-
-## Setup
-
-### Start Cassandra and MySQL
-
-To start Cassandra and MySQL, you need to run the following `docker-compose` command:
-
-```shell
-$ docker-compose up -d cassandra mysql
-```
-
-Please note that you need to wait around more than one minute for the containers to be fully started.
-
-### Load schema
-
-You then need to apply the schema with the following commands.
-To download the schema loader tool, `scalardb-schema-loader-<VERSION>.jar`, see the [Releases](https://github.com/scalar-labs/scalardb/releases) of ScalarDB and download the version that you want to use.
-
-For MySQL:
-
-```shell
-$ java -jar scalardb-schema-loader-<VERSION>.jar --config database-mysql.properties --schema-file customer-service-schema.json
-```
-
-For Cassandra:
-
-```shell
-$ java -jar scalardb-schema-loader-<VERSION>.jar --config database-cassandra.properties --schema-file order-service-schema.json --coordinator
-```
-
-### Start Microservices
-
-First, you need to build the docker images of the sample application with the following command:
-
-```shell
+```console
 $ ./gradlew docker
 ```
 
-Then, you can start the microservices with the following `docker-compose` command:
+Then, start the microservices by running the following command:
 
-```shell
+```console
 $ docker-compose up -d customer-service order-service
 ```
 
-### Initial data
-
-When the microservices start, the initial data is loaded automatically.
-
-After the initial data has loaded, the following records should be stored in the tables:
-
-- For the `customer_service.customers` table:
+After starting the microservices and the initial data has loaded, the following records should be stored in the `customer_service.customers` table:
 
 | customer_id | name          | credit_limit | credit_total |
 |-------------|---------------|--------------|--------------|
@@ -219,7 +177,7 @@ After the initial data has loaded, the following records should be stored in the
 | 2           | Yamada Hanako | 10000        | 0            |
 | 3           | Suzuki Ichiro | 10000        | 0            |
 
-- For the `order_service.items` table:
+And the following records should be stored in the `order_service.items` table:
 
 | item_id | name   | price |
 |---------|--------|-------|
@@ -229,12 +187,21 @@ After the initial data has loaded, the following records should be stored in the
 | 4       | Mango  | 5000  |
 | 5       | Melon  | 3000  |
 
-## Run the sample application
+## Execute transactions and retrieve data in the sample application
 
-Let's start with getting information about the customer whose ID is `1`:
+The following sections describe how to execute transactions and retrieve data in the sample e-commerce application.
 
-```shell
+### Get customer information
+
+Start with getting information about the customer whose ID is `1` by running the following command:
+
+```console
 $ ./gradlew :client:run --args="GetCustomerInfo 1"
+```
+
+You should see the following output:
+
+```console
 ...
 {"id": 1,"name": "Yamada Taro","credit_limit": 10000}
 ...
@@ -242,51 +209,103 @@ $ ./gradlew :client:run --args="GetCustomerInfo 1"
 
 At this time, `credit_total` isn't shown, which means the current value of `credit_total` is `0`.
 
-Then, place an order for three apples and two oranges by using customer ID `1`.
-Note that the order format is `<Item ID>:<Count>,<Item ID>:<Count>,...`:
+### Place an order
 
-```shell
+Then, have customer ID `1` place an order for three apples and two oranges by running the following command:
+
+{% capture notice--info %}
+**Note**
+
+The order format in this command is `./gradlew run --args="PlaceOrder <CUSTOMER_ID> <ITEM_ID>:<COUNT>,<ITEM_ID>:<COUNT>,..."`.
+{% endcapture %}
+
+<div class="notice--info">{{ notice--info | markdownify }}</div>
+
+```console
 $ ./gradlew :client:run --args="PlaceOrder 1 1:3,2:2"
+```
+
+You should see a similar output as below, with a different UUID for `order_id`, which confirms that the order was successful:
+
+```console
 ...
 {"order_id": "4ccdb21c-ac03-4b48-bcb7-cad57eac1e79"}
 ...
 ```
 
-You can see that running this command shows the order ID.
+### Check order details
 
-Let's check the details of the order by using the order ID:
+Check details about the order by running the following command, replacing `<ORDER_ID_UUID>` with the UUID for the `order_id` that was shown after running the previous command:
 
-```shell
-$ ./gradlew :client:run --args="GetOrder 4ccdb21c-ac03-4b48-bcb7-cad57eac1e79"
+```console
+$ ./gradlew :client:run --args="GetOrder <ORDER_ID_UUID>"
+```
+
+You should see a similar output as below, with different UUIDs for `order_id` and `timestamp`:
+
+```console
 ...
 {"order": {"order_id": "4ccdb21c-ac03-4b48-bcb7-cad57eac1e79","timestamp": 1631605253126,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 1,"item_name": "Apple","price": 1000,"count": 3,"total": 3000},{"item_id": 2,"item_name": "Orange","price": 2000,"count": 2,"total": 4000}],"total": 7000}}
 ...
 ```
 
-Then, let's place another order and get the order history of customer ID `1`:
+### Place another order
 
-```shell
+Place an order for one melon that uses the remaining amount in `credit_total` for customer ID `1` by running the following command:
+
+```console
 $ ./gradlew :client:run --args="PlaceOrder 1 5:1"
+```
+
+You should see a similar output as below, with a different UUID for `order_id`, which confirms that the order was successful:
+
+```console
 ...
 {"order_id": "0b10db66-faa6-4323-8a7a-474e8534a7ee"}
 ...
+```
+
+### Check order history
+
+Get the history of all orders for customer ID `1` by running the following command:
+
+```console
 $ ./gradlew :client:run --args="GetOrders 1"
+```
+
+You should see a similar output as below, with different UUIDs for `order_id` and `timestamp`, which shows the history of all orders for customer ID `1` in descending order by timestamp:
+
+```console
 ...
 {"order": [{"order_id": "0b10db66-faa6-4323-8a7a-474e8534a7ee","timestamp": 1631605501485,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 5,"item_name": "Melon","price": 3000,"count": 1,"total": 3000}],"total": 3000},{"order_id": "4ccdb21c-ac03-4b48-bcb7-cad57eac1e79","timestamp": 1631605253126,"customer_id": 1,"customer_name": "Yamada Taro","statement": [{"item_id": 1,"item_name": "Apple","price": 1000,"count": 3,"total": 3000},{"item_id": 2,"item_name": "Orange","price": 2000,"count": 2,"total": 4000}],"total": 7000}]}
 ...
 ```
 
-This order history is shown in descending order by timestamp.
+### Check credit total
 
-The customer's current `credit_total` is `10000`.
-Since the customer has now reached their `credit_limit`, which was shown when retrieving their information, they cannot place anymore orders.
+Get the credit total for customer ID `1` by running the following command:
 
-```shell
+```console
 $ ./gradlew :client:run --args="GetCustomerInfo 1"
+```
+
+You should see the following output, which shows that customer ID `1` has reached their `credit_limit` in `credit_total` and cannot place anymore orders:
+
+```console
 ...
 {"id": 1,"name": "Yamada Taro","credit_limit": 10000,"credit_total": 10000}
 ...
+```
+
+Try to place an order for one grape and one mango by running the following command:
+
+```console
 $ ./gradlew :client:run --args="PlaceOrder 1 3:1,4:1"
+```
+
+You should see the following output, which shows that the order failed because the `credit_total` amount would exceed the `credit_limit` amount:
+
+```console
 ...
 io.grpc.StatusRuntimeException: FAILED_PRECONDITION: Credit limit exceeded
         at io.grpc.stub.ClientCalls.toStatusRuntimeException(ClientCalls.java:271)
@@ -307,194 +326,191 @@ io.grpc.StatusRuntimeException: FAILED_PRECONDITION: Credit limit exceeded
 ...
 ```
 
-After making a payment, the customer will be able to place orders again.
+### Make a payment
 
-```shell
+To continue making orders, customer ID `1` must make a payment to reduce the `credit_total` amount.
+
+Make a payment by running the following command:
+
+```console
 $ ./gradlew :client:run --args="Repayment 1 8000"
-...
+```
+
+Then, check the `credit_total` amount for customer ID `1` by running the following command:
+
+```console
 $ ./gradlew :client:run --args="GetCustomerInfo 1"
+```
+
+You should see the following output, which shows that a payment was applied to customer ID `1`, reducing the `credit_total` amount:
+
+```console
 ...
 {"id": 1,"name": "Yamada Taro","credit_limit": 10000,"credit_total": 2000}
 ...
+```
+
+Now that customer ID `1` has made a payment, place an order for one grape and one melon by running the following command:
+
+```console
 $ ./gradlew :client:run --args="PlaceOrder 1 3:1,4:1"
+```
+
+You should see a similar output as below, with a different UUID for `order_id`, which confirms that the order was successful:
+
+```console
 ...
 {"order_id": "dd53dd9d-aaf4-41db-84b2-56951fed6425"}
 ...
 ```
 
-## Clean up
+## Stop the sample application
 
-To stop Cassandra, MySQL and the Microservices, run the following command:
+To stop the sample application, you need to stop the Docker containers that are running Cassandra, MySQL, and the microservices. To stop the Docker containers, run the following command:
 
-```shell
+```console
 $ docker-compose down
 ```
 
-## How the microservice transaction is achieved
+## Reference - How the microservice transaction is achieved
 
-So far, you have run the sample application, but you haven't seen how it is implemented.
-Let's look at the code to see how the transaction that spans the services is implemented.
+The transaction for placing an order achieves the microservice transaction, so this section focuses on how the transaction that spans Customer Service and Order service is implemented.
 
-Transaction #2 (Placing an order) achieves the microservice transaction, so we focus on this transaction here.
+The following sequence diagram shows the transaction for placing an order:
 
-The sequence diagram of transaction #2 is as follows:
+![Microservice transaction sequence diagram](images/sequence_diagram.png)
 
-<p align="center">
-<img src="images/sequence_diagram.png" width="400" />
-</p>
+### 1. Two-phase commit transaction is started
 
-### 1. Start a two-phase commit transaction
+When a client sends a request to place an order to Order Service, `OrderService.placeOrder()` is called, and the microservice transaction starts.
 
-When a client sends `Place an order` request to Order Service, [OrderService.placeOrder()](order-service/src/main/java/sample/order/OrderService.java#L99-L100) is called, and the microservice transaction starts.
-
-At first, Order Service starts a two-phase commit transaction with [start()](order-service/src/main/java/sample/order/OrderService.java#L106):
+At first, Order Service starts a two-phase commit transaction with `start()` as follows. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java).
 
 ```java
 transaction = twoPhaseCommitTransactionManager.start();
 ```
 
-### 2. Execute CRUD operations
+### 2. CRUD operations are executed
 
-After that, CRUD operations happen.
-
-Order Service puts the order information to the `order_service.orders` table also the detailed information to `order_service.statements` (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L109-L124)):
+After the two-phase commit transaction starts, CRUD operations are executed. Order Service puts the order information in the `order_service.orders` table and the detailed information in the `order_service.statements` table as follows. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java):
 
 ```java
-// Put the order info into the orders table
+// Put the order info into the `orders` table.
 Order.put(transaction, orderId, request.getCustomerId(), System.currentTimeMillis());
 
 int amount = 0;
 for (ItemOrder itemOrder : request.getItemOrderList()) {
-  // Put the order statement into the statements table
+  // Put the order statement into the `statements` table.
   Statement.put(transaction, orderId, itemOrder.getItemId(), itemOrder.getCount());
 
-  // Retrieve the item info from the items table
+  // Retrieve the item info from the `items` table.
   Optional<Item> item = Item.get(transaction, itemOrder.getItemId());
   if (!item.isPresent()) {
-    throw Status.NOT_FOUND.withDescription("Item not found").asRuntimeException();
+    responseObserver.onError(
+        Status.NOT_FOUND.withDescription("Item not found").asRuntimeException());
+    return;
   }
 
-  // Calculate the total amount
+  // Calculate the total amount.
   amount += item.get().price * itemOrder.getCount();
 }
 ```
 
-And, Order Service calls the `payment` gRPC endpoint of Customer Service along with the transaction ID (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L127)).
+Then, Order Service calls the `payment` gRPC endpoint of Customer Service along with the transaction ID. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java).
 
-This endpoint first joins the transaction with [join()](customer-service/src/main/java/sample/customer/CustomerService.java#L174-L175):
+This endpoint first joins the transaction with `join()` as follows. For reference, see [CustomerService.java](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
-TwoPhaseCommitTransaction transaction =
-    twoPhaseCommitTransactionManager.join(request.getTransactionId());
+twoPhaseCommitTransactionManager.join(request.getTransactionId());
 ```
 
-It then gets the customer information, and checks if the customer's credit total exceeds the credit limit after the payment.
-And if the check is okay, it updates the customer's credit total (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L177-L193)):
+The endpoint then gets the customer information and checks if the customer's credit total exceeds the credit limit after the payment. If the credit total does not exceed the credit limit, the endpoint updates the customer's credit total. For reference, see [CustomerService.java](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
-// Retrieve the customer info for the customer ID
+// Join the transaction that Order Service started.
+transaction = twoPhaseCommitTransactionManager.join(request.getTransactionId());
+
+// Retrieve the customer info for the customer ID.
 Optional<Customer> result = Customer.get(transaction, request.getCustomerId());
 if (!result.isPresent()) {
-  throw Status.NOT_FOUND.withDescription("Customer not found").asRuntimeException();
+  responseObserver.onError(
+      Status.NOT_FOUND.withDescription("Customer not found").asRuntimeException());
+  return;
 }
 
 int updatedCreditTotal = result.get().creditTotal + request.getAmount();
 
-// Check if the credit total exceeds the credit limit after payment
+// Check if the credit total exceeds the credit limit after payment.
 if (updatedCreditTotal > result.get().creditLimit) {
-  throw Status.FAILED_PRECONDITION
-      .withDescription("Credit limit exceeded")
-      .asRuntimeException();
+  responseObserver.onError(
+      Status.FAILED_PRECONDITION
+          .withDescription("Credit limit exceeded")
+          .asRuntimeException());
+  return;
 }
 
-// Update credit_total for the customer
+// Update `credit_total` for the customer.
 Customer.updateCreditTotal(transaction, request.getCustomerId(), updatedCreditTotal);
 ```
 
-### 3. Two-phase Commit
+### 3. Transaction is committed by using the two-phase commit protocol
 
-Once Order Service receives that the payment succeeded, Order Service tries to commit the transaction.
+After Order Service receives the update that the payment succeeded, Order Service tries to commit the transaction.
 
-To do that, Order Service starts with preparing the transaction.
-Order Service calls `prepare()` of its transaction object and calls the `prepare` gRPC endpoint of Customer Service (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L130-L131`)):
+To commit the transaction, Order Service starts with preparing the transaction. Order Service calls `prepare()` from its transaction object and calls the `prepare` gRPC endpoint of Customer Service. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java):
 
 ```java
 transaction.prepare();
 callPrepareEndpoint(transaction.getId());
 ```
 
-In this endpoint, Customer Service resumes the transaction and calls `prepare()` of its transaction object, as well (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L211-L216)):
+In this endpoint, Customer Service resumes the transaction and calls `prepare()` from its transaction object, as well. For reference, see [CustomerService.java](customer-service/src/main/java/sample/customer/CustomerService.java):
 
 ```java
-// Resume the transaction
-TwoPhaseCommitTransaction transaction =
-    twoPhaseCommitTransactionManager.resume(request.getTransactionId());
+// Resume the transaction.
+transaction = twoPhaseCommitTransactionManager.resume(request.getTransactionId());
 
-// Prepare the transaction
+// Prepare the transaction.
 transaction.prepare();
 ```
 
-Similarly, Order Service and Customer Service call `validate()` of their transaction objects (the codes are [here](order-service/src/main/java/sample/order/OrderService.java#L137-L138) and [here](customer-service/src/main/java/sample/customer/CustomerService.java#L231-L236)).
-For the details of `validate()`, see [this document](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#validate-the-transaction).
+Similarly, Order Service and Customer Service call `validate()` from their transaction objects. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java) and [CustomerService.java](customer-service/src/main/java/sample/customer/CustomerService.java). For details about `validate()`, see [Validate the transaction](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#validate-the-transaction).
 
-When preparing (and validating) the transaction succeeds in both Order Service and Customer Service, you can commit the transaction.
-Order Service calls `commit()` of its transaction object, and then calls the `commit` gRPC endpoint of Customer Service (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L142-L158)):
+After preparing and validating the transaction succeeds in both Order Service and Customer Service, the transaction can be committed. In this case, Order Service calls `commit()` from its transaction object and then calls the `commit` gRPC endpoint of Customer Service. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java).
 
 ```java
-boolean committed = false;
-Exception exception = null;
-try {
-  transaction.commit();
-  committed = true;
-} catch (TransactionException e) {
-  exception = e;
-}
-try {
-  callCommitEndpoint(transaction.getId());
-  committed = true;
-} catch (StatusRuntimeException e) {
-  exception = e;
-}
-if (!committed) {
-  throw exception;
-}
+transaction.commit();
+callCommitEndpoint(transaction.getId());
 ```
 
-Note that If any of services succeed in committing the transaction, you can consider the transaction as committed.
-
-In this endpoint, Customer Service resumes the transaction and calls `commit()` of its transaction object, as well (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L251-L256)):
+In this endpoint, Customer Service resumes the transaction and calls `commit()` from its transaction object, as well. For reference, see [CustomerService.java](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
-// Resume the transaction
-TwoPhaseCommitTransaction transaction =
-    twoPhaseCommitTransactionManager.resume(request.getTransactionId());
+// Resume the transaction.
+transaction = twoPhaseCommitTransactionManager.resume(request.getTransactionId());
 
-// Commit the transaction
+// Commit the transaction.
 transaction.commit();
 ```
 
-#### Rollback the transaction
+### Error handling
 
-When some error happens during the transaction, you need to rollback the transaction.
-In this case, Order Service calls `rollback()` of its transaction object, and then calls the `rollback` gRPC endpoint of Customer Service (the codes are [here](order-service/src/main/java/sample/order/OrderService.java#L181-L190)):
+If an error happens while executing a transaction, you will need to roll back the transaction. In this case, Order Service calls `rollback()` from its transaction object and then calls the `rollback` gRPC endpoint of Customer Service. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java).
 
 ```java
 transaction.rollback();
-
-...
-
 callRollbackEndpoint(transaction.getId());
 ```
 
-In this endpoint, Customer Service resumes the transaction and calls `rollback()` of its transaction object, as well (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L271-L276)):
+In this endpoint, Customer Service resumes the transaction and calls `rollback()` from its transaction object, as well. For reference, see [CustomerService.java](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
-// Resume the transaction
+// Resume the transaction.
 TwoPhaseCommitTransaction transaction =
     twoPhaseCommitTransactionManager.resume(request.getTransactionId());
 
-// Rollback the transaction
+// Roll back the transaction.
 transaction.rollback();
 ```
 
-For more details about how to handle exceptions for Two-phase Commit Transactions, see [Handle exceptions](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#handle-exceptions) 
+For details about how to handle exceptions in ScalarDB, see [Handle exceptions](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions).
