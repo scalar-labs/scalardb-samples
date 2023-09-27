@@ -4,7 +4,7 @@ This tutorial describes how to create a sample application that supports microse
 
 ## Overview
 
-The sample e-commerce application shows how users can order and pay for items by using a line of credit. The use case described in this tutorial is the same as the [basic ScalarDB sample](../scalardb-sample) but takes advantage of [two-phase commit transactions](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md) when using ScalarDB.
+The sample e-commerce application shows how users can order and pay for items by using a line of credit. The use case described in this tutorial is the same as the [basic ScalarDB sample](../scalardb-sample) but takes advantage of [transactions with a two-phase commit interface](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md) when using ScalarDB.
 
 The sample application has two microservices called the *Customer Service* and the *Order Service* based on the [database-per-service pattern](https://microservices.io/patterns/data/database-per-service.html):
 
@@ -26,7 +26,7 @@ In the sample application, for ease of setup and explanation, we co-locate the c
 
 Since the focus of the sample application is to demonstrate using ScalarDB, application-specific error handling, authentication processing, and similar functions are not included in the sample application. For details about exception handling in ScalarDB, see [Handle exceptions](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions).
 
-Additionally, for the purpose of the sample application, each service has one container so that you can avoid using request routing between the services. However, for production use, because each service typically has multiple servers or hosts for scalability and availability, you should consider request routing between the services in two-phase commit transactions. For details about request routing, see [Request routing in two-phase commit transactions](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#request-routing-in-two-phase-commit-transactions).
+Additionally, for the purpose of the sample application, each service has one container so that you can avoid using request routing between the services. However, for production use, because each service typically has multiple servers or hosts for scalability and availability, you should consider request routing between the services in transactions with a two-phase commit interface. For details about request routing, see [Request routing in transactions with a two-phase commit interface](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#request-routing-in-transactions-with-a-two-phase-commit-interface).
 {% endcapture %}
 
 <div class="notice--info">{{ notice--info | markdownify }}</div>
@@ -380,11 +380,11 @@ The following sequence diagram shows the transaction for placing an order:
 
 ![Microservice transaction sequence diagram](images/sequence_diagram.png)
 
-### 1. Two-phase commit transaction is started
+### 1. Transaction with a two-phase commit interface is started
 
 When a client sends a request to place an order to the Order Service, `OrderService.placeOrder()` is called, and the microservice transaction starts.
 
-At first, the Order Service starts a two-phase commit transaction with `start()` as follows. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java).
+At first, the Order Service starts a transaction with a two-phase commit interface with `start()` as follows. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java).
 
 ```java
 transaction = twoPhaseCommitTransactionManager.start();
@@ -392,7 +392,7 @@ transaction = twoPhaseCommitTransactionManager.start();
 
 ### 2. CRUD operations are executed
 
-After the two-phase commit transaction starts, CRUD operations are executed. The Order Service puts the order information in the `order_service.orders` table and the detailed information in the `order_service.statements` table as follows. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java):
+After the transaction with a two-phase commit interface starts, CRUD operations are executed. The Order Service puts the order information in the `order_service.orders` table and the detailed information in the `order_service.statements` table as follows. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java):
 
 ```java
 // Put the order info into the `orders` table.
