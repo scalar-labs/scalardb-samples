@@ -119,7 +119,7 @@ Starting the Docker container may take more than one minute depending on your de
 
 The database schema (the method in which the data will be organized) for the sample application has already been defined in [customer-service-schema.json](customer-service-schema.json) for the Customer Service and [order-service-schema.json](order-service-schema.json) for the Order Service.
 
-To apply the schema, go to the [`scalardb` Releases](https://github.com/scalar-labs/scalardb/releases) page and download the ScalarDB Schema Loader that matches the version of ScalarDB that you want to use to the `scalardb-samples/microservice-transaction-sample` folder.
+To apply the schema, go to the [ScalarDB Releases](https://github.com/scalar-labs/scalardb/releases) page and download the ScalarDB Schema Loader that matches the version of ScalarDB that you want to use to the `scalardb-samples/microservice-transaction-sample` folder.
 
 #### MySQL
 
