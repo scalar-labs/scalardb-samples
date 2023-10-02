@@ -162,7 +162,7 @@ You should see the following output:
 ### Place an order
 
 Then, have customer ID `1` place an order for three apples and two oranges by running the following command:
-lol
+
 {% capture notice--info %}
 **Note**
 
