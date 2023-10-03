@@ -24,7 +24,7 @@ In the sample application, for ease of setup and explanation, we co-locate the c
 {% capture notice--info %}
 **Note**
 
-Since the focus of the sample application is to demonstrate using ScalarDB, application-specific error handling, authentication processing, and similar functions are not included in the sample application. For details about exception handling in ScalarDB, see [Handle exceptions](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions).
+Since the focus of the sample application is to demonstrate using ScalarDB, application-specific error handling, authentication processing, and similar functions are not included in the sample application. For details about exception handling in ScalarDB, see [How to handle exceptions](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#how-to-handle-exceptions).
 
 Additionally, for the purpose of the sample application, each service has one container so that you can avoid using request routing between the services. However, for production use, because each service typically has multiple servers or hosts for scalability and availability, you should consider request routing between the services in transactions with a two-phase commit interface. For details about request routing, see [Request routing in transactions with a two-phase commit interface](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#request-routing-in-transactions-with-a-two-phase-commit-interface).
 {% endcapture %}
@@ -99,7 +99,7 @@ $ cd scalardb-samples/microservice-transaction-sample
 
 ### Start Cassandra and MySQL
 
-Cassandra and MySQL are already configured for the sample application, as shown in [database.properties](database.properties). For details about configuring the multi-storage transactions feature in ScalarDB, see [Configuration](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md#configuration).
+Cassandra and MySQL are already configured for the sample application, as shown in [database.properties](database.properties). For details about configuring the multi-storage transactions feature in ScalarDB, see [How to configure ScalarDB to support multi-storage transactions](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md#how-to-configure-scalardb-to-support-multi-storage-transactions).
 
 To start Cassandra and MySQL, which are included in the Docker container for the sample application, run the following command:
 
@@ -513,4 +513,4 @@ TwoPhaseCommitTransaction transaction =
 transaction.rollback();
 ```
 
-For details about how to handle exceptions in ScalarDB, see [Handle exceptions](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#handle-exceptions).
+For details about how to handle exceptions in ScalarDB, see [How to handle exceptions](https://github.com/scalar-labs/scalardb/blob/master/docs/api-guide.md#how-to-handle-exceptions).
