@@ -17,9 +17,9 @@ The databases that you will be using in the sample application are Cassandra and
 
 ![Overview](images/overview.png)
 
-As shown in the diagram, both services access a small coordinator database used for the Consensus Commit protocol. The database is service-independent and exists for managing transaction metadata for Consensus Commit in a highly available manner.
+As shown in the diagram, both services access a small Coordinator database used for the Consensus Commit protocol. The database is service-independent and exists for managing transaction metadata for Consensus Commit in a highly available manner.
 
-In the sample application, for ease of setup and explanation, we co-locate the coordinator database in the same Cassandra instance of the Order Service. Alternatively, you can manage the coordinator database as a separate database.
+In the sample application, for ease of setup and explanation, we co-locate the Coordinator database in the same Cassandra instance of the Order Service. Alternatively, you can manage the Coordinator database as a separate database.
 
 {% capture notice--info %}
 **Note**
