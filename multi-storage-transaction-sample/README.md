@@ -4,7 +4,7 @@ This tutorial describes how to create a sample application that supports the mul
 
 ## Overview
 
-The sample e-commerce application shows how users can order and pay for items by using a line of credit. The use case described in this tutorial is the same as the [basic ScalarDB sample](../scalardb-sample) but takes advantage of the [multi-storage transactions](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md) feature in ScalarDB.
+The sample e-commerce application shows how users can order and pay for items by using a line of credit. The use case described in this tutorial is the same as the basic [ScalarDB sample](../scalardb-sample) but takes advantage of the [multi-storage transactions](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md) feature in ScalarDB.
 
 In this tutorial, you will build an application that uses both Cassandra and MySQL. By using the multi-storage transactions feature in ScalarDB, you can execute a transaction that spans both Cassandra and MySQL.
 
@@ -68,7 +68,7 @@ $ cd scalardb-samples/multi-storage-transaction-sample
 
 ### Start Cassandra and MySQL
 
-Cassandra and MySQL are already configured for the sample application, as shown in [database.properties](database.properties). For details about configuring the multi-storage transactions feature in ScalarDB, see [How to configure ScalarDB to support multi-storage transactions](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md#how-to-configure-scalardb-to-support-multi-storage-transactions).
+Cassandra and MySQL are already configured for the sample application, as shown in [`database.properties`](database.properties). For details about configuring the multi-storage transactions feature in ScalarDB, see [How to configure ScalarDB to support multi-storage transactions](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md#how-to-configure-scalardb-to-support-multi-storage-transactions).
 
 To start Cassandra and MySQL, which are included in the Docker container for the sample application, make sure Docker is running and then run the following command:
 
@@ -86,7 +86,7 @@ Starting the Docker container may take more than one minute depending on your de
 
 ### Load the schema
 
-The database schema (the method in which the data will be organized) for the sample application has already been defined in [schema.json](schema.json).
+The database schema (the method in which the data will be organized) for the sample application has already been defined in [`schema.json`](schema.json).
 
 To apply the schema, go to the [ScalarDB Releases](https://github.com/scalar-labs/scalardb/releases) page and download the ScalarDB Schema Loader that matches the version of ScalarDB that you want to use to the `scalardb-samples/multi-storage-transaction-sample` folder.
 
@@ -98,7 +98,7 @@ $ java -jar scalardb-schema-loader-<VERSION>.jar --config database.properties --
 
 #### Schema details
 
-As shown in [schema.json](schema.json) for the sample application, all the tables are created in the `customer` and `order` namespaces.
+As shown in [`schema.json`](schema.json) for the sample application, all the tables are created in the `customer` and `order` namespaces.
 
 - `customer.customers`: a table that manages customers' information
   - `credit_limit`: the maximum amount of money a lender will allow each customer to spend when using a line of credit

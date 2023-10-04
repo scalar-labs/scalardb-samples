@@ -4,7 +4,7 @@ This tutorial describes how to create a sample application that supports microse
 
 ## Overview
 
-The sample e-commerce application shows how users can order and pay for items by using a line of credit. The use case described in this tutorial is the same as the [basic ScalarDB sample](../scalardb-sample) but takes advantage of [transactions with a two-phase commit interface](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md) when using ScalarDB.
+The sample e-commerce application shows how users can order and pay for items by using a line of credit. The use case described in this tutorial is the same as the basic [ScalarDB sample](../scalardb-sample) but takes advantage of [transactions with a two-phase commit interface](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md) when using ScalarDB.
 
 The sample application has two microservices called the *Customer Service* and the *Order Service* based on the [database-per-service pattern](https://microservices.io/patterns/data/database-per-service.html):
 
@@ -99,7 +99,7 @@ $ cd scalardb-samples/microservice-transaction-sample
 
 ### Start Cassandra and MySQL
 
-Cassandra and MySQL are already configured for the sample application, as shown in [database.properties](database.properties). For details about configuring the multi-storage transactions feature in ScalarDB, see [How to configure ScalarDB to support multi-storage transactions](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md#how-to-configure-scalardb-to-support-multi-storage-transactions).
+Cassandra and MySQL are already configured for the sample application, as shown in [`database.properties`](database.properties). For details about configuring the multi-storage transactions feature in ScalarDB, see [How to configure ScalarDB to support multi-storage transactions](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md#how-to-configure-scalardb-to-support-multi-storage-transactions).
 
 To start Cassandra and MySQL, which are included in the Docker container for the sample application, run the following command:
 
@@ -117,13 +117,13 @@ Starting the Docker container may take more than one minute depending on your de
 
 ### Load the schema
 
-The database schema (the method in which the data will be organized) for the sample application has already been defined in [customer-service-schema.json](customer-service-schema.json) for the Customer Service and [order-service-schema.json](order-service-schema.json) for the Order Service.
+The database schema (the method in which the data will be organized) for the sample application has already been defined in [`customer-service-schema.json`](customer-service-schema.json) for the Customer Service and [`order-service-schema.json`](order-service-schema.json) for the Order Service.
 
 To apply the schema, go to the [ScalarDB Releases](https://github.com/scalar-labs/scalardb/releases) page and download the ScalarDB Schema Loader that matches the version of ScalarDB that you want to use to the `scalardb-samples/microservice-transaction-sample` folder.
 
 #### MySQL
 
-To load the schema for [customer-service-schema.json](customer-service-schema.json) into MySQL, run the following command, replacing `<VERSION>` with the version of the ScalarDB Schema Loader that you downloaded:
+To load the schema for [`customer-service-schema.json`](customer-service-schema.json) into MySQL, run the following command, replacing `<VERSION>` with the version of the ScalarDB Schema Loader that you downloaded:
 
 ```console
 $ java -jar scalardb-schema-loader-<VERSION>.jar --config database-mysql.properties --schema-file customer-service-schema.json
@@ -131,7 +131,7 @@ $ java -jar scalardb-schema-loader-<VERSION>.jar --config database-mysql.propert
 
 #### Cassandra
 
-To load the schema for [order-service-schema.json](order-service-schema.json) into Cassandra, run the following command, replacing `<VERSION>` with the version of the ScalarDB Schema Loader that you downloaded:
+To load the schema for [`order-service-schema.json`](order-service-schema.json) into Cassandra, run the following command, replacing `<VERSION>` with the version of the ScalarDB Schema Loader that you downloaded:
 
 ```console
 $ java -jar scalardb-schema-loader-<VERSION>.jar --config database-cassandra.properties --schema-file order-service-schema.json --coordinator
@@ -139,13 +139,13 @@ $ java -jar scalardb-schema-loader-<VERSION>.jar --config database-cassandra.pro
 
 #### Schema details
 
-As shown in [customer-service-schema.json](customer-service-schema.json) for the sample application, all the tables for the Customer Service are created in the `customer_service` namespace.
+As shown in [`customer-service-schema.json`](customer-service-schema.json) for the sample application, all the tables for the Customer Service are created in the `customer_service` namespace.
 
 - `customer_service.customers`: a table that manages customers' information
   - `credit_limit`: the maximum amount of money a lender will allow each customer to spend when using a line of credit
   - `credit_total`: the amount of money that each customer has already spent by using their line of credit
 
-As shown in [order-service-schema.json](order-service-schema.json) for the sample application, all the tables for the Order Service are created in the `order_service` namespace.
+As shown in [`order-service-schema.json`](order-service-schema.json) for the sample application, all the tables for the Order Service are created in the `order_service` namespace.
 
 - `order_service.orders`: a table that manages order information
 - `order_service.statements`: a table that manages order statement information
@@ -384,7 +384,7 @@ The following sequence diagram shows the transaction for placing an order:
 
 When a client sends a request to place an order to the Order Service, `OrderService.placeOrder()` is called, and the microservice transaction starts.
 
-At first, the Order Service starts a transaction with a two-phase commit interface with `start()` as follows. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java).
+At first, the Order Service starts a transaction with a two-phase commit interface with `start()` as follows. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java).
 
 ```java
 transaction = twoPhaseCommitTransactionManager.start();
@@ -392,7 +392,7 @@ transaction = twoPhaseCommitTransactionManager.start();
 
 ### 2. CRUD operations are executed
 
-After the transaction with a two-phase commit interface starts, CRUD operations are executed. The Order Service puts the order information in the `order_service.orders` table and the detailed information in the `order_service.statements` table as follows. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java):
+After the transaction with a two-phase commit interface starts, CRUD operations are executed. The Order Service puts the order information in the `order_service.orders` table and the detailed information in the `order_service.statements` table as follows. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java):
 
 ```java
 // Put the order info into the `orders` table.
@@ -416,15 +416,15 @@ for (ItemOrder itemOrder : request.getItemOrderList()) {
 }
 ```
 
-Then, the Order Service calls the `payment` gRPC endpoint of the Customer Service along with the transaction ID. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java).
+Then, the Order Service calls the `payment` gRPC endpoint of the Customer Service along with the transaction ID. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java).
 
-This endpoint first joins the transaction with `join()` as follows. For reference, see [CustomerService.java](customer-service/src/main/java/sample/customer/CustomerService.java).
+This endpoint first joins the transaction with `join()` as follows. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
 twoPhaseCommitTransactionManager.join(request.getTransactionId());
 ```
 
-The endpoint then gets the customer information and checks if the customer's credit total exceeds the credit limit after the payment. If the credit total does not exceed the credit limit, the endpoint updates the customer's credit total. For reference, see [CustomerService.java](customer-service/src/main/java/sample/customer/CustomerService.java).
+The endpoint then gets the customer information and checks if the customer's credit total exceeds the credit limit after the payment. If the credit total does not exceed the credit limit, the endpoint updates the customer's credit total. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
 // Join the transaction that the Order Service started.
@@ -457,14 +457,14 @@ Customer.updateCreditTotal(transaction, request.getCustomerId(), updatedCreditTo
 
 After the Order Service receives the update that the payment succeeded, the Order Service tries to commit the transaction.
 
-To commit the transaction, the Order Service starts with preparing the transaction. The Order Service calls `prepare()` from its transaction object and calls the `prepare` gRPC endpoint of the Customer Service. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java):
+To commit the transaction, the Order Service starts with preparing the transaction. The Order Service calls `prepare()` from its transaction object and calls the `prepare` gRPC endpoint of the Customer Service. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java):
 
 ```java
 transaction.prepare();
 callPrepareEndpoint(transaction.getId());
 ```
 
-In this endpoint, the Customer Service resumes the transaction and calls `prepare()` from its transaction object, as well. For reference, see [CustomerService.java](customer-service/src/main/java/sample/customer/CustomerService.java):
+In this endpoint, the Customer Service resumes the transaction and calls `prepare()` from its transaction object, as well. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java):
 
 ```java
 // Resume the transaction.
@@ -474,16 +474,16 @@ transaction = twoPhaseCommitTransactionManager.resume(request.getTransactionId()
 transaction.prepare();
 ```
 
-Similarly, the Order Service and the Customer Service call `validate()` from their transaction objects. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java) and [CustomerService.java](customer-service/src/main/java/sample/customer/CustomerService.java). For details about `validate()`, see [Validate the transaction](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#validate-the-transaction).
+Similarly, the Order Service and the Customer Service call `validate()` from their transaction objects. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java) and [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java). For details about `validate()`, see [Validate the transaction](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#validate-the-transaction).
 
-After preparing and validating the transaction succeeds in both the Order Service and the Customer Service, the transaction can be committed. In this case, the Order Service calls `commit()` from its transaction object and then calls the `commit` gRPC endpoint of the Customer Service. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java).
+After preparing and validating the transaction succeeds in both the Order Service and the Customer Service, the transaction can be committed. In this case, the Order Service calls `commit()` from its transaction object and then calls the `commit` gRPC endpoint of the Customer Service. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java).
 
 ```java
 transaction.commit();
 callCommitEndpoint(transaction.getId());
 ```
 
-In this endpoint, the Customer Service resumes the transaction and calls `commit()` from its transaction object, as well. For reference, see [CustomerService.java](customer-service/src/main/java/sample/customer/CustomerService.java).
+In this endpoint, the Customer Service resumes the transaction and calls `commit()` from its transaction object, as well. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
 // Resume the transaction.
@@ -495,14 +495,14 @@ transaction.commit();
 
 ### Error handling
 
-If an error happens while executing a transaction, you will need to roll back the transaction. In this case, the Order Service calls `rollback()` from its transaction object and then calls the `rollback` gRPC endpoint of the Customer Service. For reference, see [OrderService.java](order-service/src/main/java/sample/order/OrderService.java).
+If an error happens while executing a transaction, you will need to roll back the transaction. In this case, the Order Service calls `rollback()` from its transaction object and then calls the `rollback` gRPC endpoint of the Customer Service. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java).
 
 ```java
 transaction.rollback();
 callRollbackEndpoint(transaction.getId());
 ```
 
-In this endpoint, the Customer Service resumes the transaction and calls `rollback()` from its transaction object, as well. For reference, see [CustomerService.java](customer-service/src/main/java/sample/customer/CustomerService.java).
+In this endpoint, the Customer Service resumes the transaction and calls `rollback()` from its transaction object, as well. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
 // Resume the transaction.
