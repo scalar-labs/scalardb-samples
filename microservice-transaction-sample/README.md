@@ -137,7 +137,7 @@ To load the schema for [order-service-schema.json](order-service-schema.json) in
 $ java -jar scalardb-schema-loader-<VERSION>.jar --config database-cassandra.properties --schema-file order-service-schema.json --coordinator
 ```
 
-#### Schema reference
+#### Schema details
 
 As shown in [customer-service-schema.json](customer-service-schema.json) for the sample application, all the tables for the Customer Service are created in the `customer_service` namespace.
 
