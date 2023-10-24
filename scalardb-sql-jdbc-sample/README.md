@@ -4,7 +4,7 @@ This tutorial describes how to create a sample e-commerce application that uses 
 
 ## Overview
 
-The sample e-commerce application shows how users can order and pay for items by using a line of credit. The use case described in this tutorial is the same as the basic [ScalarDB sample](../scalardb-sample) but uses ScalarDB SQL (JDBC).
+The sample e-commerce application shows how users can order and pay for items by using a line of credit. The use case described in this tutorial is the same as the basic [ScalarDB sample](../scalardb-sample/README.md) but uses ScalarDB SQL (JDBC).
 
 The database that you will be using in the sample application is Cassandra. Although Cassandra does not provide ACID transaction capabilities, you can make transactions ACID compliant by having your application connect to the database through ScalarDB SQL (JDBC).
 
