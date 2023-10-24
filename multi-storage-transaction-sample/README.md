@@ -306,7 +306,6 @@ You should see a similar output as below, with a different UUID for `order_id`, 
 ```console
 ...
 {"order_id": "8911cab3-1c2b-4322-9386-adb1c024e078"}
-The balance for merchant1 is 100
 ...
 ```
 
