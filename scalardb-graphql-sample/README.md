@@ -36,7 +36,7 @@ $ export USERNAME=<YOUR_GITHUB_USERNAME>
 $ export TOKEN=<YOUR_PERSONAL_ACCESS_TOKEN>
 ```
 
-## Set up ScalarDB GraphQL and build the client application
+## Set up ScalarDB GraphQL
 
 The following sections describe how to set up the sample electronic money application.
 
@@ -114,7 +114,7 @@ $ docker-compose up -d
 
 After the Docker container has started, open the GraphQL endpoint, http://localhost:8080/graphql, in your web browser. The GraphiQL IDE lets you use the GraphQL schema for the `account` table and browse the schema document.
 
-### Build the client application
+## Build the client application
 
 With the GraphQL server running, you can now build the client application that will communicate with the GraphQL endpoint.
 
