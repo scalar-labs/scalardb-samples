@@ -32,7 +32,7 @@ To see which types of queries PostgreSQL supports, see the [PostgreSQL documenta
 
 First, you must set up the database to run analytical queries with ScalarDB Analytics with PostgreSQL. If you haven't set up the database yet, please follow the instructions in [Getting Started](https://scalardb.scalar-labs.com/docs/latest/scalardb-analytics-postgresql/getting-started).
 
-### Schema in ScalarDB
+### Schema details in ScalarDB
 
 In the application, you have tables with the following schema in the ScalarDB database:
 
@@ -88,7 +88,7 @@ For reference, this diagram shows the following:
 - `postgresns.orders`. A table that contains information about orders that customers have placed. This table includes attributes like order key, customer key, order status, order date, and order priority.
 - `cassandrans.lineitem`. A table that represents line items associated with orders. This table includes attributes such as order key, part key, supplier key, quantity, price, and shipping date.
 
-### Schema in PostgreSQL
+### Schema details in PostgreSQL
 
 By running the Schema Importer when setting up ScalarDB, you can import the table schema in the ScalarDB database into the PostgreSQL database. More precisely, for each `namespace_name.table_name` table in the ScalarDB database, you will have a foreign table for `namespace_name._table_name` and a view for `namespace_name.table_name` in the PostgreSQL database. The columns in the foreign table are identical to the columns in the table in PostgreSQL and in the transaction metadata.
 
