@@ -90,7 +90,7 @@ For reference, this diagram shows the following:
 
 ### Schema in PostgreSQL
 
-By running the Schema Importer when setting up ScalarDB , you can import the table schema in the ScalarDB database into the PostgreSQL database. More precisely, for each `namespace_name.table_name` table in the ScalarDB database, you will have a foreign table for `namespace_name._table_name` and a view for `namespace_name.table_name` in the PostgreSQL database. The columns in the foreign table are identical to the columns in the table in PostgreSQL and in the transaction metadata.
+By running the Schema Importer when setting up ScalarDB, you can import the table schema in the ScalarDB database into the PostgreSQL database. More precisely, for each `namespace_name.table_name` table in the ScalarDB database, you will have a foreign table for `namespace_name._table_name` and a view for `namespace_name.table_name` in the PostgreSQL database. The columns in the foreign table are identical to the columns in the table in PostgreSQL and in the transaction metadata.
 
 To see the schema for `dynamons.customer` in the ScalarDB database, run the following command:
 
@@ -280,7 +280,7 @@ ORDER BY
   revenue DESC,
   o_orderdate,
   l_orderkey
-LIMIT 10
+LIMIT 10;
 ```
 
 You should see the following output:

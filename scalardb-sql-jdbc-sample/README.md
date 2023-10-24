@@ -83,7 +83,7 @@ For more details, see [how to install ScalarDB SQL](https://github.com/scalar-la
 
 The following sections describe how to set up the sample e-commerce application.
 
-## Clone the ScalarDB samples repository
+### Clone the ScalarDB samples repository
 
 Open **Terminal**, then clone the ScalarDB samples repository by running the following command:
 
@@ -97,7 +97,7 @@ Then, go to the directory that contains the sample application by running the fo
 $ cd scalardb-samples/scalardb-sql-jdbc-sample
 ```
 
-## Start Cassandra
+### Start Cassandra
 
 Cassandra is already configured for the sample application, as shown in [`scalardb-sql.properties`](scalardb-sql.properties).
 
@@ -115,7 +115,7 @@ Starting the Docker container may take more than one minute depending on your de
 
 <div class="notice--info">{{ notice--info | markdownify }}</div>
 
-## Load the schema
+### Load the schema
 
 The database schema (the method in which the data will be organized) for the sample application has already been defined in [`schema.sql`](schema.sql).
 
@@ -127,7 +127,7 @@ Then, run the following command, replacing `<VERSION>` with the version of the S
 $ java -jar scalardb-sql-cli-<VERSION>-all.jar --config scalardb-sql.properties --file schema.sql
 ```
 
-### Schema details
+#### Schema details
 
 As shown in [`schema.sql`](schema.sql) for the sample application, all the tables are created in the `sample` namespace.
 
@@ -142,7 +142,7 @@ The Entity Relationship Diagram for the schema is as follows:
 
 ![ERD](images/ERD.png)
 
-## Load the initial data
+### Load the initial data
 
 After the Docker container has started, load the initial data by running the following command:
 

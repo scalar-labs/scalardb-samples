@@ -14,7 +14,7 @@ The sample client application is just one example of what you can create. Since 
 
 <div class="notice--info">{{ notice--info | markdownify }}</div>
 
-## What you can do in this sample application
+### What you can do in this sample application
 
 The sample application supports the following types of transactions:
 
