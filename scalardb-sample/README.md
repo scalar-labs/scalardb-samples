@@ -96,7 +96,7 @@ Then, run the following command, replacing `<VERSION>` with the version of the S
 $ java -jar scalardb-schema-loader-<VERSION>.jar --config database.properties --schema-file schema.json --coordinator
 ```
 
-#### Schema reference
+#### Schema details
 
 As shown in [**schema.json**](schema.json) for the sample application, all the tables are created in the `sample` namespace.
 
