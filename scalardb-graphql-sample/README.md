@@ -27,9 +27,9 @@ The sample application supports the following types of transactions:
 - [Docker](https://www.docker.com/get-started/) 20.10 or later with [Docker Compose](https://docs.docker.com/compose/install/) V2 or later
 - [Node.js](https://nodejs.org/en/download/current/) 16+
 
-In addition, to access the Docker image for ScalarDB GraphQL in the GitHub Container registry, which is private, you need a personal access token. This registry is available only to users with an Enterprise license and permission. To get a license and permission, please [contact us](https://scalar-labs.com/contact_us/).
+In addition, you need access to the Docker image for ScalarDB GraphQL in the GitHub Container registry, which is private. The registry is available only those who are using ScalarDB Enterprise. If you need a license for ScalarDB Enterprise, please [contact us](https://scalar-labs.com/contact_us/).
 
-Specify the properties as environment variables by running the following commands, replacing `<YOUR_GITHUB_USERNAME>` with your GitHub username and `<YOUR_PERSONAL_ACCESS_TOKEN>` with your personal access token:
+After confirming that you have access to the ScalarDB GraphQL repository and its packages in the GitHub Container registry, you will need to set your GitHub username and your personal access token. To specify these properties as environment variables, run the following commands, replacing `<YOUR_GITHUB_USERNAME>` with your GitHub username and `<YOUR_PERSONAL_ACCESS_TOKEN>` with your personal access token:
 
 ```console
 $ export USERNAME=<YOUR_GITHUB_USERNAME>

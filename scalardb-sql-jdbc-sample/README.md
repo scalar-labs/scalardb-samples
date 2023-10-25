@@ -46,7 +46,7 @@ In addition, other JDKs should work with ScalarDB, but we haven't tested them.
 
 <div class="notice--info">{{ notice--info | markdownify }}</div>
 
-In addition, you need access to the [ScalarDB SQL repository on GitHub](https://github.com/scalar-labs/scalardb-sql) and the [packages in the ScalarDB SQL repository](https://github.com/orgs/scalar-labs/packages?repo_name=scalardb-sql). The packages and repository are available only in the Enterprise edition. If you need a license and permission, please [contact us](https://scalar-labs.com/contact_us/).
+In addition, you need access to the [ScalarDB SQL repository on GitHub](https://github.com/scalar-labs/scalardb-sql) and the [packages in the ScalarDB SQL repository](https://github.com/orgs/scalar-labs/packages?repo_name=scalardb-sql), which are private. The packages and repository are available only those who are using ScalarDB Enterprise. If you need a license for ScalarDB Enterprise, please [contact us](https://scalar-labs.com/contact_us/).
 
 After confirming that you have access to the ScalarDB SQL repository and its packages, you will need to set your GitHub username and your personal access token. To specify these properties, you can do one of the following:
 
