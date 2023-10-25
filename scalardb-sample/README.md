@@ -1,4 +1,4 @@
-# Create a Sample Application by Using ScalarDB
+# Create a Sample Application That Uses ScalarDB
 
 This tutorial describes how to create a sample e-commerce application by using ScalarDB.
 
@@ -68,7 +68,7 @@ $ cd scalardb-samples/scalardb-sample
 
 ### Start Cassandra
 
-Cassandra is already configured for the sample application, as shown in [**database.properties**](database.properties).
+Cassandra is already configured for the sample application, as shown in [`database.properties`](database.properties).
 
 To start Cassandra, which is included in the Docker container for the sample application, make sure Docker is running and then run the following command:
 
@@ -86,9 +86,9 @@ Starting the Docker container may take more than one minute depending on your de
 
 ### Load the schema
 
-The database schema (the method in which the data will be organized) for the sample application has already been defined in [**schema.json**](schema.json).
+The database schema (the method in which the data will be organized) for the sample application has already been defined in [`schema.json`](schema.json).
 
-To apply the schema, go to the [`scalardb` Releases](https://github.com/scalar-labs/scalardb/releases) page and download the ScalarDB Schema Loader that matches the version of ScalarDB that you want to use to the `scalardb-samples/scalardb-sample` folder.
+To apply the schema, go to the [ScalarDB Releases](https://github.com/scalar-labs/scalardb/releases) page and download the ScalarDB Schema Loader that matches the version of ScalarDB that you want to use to the `scalardb-samples/scalardb-sample` folder.
 
 Then, run the following command, replacing `<VERSION>` with the version of the ScalarDB Schema Loader that you downloaded:
 
@@ -96,9 +96,9 @@ Then, run the following command, replacing `<VERSION>` with the version of the S
 $ java -jar scalardb-schema-loader-<VERSION>.jar --config database.properties --schema-file schema.json --coordinator
 ```
 
-#### Schema reference
+#### Schema details
 
-As shown in [**schema.json**](schema.json) for the sample application, all the tables are created in the `sample` namespace.
+As shown in [`schema.json`](schema.json) for the sample application, all the tables are created in the `sample` namespace.
 
 - `sample.customers`: a table that manages customer information
   - `credit_limit`: the maximum amount of money that the lender will allow the customer to spend from their line of credit
@@ -306,7 +306,6 @@ You should see a similar output as below, with a different UUID for `order_id`, 
 ```
 ...
 {"order_id": "8911cab3-1c2b-4322-9386-adb1c024e078"}
-The balance for merchant1 is 100
 ...
 ```
 

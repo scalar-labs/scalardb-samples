@@ -4,7 +4,7 @@ This tutorial describes how to create a sample application that supports microse
 
 ## Overview
 
-The sample e-commerce application shows how users can order and pay for items by using a line of credit. The use case described in this tutorial is the same as the basic [ScalarDB sample](../scalardb-sample) but takes advantage of [transactions with a two-phase commit interface](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md) when using ScalarDB.
+The sample e-commerce application shows how users can order and pay for items by using a line of credit. The use case described in this tutorial is the same as the basic [ScalarDB sample](../scalardb-sample/README.md) but takes advantage of [transactions with a two-phase commit interface](https://github.com/scalar-labs/scalardb/tree/master/docs/two-phase-commit-transactions.md) when using ScalarDB.
 
 The sample application has two microservices called the *Customer Service* and the *Order Service* based on the [database-per-service pattern](https://microservices.io/patterns/data/database-per-service.html):
 
@@ -155,7 +155,7 @@ The Entity Relationship Diagram for the schema is as follows:
 
 ![ERD](images/ERD.png)
 
-## Load the initial data by starting the microservices
+### Load the initial data by starting the microservices
 
 Before starting the microservices, build the Docker images of the sample application by running the following command:
 

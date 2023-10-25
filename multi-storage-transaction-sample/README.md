@@ -4,7 +4,7 @@ This tutorial describes how to create a sample application that supports the mul
 
 ## Overview
 
-The sample e-commerce application shows how users can order and pay for items by using a line of credit. The use case described in this tutorial is the same as the basic [ScalarDB sample](../scalardb-sample) but takes advantage of the [multi-storage transactions](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md) feature in ScalarDB.
+The sample e-commerce application shows how users can order and pay for items by using a line of credit. The use case described in this tutorial is the same as the basic [ScalarDB sample](../scalardb-sample/README.md) but takes advantage of the [multi-storage transactions](https://github.com/scalar-labs/scalardb/blob/master/docs/multi-storage-transactions.md) feature in ScalarDB.
 
 In this tutorial, you will build an application that uses both Cassandra and MySQL. By using the multi-storage transactions feature in ScalarDB, you can execute a transaction that spans both Cassandra and MySQL.
 
@@ -306,7 +306,6 @@ You should see a similar output as below, with a different UUID for `order_id`, 
 ```console
 ...
 {"order_id": "8911cab3-1c2b-4322-9386-adb1c024e078"}
-The balance for merchant1 is 100
 ...
 ```
 
