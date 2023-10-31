@@ -8,7 +8,7 @@ The sample application shows how you can run two types of queries: a single-tabl
 
 ### What you can do in this sample application
 
-The sample application supports the following types of transactions:
+The sample application supports the following types of queries:
 
 - Read data and calculate summaries.
 - Join tables that span multiple storages.
@@ -91,6 +91,8 @@ For reference, this diagram shows the following:
 ### Schema details in PostgreSQL
 
 By running the Schema Importer when setting up ScalarDB, you can import the table schema in the ScalarDB database into the PostgreSQL database. More precisely, for each `namespace_name.table_name` table in the ScalarDB database, you will have a foreign table for `namespace_name._table_name` and a view for `namespace_name.table_name` in the PostgreSQL database. The columns in the foreign table are identical to the columns in the table in PostgreSQL and in the transaction metadata.
+
+The created foreign table contains identical columns to the ScalarDB table as well as the transaction metadata columns that ScalarDB manages internally. The created view is defined to exclude the transaction metadata columns from the foreign table, so it only contains the same columns as the ScalarDB table.
 
 To see the schema for `dynamons.customer` in the ScalarDB database, run the following command:
 
@@ -180,7 +182,7 @@ After entering your password, you should see the following output:
  c_comment    | text             |           |          |
 ```
 
-The column definitions in this view are the same as the original table in the ScalarDB database. In ScalarDB, this view is based on the foreign table explained above and interprets the transaction metadata to expose only the valid data with the Read Committed isolation level.
+The column definitions in this view are the same as the original table in the ScalarDB database. This view is created based on the foreign table explained above to expose only the valid data with the Read Committed isolation level by interpreting the transaction metadata columns.
 
 {% capture notice--info %}
 **Note**
