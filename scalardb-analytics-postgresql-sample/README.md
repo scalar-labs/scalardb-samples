@@ -296,9 +296,9 @@ You should see the following output:
 (3 rows)
 ```
 
-## Stop the sample
+## Stop ScalarDB Analytics with PostgreSQL and the database
 
-To stop the sample, stop the Docker container by running the following command:
+To stop ScalarDB Analytics with PostgreSQL and the database, stop the Docker container by running the following command:
 
 ```console
 $ docker-compose down
