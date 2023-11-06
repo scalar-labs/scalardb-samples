@@ -1,14 +1,14 @@
-# Create a Sample Application That Uses ScalarDB Analytics with PostgreSQL
+# Run Analytical Queries on Sample Data by Using ScalarDB Analytics with PostgreSQL
 
-This tutorial describes how to create a sample application that uses ScalarDB Analytics with PostgreSQL.
+This tutorial describes how to run analytical queries on sample data by using ScalarDB Analytics with PostgreSQL.
 
 ## Overview
 
-The sample application shows how you can run two types of queries: a single-table query and a multi-table query.
+This sample tutorial shows how you can run two types of queries: a single-table query and a multi-table query.
 
-### What you can do in this sample application
+### What you can do in this sample tutorial
 
-The sample application supports the following types of queries:
+This sample tutorial shows how you can run the following types of queries:
 
 - Read data and calculate summaries.
 - Join tables that span multiple storages.
@@ -16,7 +16,7 @@ The sample application supports the following types of queries:
 {% capture notice--info %}
 **Note**
 
-You can run any arbitrary query that PostgreSQL supports on the imported tables in the sample application. Since ScalarDB Analytics with PostgreSQL supports all queries that PostgreSQL supports, you can use not only join, aggregation, filtering, and ordering as shown in the example, but also the window function, lateral join, or various analytical operations.
+You can run any arbitrary query that PostgreSQL supports on the imported tables in this sample tutorial. Since ScalarDB Analytics with PostgreSQL supports all queries that PostgreSQL supports, you can use not only join, aggregation, filtering, and ordering as shown in the example, but also the window function, lateral join, or various analytical operations.
 
 To see which types of queries PostgreSQL supports, see the [PostgreSQL documentation](https://www.postgresql.org/docs/current/index.html).
 {% endcapture %}
@@ -34,7 +34,7 @@ First, you must set up the database to run analytical queries with ScalarDB Anal
 
 ### Schema details in ScalarDB
 
-In the application, you have tables with the following schema in the ScalarDB database:
+In this sample tutorial, you have tables with the following schema in the ScalarDB database:
 
 ```mermaid
 erDiagram
@@ -90,9 +90,9 @@ For reference, this diagram shows the following:
 
 ### Schema details in PostgreSQL
 
-By running the Schema Importer when setting up ScalarDB, you can import the table schema in the ScalarDB database into the PostgreSQL database. More precisely, for each `namespace_name.table_name` table in the ScalarDB database, you will have a foreign table for `namespace_name._table_name` and a view for `namespace_name.table_name` in the PostgreSQL database. The columns in the foreign table are identical to the columns in the table in PostgreSQL and in the transaction metadata.
+By running the Schema Importer when setting up ScalarDB, you can import the table schema in the ScalarDB database into the PostgreSQL database. More precisely, for each `namespace_name.table_name` table in the ScalarDB database, you will have a foreign table for `namespace_name._table_name` and a view for `namespace_name.table_name` in the PostgreSQL database. 
 
-The created foreign table contains identical columns to the ScalarDB table as well as the transaction metadata columns that ScalarDB manages internally. The created view is defined to exclude the transaction metadata columns from the foreign table, so it only contains the same columns as the ScalarDB table.
+The created foreign table contains columns that are identical to the ScalarDB table and the transaction metadata columns that ScalarDB manages internally. Since the created view is defined to exclude the transaction metadata columns from the foreign table, the created view contains only the same columns as the ScalarDB table.
 
 To see the schema for `dynamons.customer` in the ScalarDB database, run the following command:
 
@@ -296,9 +296,9 @@ You should see the following output:
 (3 rows)
 ```
 
-## Stop the sample application
+## Stop the sample
 
-To stop the sample application, stop the Docker container by running the following command:
+To stop the sample, stop the Docker container by running the following command:
 
 ```console
 $ docker-compose down

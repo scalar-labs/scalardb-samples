@@ -61,7 +61,7 @@ After confirming that you have access to the ScalarDB SQL repository and its pac
 Specify the properties with the `-P` option by running the `./gradlew` command as follows, replacing `<YOUR_GITHUB_USERNAME>` with your GitHub username and `<YOUR_PERSONAL_ACCESS_TOKEN>` with your personal access token:
 
 ```console
-$ ./gradlew run ... -Pgpr.user=<YOUR_GITHUB_USERNAME> -Pgpr.key=<YOUR_PERSONAL_ACCESS_TOKEN>
+$ ./gradlew run <OPTIONS> -Pgpr.user=<YOUR_GITHUB_USERNAME> -Pgpr.key=<YOUR_PERSONAL_ACCESS_TOKEN>
 ```
 
 </div>
