@@ -1,6 +1,6 @@
 # Create a Sample Application That Uses ScalarDB GraphQL
 
-This tutorial describes how to create a sample electronic money application that uses ScalarDB GraphQL.
+This tutorial describes how to create a sample electronic money application that uses the ScalarDB GraphQL interface.
 
 ## Overview
 
