@@ -4,7 +4,7 @@ This tutorial describes how to create a sample electronic money application that
 
 ## Overview
 
-In the sample, you will use Cassandra as the database, and the Cassandra server and the ScalarDB GraphQL server will run in Docker. Then, you will build a Node.js client application that will communicate with the GraphQL server.
+In the sample, you will use Cassandra as the database, and the Cassandra server and the ScalarDB GraphQL Server will run in Docker. Then, you will build a Node.js client application that will communicate with the ScalarDB GraphQL Server.
 
 {% capture notice--info %}
 **Note**
@@ -88,15 +88,15 @@ Then, run the following command, replacing `<VERSION>` with the version of the S
 $ java -jar scalardb-schema-loader-<VERSION>.jar --config database.properties --schema-file emoney-schema.json --coordinator
 ```
 
-### Start the GraphQL server
+### Start the ScalarDB GraphQL Server
 
-Before starting the GraphQL server, log in to the GitHub Container registry by running the following command and entering your GitHub credentials as instructed:
+Before starting the ScalarDB GraphQL Server, log in to the GitHub Container registry by running the following command and entering your GitHub credentials as instructed:
 
 ```console
 $ docker login ghcr.io
 ```
 
-To start the GraphQL server, which is included in the Docker container for the sample application, make sure Docker is running and then run the following command:
+To start the ScalarDB GraphQL Server, which is included in the Docker container for the sample application, make sure Docker is running and then run the following command:
 
 ```console
 $ docker-compose up -d
@@ -116,7 +116,7 @@ After the Docker container has started, open the GraphQL endpoint, http://localh
 
 ## Build the client application
 
-With the GraphQL server running, you can now build the client application that will communicate with the GraphQL endpoint.
+With the ScalarDB GraphQL Server running, you can now build the client application that will communicate with the GraphQL endpoint.
 
 To download and install the dependencies for the client application, run the following command:
 
