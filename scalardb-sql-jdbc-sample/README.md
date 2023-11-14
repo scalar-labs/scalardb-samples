@@ -1,5 +1,13 @@
 # Create a Sample Application That Uses ScalarDB SQL (JDBC)
 
+{% capture notice--info %}
+**Note**
+
+ScalarDB SQL (JDBC) is now deprecated. Please see [Getting Started with ScalarDB Cluster](https://scalardb.scalar-labs.com/docs/latest/scalardb-cluster/getting-started-with-scalardb-cluster/) instead.
+{% endcapture %}
+
+<div class="notice--info">{{ notice--info | markdownify }}</div>
+
 This tutorial describes how to create a sample e-commerce application that uses ScalarDB SQL (JDBC).
 
 ## Overview

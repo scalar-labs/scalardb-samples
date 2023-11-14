@@ -1,5 +1,13 @@
 # Create a Sample Application That Uses ScalarDB GraphQL
 
+{% capture notice--info %}
+**Note**
+
+ScalarDB GraphQL is now deprecated. Please see [Getting Started with ScalarDB Cluster](https://scalardb.scalar-labs.com/docs/latest/scalardb-cluster/getting-started-with-scalardb-cluster/) instead.
+{% endcapture %}
+
+<div class="notice--info">{{ notice--info | markdownify }}</div>
+
 This tutorial describes how to create a sample electronic money application that uses the ScalarDB GraphQL interface.
 
 ## Overview
