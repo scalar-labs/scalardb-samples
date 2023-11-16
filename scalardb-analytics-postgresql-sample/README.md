@@ -1,19 +1,40 @@
-# Sample Application for ScalarDB Analytics with PostgreSQL
+# Run Analytical Queries on Sample Data by Using ScalarDB Analytics with PostgreSQL
 
-This tutorial describes how to create a sample application for ScalarDB Analytics with PostgreSQL.
+This tutorial describes how to run analytical queries on sample data by using ScalarDB Analytics with PostgreSQL.
+
+## Overview
+
+This sample tutorial shows how you can run two types of queries: a single-table query and a multi-table query.
+
+### What you can do in this sample tutorial
+
+This sample tutorial shows how you can run the following types of queries:
+
+- Read data and calculate summaries.
+- Join tables that span multiple storages.
+
+{% capture notice--info %}
+**Note**
+
+You can run any arbitrary query that PostgreSQL supports on the imported tables in this sample tutorial. Since ScalarDB Analytics with PostgreSQL supports all queries that PostgreSQL supports, you can use not only join, aggregation, filtering, and ordering as shown in the example, but also the window function, lateral join, or various analytical operations.
+
+To see which types of queries PostgreSQL supports, see the [PostgreSQL documentation](https://www.postgresql.org/docs/current/index.html).
+{% endcapture %}
+
+<div class="notice--info">{{ notice--info | markdownify }}</div>
 
 ## Prerequisites
 
-- Docker
-- psql
+- [Docker](https://www.docker.com/get-started/) 20.10 or later with [Docker Compose](https://docs.docker.com/compose/install/) V2 or later
+- [psql](https://www.postgresql.org/docs/current/app-psql.html)
 
-## Set up the database
+## Set up ScalarDB Analytics with PostgreSQL
 
-First, you must set up the database to run analytical queries with ScalarDB Analytics with PostgreSQL. If you have not set up the database yet, please follow the instructions in [Getting Started](https://scalardb.scalar-labs.com/docs/latest/scalardb-analytics-postgresql/getting-started).
+First, you must set up the database to run analytical queries with ScalarDB Analytics with PostgreSQL. If you haven't set up the database yet, please follow the instructions in [Getting Started](https://scalardb.scalar-labs.com/docs/latest/scalardb-analytics-postgresql/getting-started).
 
-## Schema in ScalarDB
+### Schema details in ScalarDB
 
-In this application, you have tables with the following schema in the ScalarDB database:
+In this sample tutorial, you have tables with the following schema in the ScalarDB database:
 
 ```mermaid
 erDiagram
@@ -60,22 +81,28 @@ erDiagram
     }
 ```
 
-`dynamons`, `postgresns`, and `cassandrans` are namespaces that are mapped to the back-end storages of DynamoDB, PostgreSQL, and Cassandra, respectively.
+For reference, this diagram shows the following:
 
-The `dynamons.customer` table represents information about customers. This table includes attributes like customer key, name, address, phone number, and account balance.
+- `dynamons`, `postgresns`, and `cassandrans`. Namespaces that are mapped to the back-end storages of DynamoDB, PostgreSQL, and Cassandra, respectively.
+- `dynamons.customer`. A table that represents information about customers. This table includes attributes like customer key, name, address, phone number, and account balance.
+- `postgresns.orders`. A table that contains information about orders that customers have placed. This table includes attributes like order key, customer key, order status, order date, and order priority.
+- `cassandrans.lineitem`. A table that represents line items associated with orders. This table includes attributes such as order key, part key, supplier key, quantity, price, and shipping date.
 
-The `postgresns.orders` table contains information about orders that customers have placed. This table includes attributes like order key, customer key, order status, order date, and order priority.
+### Schema details in PostgreSQL
 
-The `cassandrans.lineitem` table represents line items associated with orders. This table includes attributes such as order key, part key, supplier key, quantity, price, and ship date.
+By running the Schema Importer when setting up ScalarDB, you can import the table schema in the ScalarDB database into the PostgreSQL database. More precisely, for each `namespace_name.table_name` table in the ScalarDB database, you will have a foreign table for `namespace_name._table_name` and a view for `namespace_name.table_name` in the PostgreSQL database. 
 
-## Schema in PostgreSQL
+The created foreign table contains columns that are identical to the ScalarDB table and the transaction metadata columns that ScalarDB manages internally. Since the created view is defined to exclude the transaction metadata columns from the foreign table, the created view contains only the same columns as the ScalarDB table.
 
-By running the Schema Importer, you can import the table schema in the ScalarDB database into the PostgreSQL database. More precisely, for each `namespace_name.table_name` table in the ScalarDB database, you will have a foreign table for `namespace_name._table_name` and a view for `namespace_name.table_name` in the PostgreSQL database.
+To see the schema for `dynamons.customer` in the ScalarDB database, run the following command:
 
-The columns in the foreign table are identical to the columns in the table in PostgreSQL and in the transaction metadata. For example, in the `dynamons.customer` table in the ScalarDB database, you should see the following schema:
-
-```shell
+```console
 $ docker compose run --rm sql-cli --config /etc/scalardb.properties -e "DESCRIBE dynamons.customer";
+```
+
+You should see the following output:
+
+```console
 +--------------+--------+--------------+----------------+-----------------+-----------------+-----------+
 |  columnName  |  type  | isPrimaryKey | isPartitionKey | isClusteringKey | clusteringOrder | isIndexed |
 +--------------+--------+--------------+----------------+-----------------+-----------------+-----------+
@@ -90,11 +117,15 @@ $ docker compose run --rm sql-cli --config /etc/scalardb.properties -e "DESCRIBE
 +--------------+--------+--------------+----------------+-----------------+-----------------+-----------+
 ```
 
-You should see the foreign table for `dynamons._customer` in the PostgreSQL database as well.
+To see the foreign table for `dynamons._customer` in the PostgreSQL database, run the following command and enter your PostgreSQL user password when prompted:
 
-```shell
+```console
 $ psql -U postgres -h localhost test -c '\d dynamons._customer';
-Password for user postgres:
+```
+
+After entering your password, you should see the following output, which shows the same `c_` columns as in the `dynamons.customer` table:
+
+```console
                             Foreign table "dynamons._customer"
          Column         |       Type       | Collation | Nullable | Default | FDW options
 ------------------------+------------------+-----------+----------+---------+-------------
@@ -127,13 +158,17 @@ Server: multi_storage_dynamodb
 FDW options: (namespace 'dynamons', table_name 'customer')
 ```
 
-As you can see in the foreign table, the table contains the transaction metadata columns as well. These columns are required to ensure the Read Committed isolation level.
+As you can see in the foreign table, the table also contains the transaction metadata columns. These columns are required to ensure the Read Committed isolation level.
 
-You also have the view for `dynamons.customer`, as shown below:
+To see the view for `dynamons.customer`, run the following command and enter your PostgreSQL user password when prompted:
 
-```shell
+```console
 $ psql -U postgres -h localhost test -c '\d dynamons.customer';
-Password for user postgres:
+```
+
+After entering your password, you should see the following output:
+
+```console
                      View "dynamons.customer"
     Column    |       Type       | Collation | Nullable | Default
 --------------+------------------+-----------+----------+---------
@@ -147,20 +182,35 @@ Password for user postgres:
  c_comment    | text             |           |          |
 ```
 
-The column definitions are the same as the original table in the ScalarDB database. Type mapping between ScalarDB and PostgreSQL is explained in [Data type mapping between ScalarDB and the other databases](https://scalardb.scalar-labs.com/docs/latest/schema-loader/#data-type-mapping-between-scalardb-and-the-other-databases). Internally, this view is based on the foreign table explained above and interprets the transaction metadata to expose only the valid data with the Read Committed isolation level.
+The column definitions in this view are the same as the original table in the ScalarDB database. This view is created based on the foreign table explained above to expose only the valid data with the Read Committed isolation level by interpreting the transaction metadata columns.
 
-Normally, you don't need to access the foreign tables directly. You can equate the views with the tables in the ScalarDB database.
+{% capture notice--info %}
+**Note**
+
+Normally, you don't need to access the foreign tables directly. Instead, you can equate the views with the tables in the ScalarDB database.
+{% endcapture %}
+
+<div class="notice--info">{{ notice--info | markdownify }}</div>
+
+For details about type mapping between ScalarDB and PostgreSQL, see [Data-type mapping between ScalarDB and other databases](https://scalardb.scalar-labs.com/docs/latest/schema-loader/#data-type-mapping-between-scalardb-and-other-databases).
 
 ## Run analytical queries
 
-You can run any arbitrary query that PostgreSQL supports on the above imported tables. To see which types of queries PostgreSQL supports, see the [PostgreSQL documentation](https://www.postgresql.org/docs/current/index.html).
+The following sections describe how to read data, calculate summaries, and join tables that span multiple storages.
 
-In this example, we will run two types of queries: a single-table query and a multi-table query.
+### Read data and calculate summaries
 
-The following query reads data from `cassandrans.lineitem`, with the actual data stored in the Cassandra back-end, and calculates several summaries of the ordered line items by aggregating the data.
+You can run a query that reads data from `cassandrans.lineitem`, with the actual data stored in the Cassandra back-end, and calculates several summaries of the ordered line items by aggregating the data.
 
-```shell
-$ psql -U postgres -h localhost test << EOS
+To run the query, log in to the psql terminal by running the following command:
+
+```console
+$ psql -U postgres -h localhost test
+```
+
+After entering your password, enter the following query into the psql terminal:
+
+```console
 SELECT
         l_returnflag,
         l_linestatus,
@@ -182,9 +232,11 @@ GROUP BY
 ORDER BY
         l_returnflag,
         l_linestatus;
-EOS
+```
 
-Password for user postgres:
+You should see the following output:
+
+```console
  l_returnflag | l_linestatus | sum_qty |   sum_base_price   |   sum_disc_price   |     sum_charge     |       avg_qty       |     avg_price      |      avg_disc       | count_order
 --------------+--------------+---------+--------------------+--------------------+--------------------+---------------------+--------------------+---------------------+-------------
  A            | F            |    1519 | 2374824.6560430005 | 1387363.5818635763 | 1962762.9341866106 | 26.6491228070175439 | 41663.590456894744 |  0.4150182982456142 |          57
@@ -194,10 +246,19 @@ Password for user postgres:
 (4 rows)
 ```
 
-You can also run a query to join tables that span multiple back-end storages.
+### Join tables that span multiple storages
 
-```shell
-$ psql -U postgres -h localhost test << EOS
+You can also run a query to join tables that are connected to the three back-end storages and calculate the unshipped orders with the highest revenue on a particular date.
+
+To run the query, log in to the psql terminal by running the following command:
+
+```console
+$ psql -U postgres -h localhost test
+```
+
+After entering your password, enter the following query into the psql terminal:
+
+```console
 SELECT
   l_orderkey,
   sum(l_extendedprice * (1 - l_discount)) AS revenue,
@@ -221,10 +282,12 @@ ORDER BY
   revenue DESC,
   o_orderdate,
   l_orderkey
-LIMIT 10
-EOS
+LIMIT 10;
+```
 
-Password for user postgres:
+You should see the following output:
+
+```console
  l_orderkey |      revenue       | o_orderdate | o_shippriority
 ------------+--------------------+-------------+----------------
     1071617 | 128186.94002748765 | 1995-03-10  |              0
@@ -233,6 +296,10 @@ Password for user postgres:
 (3 rows)
 ```
 
-This query joins the tables that are connected to the three back-end storages and calculates the unshipped orders with the highest revenue on a particular date.
+## Stop ScalarDB Analytics with PostgreSQL and the database
 
-Since ScalarDB Analytics with PostgreSQL supports all queries that PostgreSQL supports, you can use not only join, aggregation, filtering, and ordering as shown in the example, but also the window function, lateral join, or various analytical operations.
+To stop ScalarDB Analytics with PostgreSQL and the database, stop the Docker container by running the following command:
+
+```console
+$ docker-compose down
+```
