@@ -3,7 +3,7 @@
 {% capture notice--info %}
 **Note**
 
-ScalarDB GraphQL is now deprecated. Please see [Getting Started with ScalarDB Cluster](https://scalardb.scalar-labs.com/docs/latest/scalardb-cluster/getting-started-with-scalardb-cluster/) instead.
+ScalarDB GraphQL Server is now deprecated, and consequently, this sample code is also deprecated. To use the ScalarDB GraphQL interface, you need to use ScalarDB Cluster, which is available only in the Enterprise edition. For more information, see [ScalarDB Cluster](https://scalardb.scalar-labs.com/docs/latest/scalardb-cluster/).
 {% endcapture %}
 
 <div class="notice--info">{{ notice--info | markdownify }}</div>

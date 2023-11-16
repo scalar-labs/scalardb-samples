@@ -3,7 +3,7 @@
 {% capture notice--info %}
 **Note**
 
-ScalarDB SQL (JDBC) is now deprecated. Please see [Getting Started with ScalarDB Cluster](https://scalardb.scalar-labs.com/docs/latest/scalardb-cluster/getting-started-with-scalardb-cluster/) instead.
+This sample code is now deprecated. To use ScalarDB SQL, you need to use ScalarDB Cluster, which is available only in the Enterprise edition. For more information, see [ScalarDB Cluster](https://scalardb.scalar-labs.com/docs/latest/scalardb-cluster/).
 {% endcapture %}
 
 <div class="notice--info">{{ notice--info | markdownify }}</div>
