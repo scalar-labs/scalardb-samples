@@ -104,7 +104,7 @@ Cassandra and MySQL are already configured for the sample application, as shown 
 To start Cassandra and MySQL, which are included in the Docker container for the sample application, run the following command:
 
 ```console
-$ docker-compose up -d
+$ docker-compose up -d mysql cassandra
 ```
 
 {% capture notice--info %}
