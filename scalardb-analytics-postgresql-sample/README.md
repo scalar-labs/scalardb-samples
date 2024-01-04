@@ -94,27 +94,25 @@ By running the Schema Importer when setting up ScalarDB, you can import the tabl
 
 The created foreign table contains columns that are identical to the ScalarDB table and the transaction metadata columns that ScalarDB manages internally. Since the created view is defined to exclude the transaction metadata columns from the foreign table, the created view contains only the same columns as the ScalarDB table.
 
-To see the schema for `dynamons.customer` in the ScalarDB database, run the following command:
+You can find the schema of the ScalarDB tables in `schema.json`. For example, the `dynamons.customer` table is defined as follows:
 
-```console
-$ docker compose run --rm sql-cli --config /etc/scalardb.properties -e "DESCRIBE dynamons.customer";
-```
-
-You should see the following output:
-
-```console
-+--------------+--------+--------------+----------------+-----------------+-----------------+-----------+
-|  columnName  |  type  | isPrimaryKey | isPartitionKey | isClusteringKey | clusteringOrder | isIndexed |
-+--------------+--------+--------------+----------------+-----------------+-----------------+-----------+
-| c_custkey    | INT    | true         | true           | false           | null            | false     |
-| c_name       | TEXT   | false        | false          | false           | null            | false     |
-| c_address    | TEXT   | false        | false          | false           | null            | false     |
-| c_nationkey  | INT    | false        | false          | false           | null            | false     |
-| c_phone      | TEXT   | false        | false          | false           | null            | false     |
-| c_acctbal    | DOUBLE | false        | false          | false           | null            | false     |
-| c_mktsegment | TEXT   | false        | false          | false           | null            | false     |
-| c_comment    | TEXT   | false        | false          | false           | null            | false     |
-+--------------+--------+--------------+----------------+-----------------+-----------------+-----------+
+```json
+  "dynamons.customer": {
+    "transaction": true,
+    "partition-key": [
+      "c_custkey"
+    ],
+    "columns": {
+      "c_custkey": "INT",
+      "c_name": "TEXT",
+      "c_address": "TEXT",
+      "c_nationkey": "INT",
+      "c_phone": "TEXT",
+      "c_acctbal": "DOUBLE",
+      "c_mktsegment": "TEXT",
+      "c_comment": "TEXT"
+    }
+  },
 ```
 
 To see the foreign table for `dynamons._customer` in the PostgreSQL database, run the following command and enter your PostgreSQL user password when prompted:
