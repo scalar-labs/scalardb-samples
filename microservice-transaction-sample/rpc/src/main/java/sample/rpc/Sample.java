@@ -123,35 +123,37 @@ public final class Sample {
       "\001(\t\"-\n\020GetOrderResponse\022\031\n\005order\030\001 \001(\0132\n" +
       ".rpc.Order\"\'\n\020GetOrdersRequest\022\023\n\013custom" +
       "er_id\030\001 \001(\005\".\n\021GetOrdersResponse\022\031\n\005orde" +
-      "r\030\001 \003(\0132\n.rpc.Order\"-\n\026GetCustomerInfoRe" +
-      "quest\022\023\n\013customer_id\030\001 \001(\005\"_\n\027GetCustome" +
-      "rInfoResponse\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002 \001(\t\022" +
-      "\024\n\014credit_limit\030\003 \001(\005\022\024\n\014credit_total\030\004 " +
-      "\001(\005\"M\n\016PaymentRequest\022\026\n\016transaction_id\030" +
-      "\001 \001(\t\022\023\n\013customer_id\030\002 \001(\005\022\016\n\006amount\030\003 \001" +
-      "(\005\"7\n\020RepaymentRequest\022\023\n\013customer_id\030\001 " +
-      "\001(\005\022\016\n\006amount\030\002 \001(\005\"(\n\016PrepareRequest\022\026\n" +
-      "\016transaction_id\030\001 \001(\t\")\n\017ValidateRequest" +
-      "\022\026\n\016transaction_id\030\001 \001(\t\"\'\n\rCommitReques" +
-      "t\022\026\n\016transaction_id\030\001 \001(\t\")\n\017RollbackReq" +
-      "uest\022\026\n\016transaction_id\030\001 \001(\t2\310\001\n\014OrderSe" +
-      "rvice\022?\n\nPlaceOrder\022\026.rpc.PlaceOrderRequ" +
-      "est\032\027.rpc.PlaceOrderResponse\"\000\0229\n\010GetOrd" +
-      "er\022\024.rpc.GetOrderRequest\032\025.rpc.GetOrderR" +
-      "esponse\"\000\022<\n\tGetOrders\022\025.rpc.GetOrdersRe" +
-      "quest\032\026.rpc.GetOrdersResponse\"\0002\303\003\n\017Cust" +
-      "omerService\022N\n\017GetCustomerInfo\022\033.rpc.Get" +
-      "CustomerInfoRequest\032\034.rpc.GetCustomerInf" +
-      "oResponse\"\000\022<\n\tRepayment\022\025.rpc.Repayment" +
-      "Request\032\026.google.protobuf.Empty\"\000\0228\n\007Pay" +
-      "ment\022\023.rpc.PaymentRequest\032\026.google.proto" +
-      "buf.Empty\"\000\0228\n\007Prepare\022\023.rpc.PrepareRequ" +
-      "est\032\026.google.protobuf.Empty\"\000\022:\n\010Validat" +
-      "e\022\024.rpc.ValidateRequest\032\026.google.protobu" +
-      "f.Empty\"\000\0226\n\006Commit\022\022.rpc.CommitRequest\032" +
-      "\026.google.protobuf.Empty\"\000\022:\n\010Rollback\022\024." +
-      "rpc.RollbackRequest\032\026.google.protobuf.Em" +
-      "pty\"\000B\026\n\nsample.rpcB\006SampleP\001b\006proto3"
+      "r\030\001 \003(\0132\n.rpc.Order\"]\n\026GetCustomerInfoRe" +
+      "quest\022\033\n\016transaction_id\030\001 \001(\tH\000\210\001\001\022\023\n\013cu" +
+      "stomer_id\030\002 \001(\005B\021\n\017_transaction_id\"_\n\027Ge" +
+      "tCustomerInfoResponse\022\n\n\002id\030\001 \001(\005\022\014\n\004nam" +
+      "e\030\002 \001(\t\022\024\n\014credit_limit\030\003 \001(\005\022\024\n\014credit_" +
+      "total\030\004 \001(\005\"M\n\016PaymentRequest\022\026\n\016transac" +
+      "tion_id\030\001 \001(\t\022\023\n\013customer_id\030\002 \001(\005\022\016\n\006am" +
+      "ount\030\003 \001(\005\"7\n\020RepaymentRequest\022\023\n\013custom" +
+      "er_id\030\001 \001(\005\022\016\n\006amount\030\002 \001(\005\"(\n\016PrepareRe" +
+      "quest\022\026\n\016transaction_id\030\001 \001(\t\")\n\017Validat" +
+      "eRequest\022\026\n\016transaction_id\030\001 \001(\t\"\'\n\rComm" +
+      "itRequest\022\026\n\016transaction_id\030\001 \001(\t\")\n\017Rol" +
+      "lbackRequest\022\026\n\016transaction_id\030\001 \001(\t2\310\001\n" +
+      "\014OrderService\022?\n\nPlaceOrder\022\026.rpc.PlaceO" +
+      "rderRequest\032\027.rpc.PlaceOrderResponse\"\000\0229" +
+      "\n\010GetOrder\022\024.rpc.GetOrderRequest\032\025.rpc.G" +
+      "etOrderResponse\"\000\022<\n\tGetOrders\022\025.rpc.Get" +
+      "OrdersRequest\032\026.rpc.GetOrdersResponse\"\0002" +
+      "\303\003\n\017CustomerService\022N\n\017GetCustomerInfo\022\033" +
+      ".rpc.GetCustomerInfoRequest\032\034.rpc.GetCus" +
+      "tomerInfoResponse\"\000\022<\n\tRepayment\022\025.rpc.R" +
+      "epaymentRequest\032\026.google.protobuf.Empty\"" +
+      "\000\0228\n\007Payment\022\023.rpc.PaymentRequest\032\026.goog" +
+      "le.protobuf.Empty\"\000\0228\n\007Prepare\022\023.rpc.Pre" +
+      "pareRequest\032\026.google.protobuf.Empty\"\000\022:\n" +
+      "\010Validate\022\024.rpc.ValidateRequest\032\026.google" +
+      ".protobuf.Empty\"\000\0226\n\006Commit\022\022.rpc.Commit" +
+      "Request\032\026.google.protobuf.Empty\"\000\022:\n\010Rol" +
+      "lback\022\024.rpc.RollbackRequest\032\026.google.pro" +
+      "tobuf.Empty\"\000B\026\n\nsample.rpcB\006SampleP\001b\006p" +
+      "roto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -217,7 +219,7 @@ public final class Sample {
     internal_static_rpc_GetCustomerInfoRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_rpc_GetCustomerInfoRequest_descriptor,
-        new java.lang.String[] { "CustomerId", });
+        new java.lang.String[] { "TransactionId", "CustomerId", "TransactionId", });
     internal_static_rpc_GetCustomerInfoResponse_descriptor =
       getDescriptor().getMessageTypes().get(10);
     internal_static_rpc_GetCustomerInfoResponse_fieldAccessorTable = new
