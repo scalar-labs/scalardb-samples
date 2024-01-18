@@ -115,6 +115,44 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   }
 
   @Override
+  public void getCustomerInfoInTwoPhaseCommit(GetCustomerInfoRequest request,
+      StreamObserver<GetCustomerInfoResponse> responseObserver) {
+    try {
+      if (!request.hasTransactionId()) {
+        throw Status.INVALID_ARGUMENT.withDescription("Transaction ID isn't set").asRuntimeException();
+      }
+      // Start a transaction
+      TwoPhaseCommitTransaction transaction = twoPhaseCommitTransactionManager.join(request.getTransactionId());
+
+      // Retrieve the customer info for the specified customer ID
+      Optional<Customer> result = Customer.get(transaction, request.getCustomerId());
+
+      if (!result.isPresent()) {
+        // If the customer info the specified customer ID doesn't exist, throw an exception
+        throw Status.NOT_FOUND.withDescription("Customer not found").asRuntimeException();
+      }
+
+      // Return the customer info
+      responseObserver.onNext(
+          GetCustomerInfoResponse.newBuilder()
+              .setId(result.get().id)
+              .setName(result.get().name)
+              .setCreditLimit(result.get().creditLimit)
+              .setCreditTotal(result.get().creditTotal)
+              .build());
+      responseObserver.onCompleted();
+    } catch (StatusRuntimeException e) {
+      logger.error("Getting customer info failed", e);
+      responseObserver.onError(e);
+    } catch (Exception e) {
+      String message = "Getting customer info failed";
+      logger.error(message, e);
+      responseObserver.onError(
+          Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
+    }
+  }
+
+  @Override
   public void repayment(RepaymentRequest request, StreamObserver<Empty> responseObserver) {
     DistributedTransaction transaction = null;
     try {

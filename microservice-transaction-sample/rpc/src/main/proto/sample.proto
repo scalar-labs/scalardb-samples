@@ -79,6 +79,9 @@ service CustomerService {
 
   // RPCs for two-phase commit transactions
 
+  // Get a customer information
+  rpc GetCustomerInfoInTwoPhaseCommit(GetCustomerInfoRequest) returns (GetCustomerInfoResponse) {
+  }
   // Credit card payment
   rpc Payment(PaymentRequest) returns (google.protobuf.Empty) {
   }
