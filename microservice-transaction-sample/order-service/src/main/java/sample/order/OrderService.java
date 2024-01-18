@@ -102,7 +102,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   @Override
   public void placeOrder(
       PlaceOrderRequest request, StreamObserver<PlaceOrderResponse> responseObserver) {
-    execInTwoPhaseCommit(responseObserver, "Getting an order",
+    execInTwoPhaseCommit(responseObserver, "Placing an order",
         (transaction) -> {
           String orderId = UUID.randomUUID().toString();
 
