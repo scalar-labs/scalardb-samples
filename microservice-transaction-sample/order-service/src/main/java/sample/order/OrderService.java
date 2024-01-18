@@ -188,8 +188,11 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
             throw Status.NOT_FOUND.withDescription("Order not found").asRuntimeException();
           }
 
+          // Get the customer name from Customer service
+          String customerName = getCustomerName(transaction.getId(), order.get().customerId);
+
           // Make an order protobuf to return
-          sample.rpc.Order rpcOrder = getOrder(transaction, order.get());
+          sample.rpc.Order rpcOrder = getOrder(transaction, order.get(), customerName);
 
           return GetOrderResponse.newBuilder().setOrder(rpcOrder).build();
         }
@@ -205,10 +208,13 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
           // Retrieve the order info for the specified customer ID
           List<Order> orders = Order.getByCustomerId(transaction, request.getCustomerId());
 
+          // Get the customer name from Customer service
+          String customerName = getCustomerName(transaction.getId(), request.getCustomerId());
+
           GetOrdersResponse.Builder builder = GetOrdersResponse.newBuilder();
           for (Order order : orders) {
             // Make an order protobuf to return
-            sample.rpc.Order rpcOrder = getOrder(transaction, order);
+            sample.rpc.Order rpcOrder = getOrder(transaction, order, customerName);
             builder.addOrder(rpcOrder);
           }
 
@@ -273,11 +279,9 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     }
   }
 
-  private sample.rpc.Order getOrder(TwoPhaseCommitTransaction transaction, Order order)
+  private sample.rpc.Order getOrder(TwoPhaseCommitTransaction transaction, Order order,
+      String customerName)
       throws CrudException {
-    // Get the customer name from Customer service
-    String customerName = getCustomerName(transaction.getId(), order.customerId);
-
     sample.rpc.Order.Builder orderBuilder =
         sample.rpc.Order.newBuilder()
             .setOrderId(order.id)
