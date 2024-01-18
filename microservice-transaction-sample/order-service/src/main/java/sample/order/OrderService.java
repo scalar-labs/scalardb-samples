@@ -56,7 +56,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   private final ManagedChannel channel;
   private final CustomerServiceGrpc.CustomerServiceBlockingStub customerServiceStub;
 
-  interface TransactionFunction<T, R> {
+  private interface TransactionFunction<T, R> {
     R apply(T t) throws TransactionException;
   }
 
