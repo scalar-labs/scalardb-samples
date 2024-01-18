@@ -74,7 +74,7 @@ service CustomerService {
   rpc GetCustomerInfo(GetCustomerInfoRequest) returns (GetCustomerInfoResponse) {
   }
   // Get a customer information
-  rpc GetCustomerInfoInTwoPhaseCommit(GetCustomerInfoRequest) returns (GetCustomerInfoResponse) {
+  rpc GetCustomerInfoForTwoPhaseCommit(GetCustomerInfoRequest) returns (GetCustomerInfoResponse) {
   }
   // Credit card repayment
   rpc Repayment(RepaymentRequest) returns (google.protobuf.Empty) {

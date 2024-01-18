@@ -115,7 +115,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   }
 
   @Override
-  public void getCustomerInfoInTwoPhaseCommit(GetCustomerInfoRequest request,
+  public void getCustomerInfoForTwoPhaseCommit(GetCustomerInfoRequest request,
       StreamObserver<GetCustomerInfoResponse> responseObserver) {
     try {
       if (!request.hasTransactionId()) {

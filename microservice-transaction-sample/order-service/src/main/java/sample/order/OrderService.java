@@ -321,7 +321,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
 
   private String getCustomerName(String transactionId, int customerId) {
     GetCustomerInfoResponse customerInfo =
-        customerServiceStub.getCustomerInfoInTwoPhaseCommit(
+        customerServiceStub.getCustomerInfoForTwoPhaseCommit(
             GetCustomerInfoRequest.newBuilder()
                 .setTransactionId(transactionId)
                 .setCustomerId(customerId).build());

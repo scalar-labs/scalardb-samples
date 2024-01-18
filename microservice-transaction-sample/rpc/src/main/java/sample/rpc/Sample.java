@@ -141,21 +141,21 @@ public final class Sample {
       "\n\010GetOrder\022\024.rpc.GetOrderRequest\032\025.rpc.G" +
       "etOrderResponse\"\000\022<\n\tGetOrders\022\025.rpc.Get" +
       "OrdersRequest\032\026.rpc.GetOrdersResponse\"\0002" +
-      "\243\004\n\017CustomerService\022N\n\017GetCustomerInfo\022\033" +
+      "\244\004\n\017CustomerService\022N\n\017GetCustomerInfo\022\033" +
       ".rpc.GetCustomerInfoRequest\032\034.rpc.GetCus" +
-      "tomerInfoResponse\"\000\022<\n\tRepayment\022\025.rpc.R" +
-      "epaymentRequest\032\026.google.protobuf.Empty\"" +
-      "\000\022^\n\037GetCustomerInfoInTwoPhaseCommit\022\033.r" +
-      "pc.GetCustomerInfoRequest\032\034.rpc.GetCusto" +
-      "merInfoResponse\"\000\0228\n\007Payment\022\023.rpc.Payme" +
-      "ntRequest\032\026.google.protobuf.Empty\"\000\0228\n\007P" +
-      "repare\022\023.rpc.PrepareRequest\032\026.google.pro" +
-      "tobuf.Empty\"\000\022:\n\010Validate\022\024.rpc.Validate" +
-      "Request\032\026.google.protobuf.Empty\"\000\0226\n\006Com" +
-      "mit\022\022.rpc.CommitRequest\032\026.google.protobu" +
-      "f.Empty\"\000\022:\n\010Rollback\022\024.rpc.RollbackRequ" +
-      "est\032\026.google.protobuf.Empty\"\000B\026\n\nsample." +
-      "rpcB\006SampleP\001b\006proto3"
+      "tomerInfoResponse\"\000\022_\n GetCustomerInfoFo" +
+      "rTwoPhaseCommit\022\033.rpc.GetCustomerInfoReq" +
+      "uest\032\034.rpc.GetCustomerInfoResponse\"\000\022<\n\t" +
+      "Repayment\022\025.rpc.RepaymentRequest\032\026.googl" +
+      "e.protobuf.Empty\"\000\0228\n\007Payment\022\023.rpc.Paym" +
+      "entRequest\032\026.google.protobuf.Empty\"\000\0228\n\007" +
+      "Prepare\022\023.rpc.PrepareRequest\032\026.google.pr" +
+      "otobuf.Empty\"\000\022:\n\010Validate\022\024.rpc.Validat" +
+      "eRequest\032\026.google.protobuf.Empty\"\000\0226\n\006Co" +
+      "mmit\022\022.rpc.CommitRequest\032\026.google.protob" +
+      "uf.Empty\"\000\022:\n\010Rollback\022\024.rpc.RollbackReq" +
+      "uest\032\026.google.protobuf.Empty\"\000B\026\n\nsample" +
+      ".rpcB\006SampleP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

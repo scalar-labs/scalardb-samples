@@ -75,7 +75,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   // @Retryable shouldn't be used here as this is used as a participant API and
   // will be retried by the coordinator service if needed
   @Override
-  public void getCustomerInfoInTwoPhaseCommit(
+  public void getCustomerInfoForTwoPhaseCommit(
       GetCustomerInfoRequest request, StreamObserver<GetCustomerInfoResponse> responseObserver) {
     execAndReturnResponse(responseObserver, "Getting customer info", () ->
         customerRepository.joinTransactionOnParticipant(request.getTransactionId(), () -> {

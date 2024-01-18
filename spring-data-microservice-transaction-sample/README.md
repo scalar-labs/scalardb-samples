@@ -112,44 +112,37 @@ The Entity Relationship Diagram for the schema is as follows:
 
 ![ERD](images/ERD.png)
 
-### Transactions
-
-The following five transactions are implemented in this sample application:
-
-1. Getting customer information. It is a transaction in the Customer Service
-2. Placing an order (checks if the cost of the order is below the credit limit, then records order history and updates the `credit_total` if the check passes). It is a transaction that spans the Order Service and the Customer Service.
-3. Getting order information by order ID. It is a transaction in the Order Service
-4. Getting order information by customer ID. It is a transaction in the Order Service
-5. Repayment (reduces the amount in the `credit_total`). It is a transaction in the Customer Service.
-
-### Service Endpoints
+### Service endpoints
 
 The endpoints defined in the services are as follows:
 
-Customer Service:
+- Customer Service
+  - `getCustomerInfo`
+  - `getCustomerInfoForTwoPhaseCommit`
+  - `payment`
+  - `prepare`
+  - `validate`
+  - `commit`
+  - `rollback`
+  - `repayment`
 
-- getCustomerInfo
-- payment
-- prepare
-- validate
-- commit
-- rollback
-- repayment
+- Order Service
+  - `placeOrder`
+  - `getOrder`
+  - `getOrders`
 
-Order Service:
+### What you can do in this sample application
 
-- placeOrder
-- getOrder
-- getOrders
+The sample application supports the following types of transactions:
 
-The `getCustomerInfo` endpoint of the Customer Service is for transaction #1 (Getting customer information).
-
-And the `placeOrder` endpoint of the Order Service and the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service are for transaction #2 (Placing an order) that spans the Order Service and the Customer Service.
-The Order Service starts the transaction with the `placeOrder` endpoint, which calls the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
-
-The `getOrder` of the Order Service is for transaction #3, and The `getOrders` of the Order Service is for transaction #4.
-
-And the `repayment` endpoint of the Customer Service is for transaction #5.
+- Get customer information through the `getCustomerInfo` endpoint of the Customer Service.
+- Place an order by using a line of credit through the `placeOrder` endpoint of the Order Service and the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
+  - Checks if the cost of the order is below the customer's credit limit.
+  - If the check passes, records the order history and updates the amount the customer has spent.
+- Get order information by order ID through the `getOrder` of the Order Service and `getCustomerInfoForTwoPhaseCommit`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
+- Get order information by customer ID through the `getOrders` of the Order Service and `getCustomerInfoForTwoPhaseCommit`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
+- Make a payment through the `repayment` endpoint of the Customer Service.
+  - Reduces the amount the customer has spent.
 
 ## Configuration
 
