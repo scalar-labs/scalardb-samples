@@ -191,8 +191,12 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
                   Status.NOT_FOUND.withDescription(message).asRuntimeException());
               throw new ScalarDbNonTransientException(message);
             }
+
+            // Get the customer name from Customer service
+            String customerName = getCustomerName(txId, orderOpt.get().customerId);
+
             // Make an order protobuf to return
-            sample.rpc.Order order = getOrderResult(txId, responseObserver, orderOpt.get());
+            sample.rpc.Order order = getOrderResult(txId, responseObserver, orderOpt.get(), customerName);
             return GetOrderResponse.newBuilder().setOrder(order).build();
           },
           Collections.singletonList(
@@ -221,12 +225,15 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     execAndReturnResponse(responseObserver, "Getting an order", () -> {
       // Start a two-phase commit transaction
       TwoPcResult<GetOrdersResponse> result = orderRepository.executeTwoPcTransaction(txId -> {
+            // Get the customer name from Customer service
+            String customerName = getCustomerName(txId, request.getCustomerId());
+
             // Retrieve the order info for the specified order ID
             GetOrdersResponse.Builder builder = GetOrdersResponse.newBuilder();
             for (Order order : orderRepository.findAllByCustomerIdOrderByTimestampDesc(
                 request.getCustomerId())) {
               // Make an order protobuf to return
-              builder.addOrder(getOrderResult(txId, responseObserver, order));
+              builder.addOrder(getOrderResult(txId, responseObserver, order, customerName));
             }
             return builder.build();
           },
@@ -244,10 +251,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
 }
 
   private sample.rpc.Order getOrderResult(String transactionId, StreamObserver<?> responseObserver,
-      Order order) {
-    // Get the customer name from Customer service
-    String customerName = getCustomerName(transactionId, order.customerId);
-
+      Order order, String customerName) {
     sample.rpc.Order.Builder orderBuilder =
         sample.rpc.Order.newBuilder()
             .setOrderId(order.orderId)
