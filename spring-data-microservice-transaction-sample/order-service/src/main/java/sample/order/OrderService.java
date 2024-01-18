@@ -222,7 +222,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   @Override
   public void getOrders(
       GetOrdersRequest request, StreamObserver<GetOrdersResponse> responseObserver) {
-    execAndReturnResponse(responseObserver, "Getting an order", () -> {
+    execAndReturnResponse(responseObserver, "Getting orders", () -> {
       // Start a two-phase commit transaction
       TwoPcResult<GetOrdersResponse> result = orderRepository.executeTwoPcTransaction(txId -> {
             // Get the customer name from Customer service
