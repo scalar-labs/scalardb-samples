@@ -49,6 +49,37 @@ public final class CustomerServiceGrpc {
     return getGetCustomerInfoMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<sample.rpc.GetCustomerInfoRequest,
+      sample.rpc.GetCustomerInfoResponse> getGetCustomerInfoInTwoPhaseCommitMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "GetCustomerInfoInTwoPhaseCommit",
+      requestType = sample.rpc.GetCustomerInfoRequest.class,
+      responseType = sample.rpc.GetCustomerInfoResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<sample.rpc.GetCustomerInfoRequest,
+      sample.rpc.GetCustomerInfoResponse> getGetCustomerInfoInTwoPhaseCommitMethod() {
+    io.grpc.MethodDescriptor<sample.rpc.GetCustomerInfoRequest, sample.rpc.GetCustomerInfoResponse> getGetCustomerInfoInTwoPhaseCommitMethod;
+    if ((getGetCustomerInfoInTwoPhaseCommitMethod = CustomerServiceGrpc.getGetCustomerInfoInTwoPhaseCommitMethod) == null) {
+      synchronized (CustomerServiceGrpc.class) {
+        if ((getGetCustomerInfoInTwoPhaseCommitMethod = CustomerServiceGrpc.getGetCustomerInfoInTwoPhaseCommitMethod) == null) {
+          CustomerServiceGrpc.getGetCustomerInfoInTwoPhaseCommitMethod = getGetCustomerInfoInTwoPhaseCommitMethod =
+              io.grpc.MethodDescriptor.<sample.rpc.GetCustomerInfoRequest, sample.rpc.GetCustomerInfoResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetCustomerInfoInTwoPhaseCommit"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  sample.rpc.GetCustomerInfoRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  sample.rpc.GetCustomerInfoResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new CustomerServiceMethodDescriptorSupplier("GetCustomerInfoInTwoPhaseCommit"))
+              .build();
+        }
+      }
+    }
+    return getGetCustomerInfoInTwoPhaseCommitMethod;
+  }
+
   private static volatile io.grpc.MethodDescriptor<sample.rpc.RepaymentRequest,
       com.google.protobuf.Empty> getRepaymentMethod;
 
@@ -298,6 +329,16 @@ public final class CustomerServiceGrpc {
 
     /**
      * <pre>
+     * Get a customer information
+     * </pre>
+     */
+    public void getCustomerInfoInTwoPhaseCommit(sample.rpc.GetCustomerInfoRequest request,
+        io.grpc.stub.StreamObserver<sample.rpc.GetCustomerInfoResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetCustomerInfoInTwoPhaseCommitMethod(), responseObserver);
+    }
+
+    /**
+     * <pre>
      * Credit card repayment
      * </pre>
      */
@@ -365,6 +406,13 @@ public final class CustomerServiceGrpc {
                 sample.rpc.GetCustomerInfoRequest,
                 sample.rpc.GetCustomerInfoResponse>(
                   this, METHODID_GET_CUSTOMER_INFO)))
+          .addMethod(
+            getGetCustomerInfoInTwoPhaseCommitMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+              new MethodHandlers<
+                sample.rpc.GetCustomerInfoRequest,
+                sample.rpc.GetCustomerInfoResponse>(
+                  this, METHODID_GET_CUSTOMER_INFO_IN_TWO_PHASE_COMMIT)))
           .addMethod(
             getRepaymentMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
@@ -437,6 +485,17 @@ public final class CustomerServiceGrpc {
         io.grpc.stub.StreamObserver<sample.rpc.GetCustomerInfoResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetCustomerInfoMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     * <pre>
+     * Get a customer information
+     * </pre>
+     */
+    public void getCustomerInfoInTwoPhaseCommit(sample.rpc.GetCustomerInfoRequest request,
+        io.grpc.stub.StreamObserver<sample.rpc.GetCustomerInfoResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getGetCustomerInfoInTwoPhaseCommitMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
@@ -535,6 +594,16 @@ public final class CustomerServiceGrpc {
 
     /**
      * <pre>
+     * Get a customer information
+     * </pre>
+     */
+    public sample.rpc.GetCustomerInfoResponse getCustomerInfoInTwoPhaseCommit(sample.rpc.GetCustomerInfoRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getGetCustomerInfoInTwoPhaseCommitMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
      * Credit card repayment
      * </pre>
      */
@@ -624,6 +693,17 @@ public final class CustomerServiceGrpc {
 
     /**
      * <pre>
+     * Get a customer information
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<sample.rpc.GetCustomerInfoResponse> getCustomerInfoInTwoPhaseCommit(
+        sample.rpc.GetCustomerInfoRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getGetCustomerInfoInTwoPhaseCommitMethod(), getCallOptions()), request);
+    }
+
+    /**
+     * <pre>
      * Credit card repayment
      * </pre>
      */
@@ -690,12 +770,13 @@ public final class CustomerServiceGrpc {
   }
 
   private static final int METHODID_GET_CUSTOMER_INFO = 0;
-  private static final int METHODID_REPAYMENT = 1;
-  private static final int METHODID_PAYMENT = 2;
-  private static final int METHODID_PREPARE = 3;
-  private static final int METHODID_VALIDATE = 4;
-  private static final int METHODID_COMMIT = 5;
-  private static final int METHODID_ROLLBACK = 6;
+  private static final int METHODID_GET_CUSTOMER_INFO_IN_TWO_PHASE_COMMIT = 1;
+  private static final int METHODID_REPAYMENT = 2;
+  private static final int METHODID_PAYMENT = 3;
+  private static final int METHODID_PREPARE = 4;
+  private static final int METHODID_VALIDATE = 5;
+  private static final int METHODID_COMMIT = 6;
+  private static final int METHODID_ROLLBACK = 7;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -716,6 +797,10 @@ public final class CustomerServiceGrpc {
       switch (methodId) {
         case METHODID_GET_CUSTOMER_INFO:
           serviceImpl.getCustomerInfo((sample.rpc.GetCustomerInfoRequest) request,
+              (io.grpc.stub.StreamObserver<sample.rpc.GetCustomerInfoResponse>) responseObserver);
+          break;
+        case METHODID_GET_CUSTOMER_INFO_IN_TWO_PHASE_COMMIT:
+          serviceImpl.getCustomerInfoInTwoPhaseCommit((sample.rpc.GetCustomerInfoRequest) request,
               (io.grpc.stub.StreamObserver<sample.rpc.GetCustomerInfoResponse>) responseObserver);
           break;
         case METHODID_REPAYMENT:
@@ -804,6 +889,7 @@ public final class CustomerServiceGrpc {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new CustomerServiceFileDescriptorSupplier())
               .addMethod(getGetCustomerInfoMethod())
+              .addMethod(getGetCustomerInfoInTwoPhaseCommitMethod())
               .addMethod(getRepaymentMethod())
               .addMethod(getPaymentMethod())
               .addMethod(getPrepareMethod())

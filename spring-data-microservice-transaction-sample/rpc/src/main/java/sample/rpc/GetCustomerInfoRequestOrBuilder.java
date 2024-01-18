@@ -8,7 +8,24 @@ public interface GetCustomerInfoRequestOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>int32 customer_id = 1;</code>
+   * <code>optional string transaction_id = 1;</code>
+   * @return Whether the transactionId field is set.
+   */
+  boolean hasTransactionId();
+  /**
+   * <code>optional string transaction_id = 1;</code>
+   * @return The transactionId.
+   */
+  java.lang.String getTransactionId();
+  /**
+   * <code>optional string transaction_id = 1;</code>
+   * @return The bytes for transactionId.
+   */
+  com.google.protobuf.ByteString
+      getTransactionIdBytes();
+
+  /**
+   * <code>int32 customer_id = 2;</code>
    * @return The customerId.
    */
   int getCustomerId();

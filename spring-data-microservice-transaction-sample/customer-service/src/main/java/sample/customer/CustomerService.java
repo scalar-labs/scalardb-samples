@@ -72,6 +72,24 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
         }));
   }
 
+  // @Retryable shouldn't be used here as this is used as a participant API and
+  // will be retried by the coordinator service if needed
+  @Override
+  public void getCustomerInfoInTwoPhaseCommit(
+      GetCustomerInfoRequest request, StreamObserver<GetCustomerInfoResponse> responseObserver) {
+    execAndReturnResponse(responseObserver, "Getting customer info", () ->
+        customerRepository.joinTransactionOnParticipant(request.getTransactionId(), () -> {
+          Customer customer = getCustomer(responseObserver, request.getCustomerId());
+
+          return GetCustomerInfoResponse.newBuilder()
+              .setId(customer.customerId)
+              .setName(customer.name)
+              .setCreditLimit(customer.creditLimit)
+              .setCreditTotal(customer.creditTotal)
+              .build();
+        }));
+  }
+
   @Retryable(
       include = TransientDataAccessException.class,
       maxAttempts = 8,
