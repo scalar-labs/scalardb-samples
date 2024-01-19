@@ -139,8 +139,8 @@ The sample application supports the following types of transactions:
 - Place an order by using a line of credit through the `placeOrder` endpoint of the Order Service and the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
   - Checks if the cost of the order is below the customer's credit limit.
   - If the check passes, records the order history and updates the amount the customer has spent.
-- Get order information by order ID through the `getOrder` of the Order Service and `getCustomerInfoForTwoPhaseCommit`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
-- Get order information by customer ID through the `getOrders` of the Order Service and `getCustomerInfoForTwoPhaseCommit`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
+- Get order information by order ID through the `getOrder` endpoint of the Order Service and the `getCustomerInfoForTwoPhaseCommit`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
+- Get order information by customer ID through the `getOrders` endpoint of the Order Service and the `getCustomerInfoForTwoPhaseCommit`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
 - Make a payment through the `repayment` endpoint of the Customer Service.
   - Reduces the amount the customer has spent.
 

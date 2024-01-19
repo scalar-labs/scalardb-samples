@@ -73,7 +73,7 @@ service CustomerService {
   // Get a customer information
   rpc GetCustomerInfo(GetCustomerInfoRequest) returns (GetCustomerInfoResponse) {
   }
-  // Get a customer information
+  // Get customer information
   rpc GetCustomerInfoForTwoPhaseCommit(GetCustomerInfoRequest) returns (GetCustomerInfoResponse) {
   }
   // Credit card repayment
