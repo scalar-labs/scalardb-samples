@@ -5,6 +5,6 @@ WORKDIR /app
 
 RUN ./gradlew shadowJar
 
-FROM openjdk:17-slim
+FROM eclipse-temurin:17-jre-jammy
 
 COPY --from=builder /app/build/libs/sample-data-loader-all.jar /app.jar
