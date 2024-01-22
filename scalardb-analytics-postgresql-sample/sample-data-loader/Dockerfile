@@ -1,4 +1,4 @@
-FROM openjdk:17-slim AS builder
+FROM eclipse-temurin:17-jdk-jammy AS builder
 
 COPY . /app
 WORKDIR /app
