@@ -7,10 +7,7 @@ import com.scalar.db.exception.transaction.TransactionException;
 import com.scalar.db.io.Key;
 import com.scalar.db.service.TransactionFactory;
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Function;
@@ -61,8 +58,6 @@ public class Loader implements AutoCloseable {
     "l_comment"
   };
 
-
-
   private final DistributedTransactionManager manager;
 
   public Loader() throws IOException {
@@ -75,30 +70,15 @@ public class Loader implements AutoCloseable {
   }
 
   public void load() throws TransactionException, IOException {
-    loadData(
-      this.manager,
-      "/data/customer.csv",
-      CUSTOMER_COLUMNS,
-        this::buildPutCustomer
-    );
+    loadData(this.manager, "/data/customer.csv", CUSTOMER_COLUMNS, this::buildPutCustomer);
 
-    loadData(
-      this.manager,
-      "/data/orders.csv",
-      ORDERS_COLUMNS,
-        this::buildPutOrders
-    );
+    loadData(this.manager, "/data/orders.csv", ORDERS_COLUMNS, this::buildPutOrders);
 
-    loadData(
-      this.manager,
-      "/data/lineitem.csv",
-      LINEITEM_COLUMNS,
-        this::buildPutLineitem
-    );
+    loadData(this.manager, "/data/lineitem.csv", LINEITEM_COLUMNS, this::buildPutLineitem);
   }
 
   private Put buildPutCustomer(CSVRecord record) {
-      return Put.newBuilder()
+    return Put.newBuilder()
         .namespace("dynamons")
         .table("customer")
         .partitionKey(Key.ofInt("c_custkey", intCol(record, "c_custkey")))
@@ -114,47 +94,57 @@ public class Loader implements AutoCloseable {
 
   private Put buildPutOrders(CSVRecord record) {
     return Put.newBuilder()
-      .namespace("postgresns")
-      .table("orders")
-      .partitionKey(Key.ofInt("o_orderkey", intCol(record, "o_orderkey")))
-      .intValue("o_custkey", intCol(record, "o_custkey"))
-      .textValue("o_orderstatus", stringCol(record, "o_orderstatus"))
-      .doubleValue("o_totalprice", doubleCol(record, "o_totalprice"))
-      .textValue("o_orderdate", stringCol(record, "o_orderdate"))
-      .textValue("o_orderpriority", stringCol(record, "o_orderpriority"))
-      .textValue("o_clerk", stringCol(record, "o_clerk"))
-      .intValue("o_shippriority", intCol(record, "o_shippriority"))
-      .textValue("o_comment", stringCol(record, "o_comment"))
-      .build();
+        .namespace("postgresns")
+        .table("orders")
+        .partitionKey(Key.ofInt("o_orderkey", intCol(record, "o_orderkey")))
+        .intValue("o_custkey", intCol(record, "o_custkey"))
+        .textValue("o_orderstatus", stringCol(record, "o_orderstatus"))
+        .doubleValue("o_totalprice", doubleCol(record, "o_totalprice"))
+        .textValue("o_orderdate", stringCol(record, "o_orderdate"))
+        .textValue("o_orderpriority", stringCol(record, "o_orderpriority"))
+        .textValue("o_clerk", stringCol(record, "o_clerk"))
+        .intValue("o_shippriority", intCol(record, "o_shippriority"))
+        .textValue("o_comment", stringCol(record, "o_comment"))
+        .build();
   }
 
   private Put buildPutLineitem(CSVRecord record) {
     return Put.newBuilder()
-      .namespace("cassandrans")
-      .table("lineitem")
-      .partitionKey(Key.of("l_orderkey", intCol(record, "l_orderkey"), "l_linenumber", intCol(record, "l_linenumber")))
-      .intValue("l_partkey", intCol(record, "l_partkey"))
-      .intValue("l_suppkey", intCol(record, "l_suppkey"))
-      .intValue("l_quantity", intCol(record, "l_quantity"))
-      .doubleValue("l_extendedprice", doubleCol(record, "l_extendedprice"))
-      .doubleValue("l_discount", doubleCol(record, "l_discount"))
-      .doubleValue("l_tax", doubleCol(record, "l_tax"))
-      .textValue("l_returnflag", stringCol(record, "l_returnflag"))
-      .textValue("l_linestatus", stringCol(record, "l_linestatus"))
-      .textValue("l_shipdate", stringCol(record, "l_shipdate"))
-      .textValue("l_commitdate", stringCol(record, "l_commitdate"))
-      .textValue("l_receiptdate", stringCol(record, "l_receiptdate"))
-      .textValue("l_shipinstruct", stringCol(record, "l_shipinstruct"))
-      .textValue("l_shipmode", stringCol(record, "l_shipmode"))
-      .textValue("l_comment", stringCol(record, "l_comment"))
-      .build();
+        .namespace("cassandrans")
+        .table("lineitem")
+        .partitionKey(
+            Key.of(
+                "l_orderkey",
+                intCol(record, "l_orderkey"),
+                "l_linenumber",
+                intCol(record, "l_linenumber")))
+        .intValue("l_partkey", intCol(record, "l_partkey"))
+        .intValue("l_suppkey", intCol(record, "l_suppkey"))
+        .intValue("l_quantity", intCol(record, "l_quantity"))
+        .doubleValue("l_extendedprice", doubleCol(record, "l_extendedprice"))
+        .doubleValue("l_discount", doubleCol(record, "l_discount"))
+        .doubleValue("l_tax", doubleCol(record, "l_tax"))
+        .textValue("l_returnflag", stringCol(record, "l_returnflag"))
+        .textValue("l_linestatus", stringCol(record, "l_linestatus"))
+        .textValue("l_shipdate", stringCol(record, "l_shipdate"))
+        .textValue("l_commitdate", stringCol(record, "l_commitdate"))
+        .textValue("l_receiptdate", stringCol(record, "l_receiptdate"))
+        .textValue("l_shipinstruct", stringCol(record, "l_shipinstruct"))
+        .textValue("l_shipmode", stringCol(record, "l_shipmode"))
+        .textValue("l_comment", stringCol(record, "l_comment"))
+        .build();
   }
 
-  private void loadData(DistributedTransactionManager manager, String path, String[] columnHeader, Function<CSVRecord, Put> putFunction)
-    throws TransactionException, IOException {
+  private void loadData(
+      DistributedTransactionManager manager,
+      String path,
+      String[] columnHeader,
+      Function<CSVRecord, Put> putFunction)
+      throws TransactionException, IOException {
     DistributedTransaction transaction = null;
     try (BufferedReader reader = Files.newBufferedReader(Path.of(path))) {
-      Iterable<CSVRecord> records = CSVFormat.Builder.create().setHeader(columnHeader).build().parse(reader);
+      Iterable<CSVRecord> records =
+          CSVFormat.Builder.create().setHeader(columnHeader).build().parse(reader);
       transaction = manager.start();
       for (CSVRecord record : records) {
         Put put = putFunction.apply(record);
