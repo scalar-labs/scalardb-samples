@@ -144,6 +144,8 @@ The sample application supports the following types of transactions:
 - Make a payment through the `repayment` endpoint of the Customer Service.
   - Reduces the amount the customer has spent.
 
+Merging the `getCustomerInfoForTwoPhaseCommit` endpoint into the `getCustomerInfo` endpoint may be a good way to reduce the number of endpoints in the Customer Service. We intentionally separated the endpoints to keep them simple as a sample application.
+
 ## Configuration
 
 [The configuration for the Customer Service](customer-service/src/main/resources/application.properties) is as follows:
