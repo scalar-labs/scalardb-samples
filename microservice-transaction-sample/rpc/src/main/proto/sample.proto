@@ -70,7 +70,7 @@ message GetOrdersResponse {
 
 // for Customer Service
 service CustomerService {
-  // Get a customer information
+  // Get customer information
   rpc GetCustomerInfo(GetCustomerInfoRequest) returns (GetCustomerInfoResponse) {
   }
   // Get customer information
