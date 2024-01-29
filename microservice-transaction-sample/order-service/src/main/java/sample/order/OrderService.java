@@ -325,7 +325,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
         throw exception;
       }
 
-      // Return the order id
+      // Return the response
       responseObserver.onNext(result);
       responseObserver.onCompleted();
     } catch (StatusRuntimeException e) {
