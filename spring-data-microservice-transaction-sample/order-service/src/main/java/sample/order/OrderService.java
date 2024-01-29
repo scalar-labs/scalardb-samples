@@ -97,7 +97,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   public void placeOrder(
       PlaceOrderRequest request, StreamObserver<PlaceOrderResponse> responseObserver) {
 
-    execAndReturnResponse(responseObserver, "Placing an order", () -> {
+    execAndReturnResponse("Placing an order", () -> {
       // Start a two-phase commit transaction
       TwoPcResult<PlaceOrderResponse> result = orderRepository.executeTwoPcTransaction(txId -> {
             String orderId = UUID.randomUUID().toString();
@@ -143,7 +143,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
       );
 
       return result.executionPhaseReturnValue();
-    });
+    }, responseObserver);
   }
 
   private void callPaymentEndpoint(String transactionId, int customerId, int amount) {
@@ -180,7 +180,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
       backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
   @Override
   public void getOrder(GetOrderRequest request, StreamObserver<GetOrderResponse> responseObserver) {
-    execAndReturnResponse(responseObserver, "Getting an order", () -> {
+    execAndReturnResponse("Getting an order", () -> {
       // Start a two-phase commit transaction
       TwoPcResult<GetOrderResponse> result = orderRepository.executeTwoPcTransaction(txId -> {
             // Retrieve the order info for the specified order ID
@@ -209,7 +209,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
           ));
 
       return result.executionPhaseReturnValue();
-    });
+    }, responseObserver);
   }
 
   /**
@@ -222,7 +222,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   @Override
   public void getOrders(
       GetOrdersRequest request, StreamObserver<GetOrdersResponse> responseObserver) {
-    execAndReturnResponse(responseObserver, "Getting orders", () -> {
+    execAndReturnResponse("Getting orders", () -> {
       // Start a two-phase commit transaction
       TwoPcResult<GetOrdersResponse> result = orderRepository.executeTwoPcTransaction(txId -> {
             // Get the customer name from Customer service
@@ -247,7 +247,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
           ));
 
       return result.executionPhaseReturnValue();
-    });
+    }, responseObserver);
 }
 
   private sample.rpc.Order getOrderResult(String transactionId, StreamObserver<?> responseObserver,
@@ -295,7 +295,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
 
   private String getCustomerName(String transactionId, int customerId) {
     GetCustomerInfoResponse customerInfo =
-        stub.getCustomerInfoForTwoPhaseCommit(
+        stub.getCustomerInfo(
             GetCustomerInfoRequest.newBuilder()
                 .setTransactionId(transactionId)
                 .setCustomerId(customerId).build());
@@ -314,8 +314,8 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     return null;
   }
 
-  private <T> void execAndReturnResponse(StreamObserver<T> responseObserver, String funcName,
-      Supplier<T> task) {
+  private <T> void execAndReturnResponse(String funcName, Supplier<T> task,
+      StreamObserver<T> responseObserver) {
     try {
       T result = task.get();
 

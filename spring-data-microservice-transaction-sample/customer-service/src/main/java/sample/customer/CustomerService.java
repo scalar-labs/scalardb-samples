@@ -59,35 +59,29 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   @Override
   public void getCustomerInfo(
       GetCustomerInfoRequest request, StreamObserver<GetCustomerInfoResponse> responseObserver) {
-    execAndReturnResponse(responseObserver, "Getting customer info", () ->
-        customerRepository.executeOneshotOperations(() -> {
-          Customer customer = getCustomer(responseObserver, request.getCustomerId());
+    String funcName = "Getting customer info";
+    // This function processing operations can be used in both normal transaction and two-phase
+    // interface transaction.
+    Supplier<GetCustomerInfoResponse> task = () -> {
+      Customer customer = getCustomer(responseObserver, request.getCustomerId());
 
-          return GetCustomerInfoResponse.newBuilder()
-              .setId(customer.customerId)
-              .setName(customer.name)
-              .setCreditLimit(customer.creditLimit)
-              .setCreditTotal(customer.creditTotal)
-              .build();
-        }));
-  }
+      return GetCustomerInfoResponse.newBuilder()
+          .setId(customer.customerId)
+          .setName(customer.name)
+          .setCreditLimit(customer.creditLimit)
+          .setCreditTotal(customer.creditTotal)
+          .build();
+    };
 
-  // @Retryable shouldn't be used here as this is used as a participant API and
-  // will be retried by the coordinator service if needed
-  @Override
-  public void getCustomerInfoForTwoPhaseCommit(
-      GetCustomerInfoRequest request, StreamObserver<GetCustomerInfoResponse> responseObserver) {
-    execAndReturnResponse(responseObserver, "Getting customer info", () ->
-        customerRepository.joinTransactionOnParticipant(request.getTransactionId(), () -> {
-          Customer customer = getCustomer(responseObserver, request.getCustomerId());
-
-          return GetCustomerInfoResponse.newBuilder()
-              .setId(customer.customerId)
-              .setName(customer.name)
-              .setCreditLimit(customer.creditLimit)
-              .setCreditTotal(customer.creditTotal)
-              .build();
-        }));
+    if (request.hasTransactionId()) {
+      execAndReturnResponse(funcName,
+          () -> customerRepository.joinTransactionOnParticipant(request.getTransactionId(), task),
+          responseObserver);
+    } else {
+      execAndReturnResponse(funcName,
+          () -> customerRepository.executeOneshotOperations(task),
+          responseObserver);
+    }
   }
 
   @Retryable(
@@ -96,7 +90,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
   @Override
   public void repayment(RepaymentRequest request, StreamObserver<Empty> responseObserver) {
-    execAndReturnResponse(responseObserver, "Repayment", () ->
+    execAndReturnResponse("Repayment", () ->
         customerRepository.executeOneshotOperations(() -> {
               Customer customer = getCustomer(responseObserver, request.getCustomerId());
 
@@ -116,14 +110,14 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
 
               return Empty.getDefaultInstance();
             }
-        ));
+        ), responseObserver);
   }
 
   // @Retryable shouldn't be used here as this is used as a participant API and
   // will be retried by the coordinator service if needed
   @Override
   public void payment(PaymentRequest request, StreamObserver<Empty> responseObserver) {
-    execAndReturnResponse(responseObserver, "Payment", () ->
+    execAndReturnResponse("Payment", () ->
         customerRepository.joinTransactionOnParticipant(request.getTransactionId(), () -> {
           Customer customer = getCustomer(responseObserver, request.getCustomerId());
 
@@ -142,47 +136,47 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
           customerRepository.update(customer.withCreditTotal(updatedCreditTotal));
 
           return Empty.getDefaultInstance();
-        }));
+        }), responseObserver);
   }
 
   // @Retryable shouldn't be put as this is used as a participant API and
   // will be retried by the coordinator service if needed
   @Override
   public void prepare(PrepareRequest request, StreamObserver<Empty> responseObserver) {
-    execAndReturnResponse(responseObserver, "Prepare", () -> {
+    execAndReturnResponse("Prepare", () -> {
       customerRepository.prepareTransactionOnParticipant(request.getTransactionId());
       return Empty.getDefaultInstance();
-    });
+    }, responseObserver);
   }
 
   // @Retryable shouldn't be put as this is used as a participant API and
   // will be retried by the coordinator service if needed
   @Override
   public void validate(ValidateRequest request, StreamObserver<Empty> responseObserver) {
-    execAndReturnResponse(responseObserver, "Validate", () -> {
+    execAndReturnResponse("Validate", () -> {
       customerRepository.validateTransactionOnParticipant(request.getTransactionId());
       return Empty.getDefaultInstance();
-    });
+    }, responseObserver);
   }
 
   // @Retryable shouldn't be put as this is used as a participant API and
   // will be retried by the coordinator service if needed
   @Override
   public void commit(CommitRequest request, StreamObserver<Empty> responseObserver) {
-    execAndReturnResponse(responseObserver, "Commit", () -> {
+    execAndReturnResponse("Commit", () -> {
       customerRepository.commitTransactionOnParticipant(request.getTransactionId());
       return Empty.getDefaultInstance();
-    });
+    }, responseObserver);
   }
 
   // @Retryable shouldn't be put as this is used as a participant API and
   // will be retried by the coordinator service if needed
   @Override
   public void rollback(RollbackRequest request, StreamObserver<Empty> responseObserver) {
-    execAndReturnResponse(responseObserver, "Rollback", () -> {
+    execAndReturnResponse("Rollback", () -> {
       customerRepository.rollbackTransactionOnParticipant(request.getTransactionId());
       return Empty.getDefaultInstance();
-    });
+    }, responseObserver);
   }
 
   private Customer getCustomer(StreamObserver<?> responseObserver, int customerId) {
@@ -209,8 +203,8 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     return null;
   }
 
-  private <T> void execAndReturnResponse(StreamObserver<T> responseObserver, String funcName,
-      Supplier<T> task) {
+  private <T> void execAndReturnResponse(String funcName, Supplier<T> task,
+      StreamObserver<T> responseObserver) {
     try {
       T result = task.get();
 
