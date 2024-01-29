@@ -65,7 +65,7 @@ The sample application supports the following types of transactions:
 {% capture notice--info %}
 **Note**
 
-`getCustomerInfo` endpoint works as a participant service endpoint when receiving a transaction ID from the coordinator.
+The `getCustomerInfo` endpoint works as a participant service endpoint when receiving a transaction ID from the coordinator.
 
 {% endcapture %}
 
