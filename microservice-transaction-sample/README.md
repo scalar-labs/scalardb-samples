@@ -37,7 +37,6 @@ The endpoints defined in the services are as follows:
 
 - Customer Service
   - `getCustomerInfo`
-  - `getCustomerInfoForTwoPhaseCommit`
   - `payment`
   - `prepare`
   - `validate`
@@ -58,15 +57,16 @@ The sample application supports the following types of transactions:
 - Place an order by using a line of credit through the `placeOrder` endpoint of the Order Service and the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
   - Checks if the cost of the order is below the customer's credit limit.
   - If the check passes, records the order history and updates the amount the customer has spent.
-- Get order information by order ID through the `getOrder` endpoint of the Order Service and the `getCustomerInfoForTwoPhaseCommit`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
-- Get order information by customer ID through the `getOrders` endpoint of the Order Service and the `getCustomerInfoForTwoPhaseCommit`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
+- Get order information by order ID through the `getOrder` endpoint of the Order Service and the `getCustomerInfo`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
+- Get order information by customer ID through the `getOrders` endpoint of the Order Service and the `getCustomerInfo`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
 - Make a payment through the `repayment` endpoint of the Customer Service.
   - Reduces the amount the customer has spent.
 
 {% capture notice--info %}
 **Note**
 
-Merging the `getCustomerInfoForTwoPhaseCommit` endpoint into the `getCustomerInfo` endpoint may be a good way to reduce the number of endpoints in the Customer Service. The endpoints are intentionally separated for the sake of simplifying them in the sample application.
+`getCustomerInfo` endpoint works as a participant service endpoint when receiving a transaction ID from the coordinator.
+
 {% endcapture %}
 
 <div class="notice--info">{{ notice--info | markdownify }}</div>

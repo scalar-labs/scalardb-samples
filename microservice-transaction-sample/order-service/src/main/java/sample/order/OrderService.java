@@ -102,7 +102,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   @Override
   public void placeOrder(
       PlaceOrderRequest request, StreamObserver<PlaceOrderResponse> responseObserver) {
-    execInTwoPhaseCommit(responseObserver, "Placing an order",
+    execOperationsAsCoordinator("Placing an order",
         (transaction) -> {
           String orderId = UUID.randomUUID().toString();
 
@@ -128,7 +128,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
           callPaymentEndpoint(transaction.getId(), request.getCustomerId(), amount);
 
           return PlaceOrderResponse.newBuilder().setOrderId(orderId).build();
-        }
+        }, responseObserver
     );
   }
 
@@ -180,7 +180,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   /** Get Order information by order ID */
   @Override
   public void getOrder(GetOrderRequest request, StreamObserver<GetOrderResponse> responseObserver) {
-    execInTwoPhaseCommit(responseObserver, "Getting an order",
+    execOperationsAsCoordinator("Getting an order",
         (transaction) -> {
           // Retrieve the order info for the specified order ID
           Optional<Order> order = Order.getById(transaction, request.getOrderId());
@@ -195,7 +195,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
           sample.rpc.Order rpcOrder = getOrder(transaction, order.get(), customerName);
 
           return GetOrderResponse.newBuilder().setOrder(rpcOrder).build();
-        }
+        }, responseObserver
     );
   }
 
@@ -203,7 +203,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   @Override
   public void getOrders(
       GetOrdersRequest request, StreamObserver<GetOrdersResponse> responseObserver) {
-    execInTwoPhaseCommit(responseObserver, "Getting orders",
+    execOperationsAsCoordinator("Getting orders",
         (transaction) -> {
           // Retrieve the order info for the specified customer ID
           List<Order> orders = Order.getByCustomerId(transaction, request.getCustomerId());
@@ -219,12 +219,72 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
           }
 
           return builder.build();
-        }
+        }, responseObserver
     );
   }
 
-  private <T> void execInTwoPhaseCommit(StreamObserver<T> responseObserver,
-      String funcName, TransactionFunction<TwoPhaseCommitTransaction, T> task) {
+  private sample.rpc.Order getOrder(TwoPhaseCommitTransaction transaction, Order order,
+      String customerName)
+      throws CrudException {
+    sample.rpc.Order.Builder orderBuilder =
+        sample.rpc.Order.newBuilder()
+            .setOrderId(order.id)
+            .setCustomerId(order.customerId)
+            .setCustomerName(customerName)
+            .setTimestamp(order.timestamp);
+
+    int total = 0;
+
+    // Retrieve the order statements for the order ID from the statements table
+    List<Statement> statements = Statement.getByOrderId(transaction, order.id);
+
+    // Make statements
+    for (Statement statement : statements) {
+      sample.rpc.Statement.Builder statementBuilder = sample.rpc.Statement.newBuilder();
+      statementBuilder.setItemId(statement.itemId);
+
+      // Retrieve the item data from the items table
+      Optional<Item> item = Item.get(transaction, statement.itemId);
+      if (!item.isPresent()) {
+        throw Status.NOT_FOUND.withDescription("Item not found").asRuntimeException();
+      }
+      statementBuilder.setItemName(item.get().name);
+      statementBuilder.setPrice(item.get().price);
+      statementBuilder.setCount(statement.count);
+
+      int itemTotal = item.get().price * statement.count;
+      statementBuilder.setTotal(itemTotal);
+
+      orderBuilder.addStatement(statementBuilder);
+
+      total += itemTotal;
+    }
+
+    return orderBuilder.setTotal(total).build();
+  }
+
+  private String getCustomerName(String transactionId, int customerId) {
+    GetCustomerInfoResponse customerInfo =
+        customerServiceStub.getCustomerInfo(
+            GetCustomerInfoRequest.newBuilder()
+                .setTransactionId(transactionId)
+                .setCustomerId(customerId).build());
+    return customerInfo.getName();
+  }
+
+  private void abortTransaction(@Nullable DistributedTransaction transaction) {
+    if (transaction == null) {
+      return;
+    }
+    try {
+      transaction.abort();
+    } catch (AbortException e) {
+      logger.warn("Abort failed", e);
+    }
+  }
+
+  private <T> void execOperationsAsCoordinator(String funcName,
+      TransactionFunction<TwoPhaseCommitTransaction, T> task, StreamObserver<T> responseObserver) {
     TwoPhaseCommitTransaction transaction = null;
     try {
       // Start a two-phase commit transaction
@@ -276,66 +336,6 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
       rollbackTransaction(transaction);
       responseObserver.onError(
           Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
-    }
-  }
-
-  private sample.rpc.Order getOrder(TwoPhaseCommitTransaction transaction, Order order,
-      String customerName)
-      throws CrudException {
-    sample.rpc.Order.Builder orderBuilder =
-        sample.rpc.Order.newBuilder()
-            .setOrderId(order.id)
-            .setCustomerId(order.customerId)
-            .setCustomerName(customerName)
-            .setTimestamp(order.timestamp);
-
-    int total = 0;
-
-    // Retrieve the order statements for the order ID from the statements table
-    List<Statement> statements = Statement.getByOrderId(transaction, order.id);
-
-    // Make statements
-    for (Statement statement : statements) {
-      sample.rpc.Statement.Builder statementBuilder = sample.rpc.Statement.newBuilder();
-      statementBuilder.setItemId(statement.itemId);
-
-      // Retrieve the item data from the items table
-      Optional<Item> item = Item.get(transaction, statement.itemId);
-      if (!item.isPresent()) {
-        throw Status.NOT_FOUND.withDescription("Item not found").asRuntimeException();
-      }
-      statementBuilder.setItemName(item.get().name);
-      statementBuilder.setPrice(item.get().price);
-      statementBuilder.setCount(statement.count);
-
-      int itemTotal = item.get().price * statement.count;
-      statementBuilder.setTotal(itemTotal);
-
-      orderBuilder.addStatement(statementBuilder);
-
-      total += itemTotal;
-    }
-
-    return orderBuilder.setTotal(total).build();
-  }
-
-  private String getCustomerName(String transactionId, int customerId) {
-    GetCustomerInfoResponse customerInfo =
-        customerServiceStub.getCustomerInfoForTwoPhaseCommit(
-            GetCustomerInfoRequest.newBuilder()
-                .setTransactionId(transactionId)
-                .setCustomerId(customerId).build());
-    return customerInfo.getName();
-  }
-
-  private void abortTransaction(@Nullable DistributedTransaction transaction) {
-    if (transaction == null) {
-      return;
-    }
-    try {
-      transaction.abort();
-    } catch (AbortException e) {
-      logger.warn("Abort failed", e);
     }
   }
 
