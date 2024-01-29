@@ -1,7 +1,7 @@
 version: "3"
 services:
   analytics:
-    image: ghcr.io/scalar-labs/scalardb-analytics-postgresql:3.9.0
+    image: ghcr.io/scalar-labs/scalardb-analytics-postgresql:3.10.3
     ports:
       - "5432:5432"
     volumes:
@@ -57,11 +57,11 @@ services:
     networks:
       - scalar-network
 
-  sql-cli:
-    image: ghcr.io/scalar-labs/scalardb-sql-cli:3.9.0
+  schema-loader:
+    image: ghcr.io/scalar-labs/scalardb-schema-loader:3.10.2
     volumes:
       - ./scalardb.properties:/etc/scalardb.properties
-      - ./sample_data.sql:/etc/sample_data.sql
+      - ./schema.json:/etc/schema.json
     networks:
       - scalar-network
     profiles:
@@ -72,7 +72,7 @@ services:
       - backend-dynamodb
 
   schema-importer:
-    image: ghcr.io/scalar-labs/scalardb-analytics-postgresql-schema-importer:3.9.0
+    image: ghcr.io/scalar-labs/scalardb-analytics-postgresql-schema-importer:3.10.3
     volumes:
       - ./scalardb.properties:/etc/scalardb.properties
     networks:
@@ -81,6 +81,24 @@ services:
       - dev
     depends_on:
       - analytics
+
+  sample-data-loader:
+    build:
+      context: sample-data-loader
+      dockerfile: Dockerfile
+    volumes:
+      - ./scalardb.properties:/etc/scalardb.properties
+      - ./data:/data
+    working_dir: /sample-data-loader
+    networks:
+      - scalar-network
+    profiles:
+      - dev
+    depends_on:
+      - backend-postgres
+      - backend-cassandra
+      - backend-dynamodb
+    command: ["java", "-jar", "/app.jar"]
 
 volumes:
   analytics-data: {}
