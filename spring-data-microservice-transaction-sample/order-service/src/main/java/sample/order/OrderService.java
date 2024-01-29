@@ -98,7 +98,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
       PlaceOrderRequest request, StreamObserver<PlaceOrderResponse> responseObserver) {
 
     execAndReturnResponse("Placing an order", () -> {
-      // Start a two-phase commit transaction
+      // Start a two-phase commit interface transaction
       TwoPcResult<PlaceOrderResponse> result = orderRepository.executeTwoPcTransaction(txId -> {
             String orderId = UUID.randomUUID().toString();
             Order order = new Order(orderId, request.getCustomerId(), System.currentTimeMillis());
@@ -181,7 +181,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   @Override
   public void getOrder(GetOrderRequest request, StreamObserver<GetOrderResponse> responseObserver) {
     execAndReturnResponse("Getting an order", () -> {
-      // Start a two-phase commit transaction
+      // Start a two-phase commit interface transaction
       TwoPcResult<GetOrderResponse> result = orderRepository.executeTwoPcTransaction(txId -> {
             // Retrieve the order info for the specified order ID
             Optional<Order> orderOpt = orderRepository.findById(request.getOrderId());
@@ -192,7 +192,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
               throw new ScalarDbNonTransientException(message);
             }
 
-            // Get the customer name from Customer service
+            // Get the customer name from the Customer service
             String customerName = getCustomerName(txId, orderOpt.get().customerId);
 
             // Make an order protobuf to return
@@ -223,9 +223,9 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   public void getOrders(
       GetOrdersRequest request, StreamObserver<GetOrdersResponse> responseObserver) {
     execAndReturnResponse("Getting orders", () -> {
-      // Start a two-phase commit transaction
+      // Start a two-phase commit interface transaction
       TwoPcResult<GetOrdersResponse> result = orderRepository.executeTwoPcTransaction(txId -> {
-            // Get the customer name from Customer service
+            // Get the customer name from the Customer service
             String customerName = getCustomerName(txId, request.getCustomerId());
 
             // Retrieve the order info for the specified order ID
@@ -314,10 +314,10 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     return null;
   }
 
-  private <T> void execAndReturnResponse(String funcName, Supplier<T> task,
+  private <T> void execAndReturnResponse(String funcName, Supplier<T> operations,
       StreamObserver<T> responseObserver) {
     try {
-      T result = task.get();
+      T result = operations.get();
 
       responseObserver.onNext(result);
       responseObserver.onCompleted();

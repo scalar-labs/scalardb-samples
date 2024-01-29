@@ -103,7 +103,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   public void placeOrder(
       PlaceOrderRequest request, StreamObserver<PlaceOrderResponse> responseObserver) {
     execOperationsAsCoordinator("Placing an order",
-        (transaction) -> {
+        transaction -> {
           String orderId = UUID.randomUUID().toString();
 
           // Put the order info into the orders table
@@ -181,14 +181,14 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   @Override
   public void getOrder(GetOrderRequest request, StreamObserver<GetOrderResponse> responseObserver) {
     execOperationsAsCoordinator("Getting an order",
-        (transaction) -> {
+        transaction -> {
           // Retrieve the order info for the specified order ID
           Optional<Order> order = Order.getById(transaction, request.getOrderId());
           if (!order.isPresent()) {
             throw Status.NOT_FOUND.withDescription("Order not found").asRuntimeException();
           }
 
-          // Get the customer name from Customer service
+          // Get the customer name from the Customer service
           String customerName = getCustomerName(transaction.getId(), order.get().customerId);
 
           // Make an order protobuf to return
@@ -204,11 +204,11 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   public void getOrders(
       GetOrdersRequest request, StreamObserver<GetOrdersResponse> responseObserver) {
     execOperationsAsCoordinator("Getting orders",
-        (transaction) -> {
+        transaction -> {
           // Retrieve the order info for the specified customer ID
           List<Order> orders = Order.getByCustomerId(transaction, request.getCustomerId());
 
-          // Get the customer name from Customer service
+          // Get the customer name from the Customer service
           String customerName = getCustomerName(transaction.getId(), request.getCustomerId());
 
           GetOrdersResponse.Builder builder = GetOrdersResponse.newBuilder();
@@ -284,13 +284,15 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   }
 
   private <T> void execOperationsAsCoordinator(String funcName,
-      TransactionFunction<TwoPhaseCommitTransaction, T> task, StreamObserver<T> responseObserver) {
+      TransactionFunction<TwoPhaseCommitTransaction, T> operations,
+      StreamObserver<T> responseObserver) {
     TwoPhaseCommitTransaction transaction = null;
     try {
-      // Start a two-phase commit transaction
+      // Start a two-phase commit interface transaction
       transaction = twoPhaseCommitTransactionManager.start();
 
-      T result = task.apply(transaction);
+      // Execute operations
+      T result = operations.apply(transaction);
 
       // Prepare the transaction
       transaction.prepare();

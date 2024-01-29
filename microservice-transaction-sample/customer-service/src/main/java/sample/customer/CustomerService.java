@@ -84,28 +84,29 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     String funcName = "Getting customer info";
     // This function processing operations can be used in both normal transaction and two-phase
     // interface transaction.
-    TransactionFunction<TransactionCrudOperable, GetCustomerInfoResponse> task = transaction -> {
-      // Retrieve the customer info for the specified customer ID
-      Optional<Customer> result = Customer.get(transaction, request.getCustomerId());
+    TransactionFunction<TransactionCrudOperable, GetCustomerInfoResponse> operations =
+        transaction -> {
+          // Retrieve the customer info for the specified customer ID
+          Optional<Customer> result = Customer.get(transaction, request.getCustomerId());
 
-      if (!result.isPresent()) {
-        // If the customer info the specified customer ID doesn't exist, throw an exception
-        throw Status.NOT_FOUND.withDescription("Customer not found").asRuntimeException();
-      }
+          if (!result.isPresent()) {
+            // If the customer info the specified customer ID doesn't exist, throw an exception
+            throw Status.NOT_FOUND.withDescription("Customer not found").asRuntimeException();
+          }
 
-      // Return the customer info
-      return GetCustomerInfoResponse.newBuilder()
-          .setId(result.get().id)
-          .setName(result.get().name)
-          .setCreditLimit(result.get().creditLimit)
-          .setCreditTotal(result.get().creditTotal)
-          .build();
-    };
+          // Return the customer info
+          return GetCustomerInfoResponse.newBuilder()
+              .setId(result.get().id)
+              .setName(result.get().name)
+              .setCreditLimit(result.get().creditLimit)
+              .setCreditTotal(result.get().creditTotal)
+              .build();
+        };
 
     if (request.hasTransactionId()) {
-      execOperationsAsParticipant(funcName, request.getTransactionId(), task, responseObserver);
+      execOperationsAsParticipant(funcName, request.getTransactionId(), operations, responseObserver);
     } else {
-      execOperations(funcName, task, responseObserver);
+      execOperations(funcName, operations, responseObserver);
     }
   }
 
@@ -257,14 +258,14 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   }
 
   private <T> void execOperations(String funcName,
-      TransactionFunction<TransactionCrudOperable, T> task, StreamObserver<T> responseObserver) {
+      TransactionFunction<TransactionCrudOperable, T> operations, StreamObserver<T> responseObserver) {
     DistributedTransaction transaction = null;
     try {
       // Start a transaction
       transaction = transactionManager.start();
 
       // Execute operations
-      T response = task.apply(transaction);
+      T response = operations.apply(transaction);
 
       // Commit the transaction (even when the transaction is read-only, we need to commit)
       transaction.commit();
@@ -286,13 +287,14 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
   }
 
   private <T> void execOperationsAsParticipant(String funcName, String transactionId,
-      TransactionFunction<TransactionCrudOperable, T> task, StreamObserver<T> responseObserver) {
+      TransactionFunction<TransactionCrudOperable, T> operations,
+      StreamObserver<T> responseObserver) {
     try {
-      // Start a transaction
+      // Join the transaction
       TwoPhaseCommitTransaction transaction = twoPhaseCommitTransactionManager.join(transactionId);
 
       // Execute operations
-      T response = task.apply(transaction);
+      T response = operations.apply(transaction);
 
       // Return the response
       responseObserver.onNext(response);

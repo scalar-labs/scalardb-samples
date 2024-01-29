@@ -62,7 +62,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     String funcName = "Getting customer info";
     // This function processing operations can be used in both normal transaction and two-phase
     // interface transaction.
-    Supplier<GetCustomerInfoResponse> task = () -> {
+    Supplier<GetCustomerInfoResponse> operations = () -> {
       Customer customer = getCustomer(responseObserver, request.getCustomerId());
 
       return GetCustomerInfoResponse.newBuilder()
@@ -75,11 +75,11 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
 
     if (request.hasTransactionId()) {
       execAndReturnResponse(funcName,
-          () -> customerRepository.joinTransactionOnParticipant(request.getTransactionId(), task),
+          () -> customerRepository.joinTransactionOnParticipant(request.getTransactionId(), operations),
           responseObserver);
     } else {
       execAndReturnResponse(funcName,
-          () -> customerRepository.executeOneshotOperations(task),
+          () -> customerRepository.executeOneshotOperations(operations),
           responseObserver);
     }
   }
@@ -203,10 +203,10 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
     return null;
   }
 
-  private <T> void execAndReturnResponse(String funcName, Supplier<T> task,
+  private <T> void execAndReturnResponse(String funcName, Supplier<T> operations,
       StreamObserver<T> responseObserver) {
     try {
-      T result = task.get();
+      T result = operations.get();
 
       responseObserver.onNext(result);
       responseObserver.onCompleted();
