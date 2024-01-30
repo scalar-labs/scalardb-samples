@@ -427,7 +427,16 @@ for (ItemOrder itemOrder : request.getItemOrderList()) {
 
 Then, the Order Service calls the `payment` gRPC endpoint of the Customer Service along with the transaction ID. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java).
 
-This endpoint first joins the transaction with `join()` as follows. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
+```java
+customerServiceStub.payment(
+  PaymentRequest.newBuilder()
+    .setTransactionId(transactionId)
+    .setCustomerId(customerId)
+    .setAmount(amount)
+    .build());
+```
+
+The `payment` endpoint of the Customer Service first joins the transaction with `join()` as follows. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
 private <T> void execOperationsAsParticipant(String funcName, String transactionId,
