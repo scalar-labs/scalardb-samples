@@ -383,7 +383,7 @@ $ docker-compose down
 
 ## Reference - How the microservice transaction is achieved
 
-The transactions for placing an order, getting an order and getting orders achieve the microservice transaction, so this section focuses on how the transactions that span the Customer Service and the Order Service are implemented by taking placing an order as an example.
+The transactions for placing an order, getting a single order, and getting the history of orders achieve the microservice transaction. This section focuses on how the transactions that span the Customer Service and the Order Service are implemented by placing an order as an example.
 
 The following sequence diagram shows the transaction for placing an order:
 

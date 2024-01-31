@@ -374,7 +374,7 @@ $ docker-compose down
 
 ## Reference - How the microservice transaction is achieved
 
-The transactions for placing an order, getting an order and getting orders achieve the microservice transaction, so this section focuses on how the transactions that span the Customer Service and the Order Service are implemented by taking placing an order as an example.
+The transactions for placing an order, getting a single order, and getting the history of orders achieve the microservice transaction. This section focuses on how the transactions that span the Customer Service and the Order Service are implemented by placing an order as an example.
 
 The following sequence diagram shows the transaction for placing an order:
 
@@ -393,7 +393,7 @@ TwoPcResult<String> result = orderRepository.executeTwoPcTransaction(txId -> {
 }, ...);
 ```
 
-The following `CRUD operations are executed`, `Transaction is committed by using the two-phase commit protocol` and `Error handling` are automatically performed by the API.
+The actions in [CRUD operations are executed](#2-crud-operations-are-executed), [Transaction is committed by using the two-phase commit protocol](#3-transaction-is-committed-by-using-the-two-phase-commit-protocol), and [Error handling](#error-handling) are automatically performed by the API.
 
 ### 2. CRUD operations are executed
 
@@ -465,7 +465,7 @@ customerRepository.update(customer.withCreditTotal(updatedCreditTotal));
 
 After the Order Service receives the update that the payment succeeded, the Order Service tries to commit the transaction.
 
-`ScalarDbTwoPcRepository.executeTwoPcTransaction()` API, called on the Order Service, automatically performs preparations, validations and commits of both the local Order Service and the remote Customer Service. These steps are executed sequentially after the above CRUD operations successfully finish. The implementations to invoke `prepare`, `validate` and `commit` gRPC endpoints of the Customer Service need to be passed as parameters to the API. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java).
+The `ScalarDbTwoPcRepository.executeTwoPcTransaction()` API, which called on the Order Service, automatically performs preparations, validations, and commits of both the local Order Service and the remote Customer Service. These steps are executed sequentially after the above CRUD operations successfully finish. The implementations to invoke `prepare`, `validate`, and `commit` gRPC endpoints of the Customer Service need to be passed as parameters to the API. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java).
 
 ```java
 TwoPcResult<PlaceOrderResponse> result = orderRepository.executeTwoPcTransaction(txId ->{
@@ -485,19 +485,19 @@ TwoPcResult<PlaceOrderResponse> result = orderRepository.executeTwoPcTransaction
 
 ![Sequence Diagram of High Level 2PC API](images/seq-diagram-high-level-2pc-api.png)
 
-In the `prepare` endpoint of the Customer Service, it resumes and prepares the transaction with `ScalarDbTwoPcRepository.prepareTransactionOnParticipant()`. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
+In the `prepare` endpoint of the Customer Service, the endpoint resumes and prepares the transaction by using `ScalarDbTwoPcRepository.prepareTransactionOnParticipant()`. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
 customerRepository.prepareTransactionOnParticipant(request.getTransactionId());
 ```
 
-In the `validate` endpoint of the Customer Service, it resumes and validates the transaction with `ScalarDbTwoPcRepository.validateTransactionOnParticipant()`. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
+In the `validate` endpoint of the Customer Service, the endpoint resumes and validates the transaction by using `ScalarDbTwoPcRepository.validateTransactionOnParticipant()`. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
 customerRepository.validateTransactionOnParticipant(request.getTransactionId());
 ```
 
-In the `commit` endpoint of the Customer Service, it resumes and commits the transaction with `ScalarDbTwoPcRepository.commitTransactionOnParticipant()`. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
+In the `commit` endpoint of the Customer Service, the endpoint resumes and commits the transaction by using `ScalarDbTwoPcRepository.commitTransactionOnParticipant()`. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
 customerRepository.commitTransactionOnParticipant(request.getTransactionId());
@@ -505,7 +505,7 @@ customerRepository.commitTransactionOnParticipant(request.getTransactionId());
 
 ### Error handling
 
-If an error happens while executing a transaction, the transaction will be automatically rolled back in both the local Order Service and the remote Customer Service by `ScalarDbTwoPcRepository.executeTwoPcTransaction()`. The implementation to invoke the `rollback` gRPC endpoint of the Customer Service also needs to be passed as a parameter to the API with other ones. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java).
+If an error happens while executing a transaction, `ScalarDbTwoPcRepository.executeTwoPcTransaction()` will automatically roll back the transaction in both the local Order Service and the remote Customer Service. The implementation to invoke the `rollback` gRPC endpoint of the Customer Service also needs to be passed as a parameter to the API with other ones. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java).
 
 ```java
 TwoPcResult<PlaceOrderResponse> result = orderRepository.executeTwoPcTransaction(txId ->{
@@ -523,7 +523,7 @@ TwoPcResult<PlaceOrderResponse> result = orderRepository.executeTwoPcTransaction
 );
 ```
 
-In the `rollback` endpoint of the Customer Service, it resumes and rolls back the transaction. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
+In the `rollback` endpoint of the Customer Service, the endpoint resumes and rolls back the transaction. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
 customerRepository.rollbackTransactionOnParticipant(request.getTransactionId());
