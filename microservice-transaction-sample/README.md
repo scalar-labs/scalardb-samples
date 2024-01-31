@@ -57,10 +57,19 @@ The sample application supports the following types of transactions:
 - Place an order by using a line of credit through the `placeOrder` endpoint of the Order Service and the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
   - Checks if the cost of the order is below the customer's credit limit.
   - If the check passes, records the order history and updates the amount the customer has spent.
-- Get order information by order ID through the `getOrder` of the Order Service.
-- Get order information by customer ID through the `getOrders` of the Order Service.
+- Get order information by order ID through the `getOrder` endpoint of the Order Service and the `getCustomerInfo`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
+- Get order information by customer ID through the `getOrders` endpoint of the Order Service and the `getCustomerInfo`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
 - Make a payment through the `repayment` endpoint of the Customer Service.
   - Reduces the amount the customer has spent.
+
+{% capture notice--info %}
+**Note**
+
+The `getCustomerInfo` endpoint works as a participant service endpoint when receiving a transaction ID from the coordinator.
+
+{% endcapture %}
+
+<div class="notice--info">{{ notice--info | markdownify }}</div>
 
 ## Prerequisites
 
@@ -374,7 +383,7 @@ $ docker-compose down
 
 ## Reference - How the microservice transaction is achieved
 
-The transaction for placing an order achieves the microservice transaction, so this section focuses on how the transaction that spans the Customer Service and the Order Service is implemented.
+The transactions for placing an order, getting a single order, and getting the history of orders achieve the microservice transaction. This section focuses on how the transactions that span the Customer Service and the Order Service are implemented by placing an order as an example.
 
 The following sequence diagram shows the transaction for placing an order:
 
@@ -418,39 +427,55 @@ for (ItemOrder itemOrder : request.getItemOrderList()) {
 
 Then, the Order Service calls the `payment` gRPC endpoint of the Customer Service along with the transaction ID. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java).
 
-This endpoint first joins the transaction with `join()` as follows. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
+```java
+customerServiceStub.payment(
+  PaymentRequest.newBuilder()
+    .setTransactionId(transactionId)
+    .setCustomerId(customerId)
+    .setAmount(amount)
+    .build());
+```
+
+The `payment` endpoint of the Customer Service first joins the transaction with `join()` as follows. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
-twoPhaseCommitTransactionManager.join(request.getTransactionId());
+private <T> void execOperationsAsParticipant(String funcName, String transactionId,
+  TransactionFunction<TransactionCrudOperable, T> operations,
+  StreamObserver<T> responseObserver) {
+  try {
+    // Join the transaction
+    TwoPhaseCommitTransaction transaction = twoPhaseCommitTransactionManager.join(transactionId);
+
+    // Execute operations
+    T response = operations.apply(transaction);
 ```
 
 The endpoint then gets the customer information and checks if the customer's credit total exceeds the credit limit after the payment. If the credit total does not exceed the credit limit, the endpoint updates the customer's credit total. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
-// Join the transaction that the Order Service started.
-transaction = twoPhaseCommitTransactionManager.join(request.getTransactionId());
+execOperationsAsParticipant("Payment", request.getTransactionId(),
+  transaction -> {
+    // Retrieve the customer info for the customer ID
+    Optional<Customer> result = Customer.get(transaction, request.getCustomerId());
+    if (!result.isPresent()) {
+      throw Status.NOT_FOUND.withDescription("Customer not found").asRuntimeException();
+    }
 
-// Retrieve the customer info for the customer ID.
-Optional<Customer> result = Customer.get(transaction, request.getCustomerId());
-if (!result.isPresent()) {
-  responseObserver.onError(
-      Status.NOT_FOUND.withDescription("Customer not found").asRuntimeException());
-  return;
-}
+    int updatedCreditTotal = result.get().creditTotal + request.getAmount();
 
-int updatedCreditTotal = result.get().creditTotal + request.getAmount();
+    // Check if the credit total exceeds the credit limit after payment
+    if (updatedCreditTotal > result.get().creditLimit) {
+      throw Status.FAILED_PRECONDITION
+        .withDescription("Credit limit exceeded")
+        .asRuntimeException();
+    }
 
-// Check if the credit total exceeds the credit limit after payment.
-if (updatedCreditTotal > result.get().creditLimit) {
-  responseObserver.onError(
-      Status.FAILED_PRECONDITION
-          .withDescription("Credit limit exceeded")
-          .asRuntimeException());
-  return;
-}
+    // Update `credit_total` for the customer
+    Customer.updateCreditTotal(transaction, request.getCustomerId(), updatedCreditTotal);
 
-// Update `credit_total` for the customer.
-Customer.updateCreditTotal(transaction, request.getCustomerId(), updatedCreditTotal);
+    return Empty.getDefaultInstance();
+  }, responseObserver
+);
 ```
 
 ### 3. Transaction is committed by using the two-phase commit protocol

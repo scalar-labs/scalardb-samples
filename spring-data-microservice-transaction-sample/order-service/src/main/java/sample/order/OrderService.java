@@ -97,9 +97,9 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   public void placeOrder(
       PlaceOrderRequest request, StreamObserver<PlaceOrderResponse> responseObserver) {
 
-    execAndReturnResponse(responseObserver, "Placing an order", () -> {
-      // Start a two-phase commit transaction
-      TwoPcResult<String> result = orderRepository.executeTwoPcTransaction(txId -> {
+    execAndReturnResponse("Placing an order", () -> {
+      // Start a two-phase commit interface transaction
+      TwoPcResult<PlaceOrderResponse> result = orderRepository.executeTwoPcTransaction(txId -> {
             String orderId = UUID.randomUUID().toString();
             Order order = new Order(orderId, request.getCustomerId(), System.currentTimeMillis());
 
@@ -129,7 +129,8 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
 
             // Call the payment endpoint of Customer service
             callPaymentEndpoint(txId, request.getCustomerId(), amount.get());
-            return orderId;
+
+            return PlaceOrderResponse.newBuilder().setOrderId(orderId).build();
           },
           Collections.singletonList(
               RemotePrepareCommitPhaseOperations.createSerializable(
@@ -140,10 +141,9 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
               )
           )
       );
-      String orderId = result.executionPhaseReturnValue();
 
-      return PlaceOrderResponse.newBuilder().setOrderId(orderId).build();
-    });
+      return result.executionPhaseReturnValue();
+    }, responseObserver);
   }
 
   private void callPaymentEndpoint(String transactionId, int customerId, int amount) {
@@ -180,23 +180,36 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
       backoff = @Backoff(delay = 1000, maxDelay = 8000, multiplier = 2))
   @Override
   public void getOrder(GetOrderRequest request, StreamObserver<GetOrderResponse> responseObserver) {
-    execAndReturnResponse(responseObserver, "Getting an order", () ->
-        orderRepository.executeOneshotOperations(() -> {
-          // Retrieve the order info for the specified order ID
-          Optional<Order> orderOpt = orderRepository.findById(request.getOrderId());
-          if (!orderOpt.isPresent()) {
-            String message = "Order not found: " + request.getOrderId();
-            responseObserver.onError(
-                Status.NOT_FOUND.withDescription(message).asRuntimeException());
-            throw new ScalarDbNonTransientException(message);
-          }
-          Order order = orderOpt.get();
+    execAndReturnResponse("Getting an order", () -> {
+      // Start a two-phase commit interface transaction
+      TwoPcResult<GetOrderResponse> result = orderRepository.executeTwoPcTransaction(txId -> {
+            // Retrieve the order info for the specified order ID
+            Optional<Order> orderOpt = orderRepository.findById(request.getOrderId());
+            if (!orderOpt.isPresent()) {
+              String message = "Order not found: " + request.getOrderId();
+              responseObserver.onError(
+                  Status.NOT_FOUND.withDescription(message).asRuntimeException());
+              throw new ScalarDbNonTransientException(message);
+            }
 
-          // Make an order protobuf to return
-          sample.rpc.Order rpcOrder = getOrderResult(responseObserver, order);
+            // Get the customer name from the Customer service
+            String customerName = getCustomerName(txId, orderOpt.get().customerId);
 
-          return GetOrderResponse.newBuilder().setOrder(rpcOrder).build();
-        }));
+            // Make an order protobuf to return
+            sample.rpc.Order order = getOrderResult(txId, responseObserver, orderOpt.get(), customerName);
+            return GetOrderResponse.newBuilder().setOrder(order).build();
+          },
+          Collections.singletonList(
+              RemotePrepareCommitPhaseOperations.createSerializable(
+                  this::callPrepareEndpoint,
+                  this::callValidateEndpoint,
+                  this::callCommitEndpoint,
+                  this::callRollbackEndpoint
+              )
+          ));
+
+      return result.executionPhaseReturnValue();
+    }, responseObserver);
   }
 
   /**
@@ -209,23 +222,36 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   @Override
   public void getOrders(
       GetOrdersRequest request, StreamObserver<GetOrdersResponse> responseObserver) {
-    execAndReturnResponse(responseObserver, "Getting an order", () ->
-        orderRepository.executeOneshotOperations(() -> {
-          // Retrieve the order info for the specified order ID
-          GetOrdersResponse.Builder builder = GetOrdersResponse.newBuilder();
-          for (Order order : orderRepository.findAllByCustomerIdOrderByTimestampDesc(
-              request.getCustomerId())) {
-            builder.addOrder(getOrderResult(responseObserver, order));
-          }
+    execAndReturnResponse("Getting orders", () -> {
+      // Start a two-phase commit interface transaction
+      TwoPcResult<GetOrdersResponse> result = orderRepository.executeTwoPcTransaction(txId -> {
+            // Get the customer name from the Customer service
+            String customerName = getCustomerName(txId, request.getCustomerId());
 
-          return builder.build();
-        }));
-  }
+            // Retrieve the order info for the specified order ID
+            GetOrdersResponse.Builder builder = GetOrdersResponse.newBuilder();
+            for (Order order : orderRepository.findAllByCustomerIdOrderByTimestampDesc(
+                request.getCustomerId())) {
+              // Make an order protobuf to return
+              builder.addOrder(getOrderResult(txId, responseObserver, order, customerName));
+            }
+            return builder.build();
+          },
+          Collections.singletonList(
+              RemotePrepareCommitPhaseOperations.createSerializable(
+                  this::callPrepareEndpoint,
+                  this::callValidateEndpoint,
+                  this::callCommitEndpoint,
+                  this::callRollbackEndpoint
+              )
+          ));
 
-  private sample.rpc.Order getOrderResult(StreamObserver<?> responseObserver, Order order) {
-    // Get the customer name from Customer service
-    String customerName = getCustomerName(order.customerId);
+      return result.executionPhaseReturnValue();
+    }, responseObserver);
+}
 
+  private sample.rpc.Order getOrderResult(String transactionId, StreamObserver<?> responseObserver,
+      Order order, String customerName) {
     sample.rpc.Order.Builder orderBuilder =
         sample.rpc.Order.newBuilder()
             .setOrderId(order.orderId)
@@ -267,9 +293,12 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     return orderBuilder.setTotal(total).build();
   }
 
-  private String getCustomerName(int customerId) {
+  private String getCustomerName(String transactionId, int customerId) {
     GetCustomerInfoResponse customerInfo =
-        stub.getCustomerInfo(GetCustomerInfoRequest.newBuilder().setCustomerId(customerId).build());
+        stub.getCustomerInfo(
+            GetCustomerInfoRequest.newBuilder()
+                .setTransactionId(transactionId)
+                .setCustomerId(customerId).build());
     return customerInfo.getName();
   }
 
@@ -285,10 +314,10 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     return null;
   }
 
-  private <T> void execAndReturnResponse(StreamObserver<T> responseObserver, String funcName,
-      Supplier<T> task) {
+  private <T> void execAndReturnResponse(String funcName, Supplier<T> operations,
+      StreamObserver<T> responseObserver) {
     try {
-      T result = task.get();
+      T result = operations.get();
 
       responseObserver.onNext(result);
       responseObserver.onCompleted();

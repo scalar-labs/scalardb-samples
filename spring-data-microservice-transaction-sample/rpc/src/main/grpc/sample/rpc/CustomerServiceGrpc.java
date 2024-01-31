@@ -288,7 +288,7 @@ public final class CustomerServiceGrpc {
 
     /**
      * <pre>
-     * Get a customer information
+     * Get customer information
      * </pre>
      */
     public void getCustomerInfo(sample.rpc.GetCustomerInfoRequest request,
@@ -430,7 +430,7 @@ public final class CustomerServiceGrpc {
 
     /**
      * <pre>
-     * Get a customer information
+     * Get customer information
      * </pre>
      */
     public void getCustomerInfo(sample.rpc.GetCustomerInfoRequest request,
@@ -525,7 +525,7 @@ public final class CustomerServiceGrpc {
 
     /**
      * <pre>
-     * Get a customer information
+     * Get customer information
      * </pre>
      */
     public sample.rpc.GetCustomerInfoResponse getCustomerInfo(sample.rpc.GetCustomerInfoRequest request) {
@@ -613,7 +613,7 @@ public final class CustomerServiceGrpc {
 
     /**
      * <pre>
-     * Get a customer information
+     * Get customer information
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<sample.rpc.GetCustomerInfoResponse> getCustomerInfo(

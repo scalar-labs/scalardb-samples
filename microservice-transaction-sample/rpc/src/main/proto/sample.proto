@@ -70,7 +70,7 @@ message GetOrdersResponse {
 
 // for Customer Service
 service CustomerService {
-  // Get a customer information
+  // Get customer information
   rpc GetCustomerInfo(GetCustomerInfoRequest) returns (GetCustomerInfoResponse) {
   }
   // Credit card repayment
@@ -97,7 +97,8 @@ service CustomerService {
 }
 
 message GetCustomerInfoRequest {
-  int32 customer_id = 1;
+  optional string transaction_id = 1;
+  int32 customer_id = 2;
 }
 
 message GetCustomerInfoResponse {

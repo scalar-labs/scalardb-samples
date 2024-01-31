@@ -56,6 +56,10 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   private final ManagedChannel channel;
   private final CustomerServiceGrpc.CustomerServiceBlockingStub customerServiceStub;
 
+  private interface TransactionFunction<T, R> {
+    R apply(T t) throws TransactionException;
+  }
+
   public OrderService(String configFile) throws TransactionException, IOException {
     // Initialize the transaction managers
     TransactionFactory factory = TransactionFactory.create(configFile);
@@ -98,79 +102,34 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   @Override
   public void placeOrder(
       PlaceOrderRequest request, StreamObserver<PlaceOrderResponse> responseObserver) {
-    TwoPhaseCommitTransaction transaction = null;
-    try {
-      String orderId = UUID.randomUUID().toString();
+    execOperationsAsCoordinator("Placing an order",
+        transaction -> {
+          String orderId = UUID.randomUUID().toString();
 
-      // Start a two-phase commit transaction
-      transaction = twoPhaseCommitTransactionManager.start();
+          // Put the order info into the orders table
+          Order.put(transaction, orderId, request.getCustomerId(), System.currentTimeMillis());
 
-      // Put the order info into the orders table
-      Order.put(transaction, orderId, request.getCustomerId(), System.currentTimeMillis());
+          int amount = 0;
+          for (ItemOrder itemOrder : request.getItemOrderList()) {
+            // Put the order statement into the statements table
+            Statement.put(transaction, orderId, itemOrder.getItemId(), itemOrder.getCount());
 
-      int amount = 0;
-      for (ItemOrder itemOrder : request.getItemOrderList()) {
-        // Put the order statement into the statements table
-        Statement.put(transaction, orderId, itemOrder.getItemId(), itemOrder.getCount());
+            // Retrieve the item info from the items table
+            Optional<Item> item = Item.get(transaction, itemOrder.getItemId());
+            if (!item.isPresent()) {
+              throw Status.NOT_FOUND.withDescription("Item not found").asRuntimeException();
+            }
 
-        // Retrieve the item info from the items table
-        Optional<Item> item = Item.get(transaction, itemOrder.getItemId());
-        if (!item.isPresent()) {
-          throw Status.NOT_FOUND.withDescription("Item not found").asRuntimeException();
-        }
+            // Calculate the total amount
+            amount += item.get().price * itemOrder.getCount();
+          }
 
-        // Calculate the total amount
-        amount += item.get().price * itemOrder.getCount();
-      }
+          // Call the payment endpoint of Customer service
+          callPaymentEndpoint(transaction.getId(), request.getCustomerId(), amount);
 
-      // Call the payment endpoint of Customer service
-      callPaymentEndpoint(transaction.getId(), request.getCustomerId(), amount);
-
-      // Prepare the transaction
-      transaction.prepare();
-      callPrepareEndpoint(transaction.getId());
-
-      // Validate the transaction. Depending on the concurrency control protocol, you need to call
-      // validate(). Currently, you need to call it when you use the Consensus Commit transaction
-      // manager and EXTRA_READ serializable strategy in SERIALIZABLE isolation level. In other
-      // cases, validate() does nothing.
-      transaction.validate();
-      callValidateEndpoint(transaction.getId());
-
-      // Commit the transaction. If any of services succeed in committing the transaction, you can
-      // consider the transaction as committed.
-      boolean committed = false;
-      Exception exception = null;
-      try {
-        transaction.commit();
-        committed = true;
-      } catch (TransactionException e) {
-        exception = e;
-      }
-      try {
-        callCommitEndpoint(transaction.getId());
-        committed = true;
-      } catch (StatusRuntimeException e) {
-        exception = e;
-      }
-      if (!committed) {
-        throw exception;
-      }
-
-      // Return the order id
-      responseObserver.onNext(PlaceOrderResponse.newBuilder().setOrderId(orderId).build());
-      responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      logger.error("Placing an order failed", e);
-      rollbackTransaction(transaction);
-      responseObserver.onError(e);
-    } catch (Exception e) {
-      String message = "Placing an order failed";
-      logger.error(message, e);
-      rollbackTransaction(transaction);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
-    }
+          return PlaceOrderResponse.newBuilder().setOrderId(orderId).build();
+        }, responseObserver
+    );
   }
 
   private void rollbackTransaction(@Nullable TwoPhaseCommitTransaction transaction) {
@@ -221,80 +180,52 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
   /** Get Order information by order ID */
   @Override
   public void getOrder(GetOrderRequest request, StreamObserver<GetOrderResponse> responseObserver) {
-    DistributedTransaction transaction = null;
-    try {
-      // Start a transaction
-      transaction = transactionManager.start();
+    execOperationsAsCoordinator("Getting an order",
+        transaction -> {
+          // Retrieve the order info for the specified order ID
+          Optional<Order> order = Order.getById(transaction, request.getOrderId());
+          if (!order.isPresent()) {
+            throw Status.NOT_FOUND.withDescription("Order not found").asRuntimeException();
+          }
 
-      // Retrieve the order info for the specified order ID
-      Optional<Order> order = Order.getById(transaction, request.getOrderId());
-      if (!order.isPresent()) {
-        throw Status.NOT_FOUND.withDescription("Order not found").asRuntimeException();
-      }
+          // Get the customer name from the Customer service
+          String customerName = getCustomerName(transaction.getId(), order.get().customerId);
 
-      // Make an order protobuf to return
-      sample.rpc.Order rpcOrder = getOrder(transaction, order.get());
+          // Make an order protobuf to return
+          sample.rpc.Order rpcOrder = getOrder(transaction, order.get(), customerName);
 
-      // Commit the transaction (even when the transaction is read-only, we need to commit)
-      transaction.commit();
-
-      responseObserver.onNext(GetOrderResponse.newBuilder().setOrder(rpcOrder).build());
-      responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      logger.error("Getting an order failed", e);
-      abortTransaction(transaction);
-      responseObserver.onError(e);
-    } catch (Exception e) {
-      String message = "Getting an order failed";
-      logger.error(message, e);
-      abortTransaction(transaction);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
-    }
+          return GetOrderResponse.newBuilder().setOrder(rpcOrder).build();
+        }, responseObserver
+    );
   }
 
   /** Get Order information by customer ID */
   @Override
   public void getOrders(
       GetOrdersRequest request, StreamObserver<GetOrdersResponse> responseObserver) {
-    DistributedTransaction transaction = null;
-    try {
-      // Start a transaction
-      transaction = transactionManager.start();
+    execOperationsAsCoordinator("Getting orders",
+        transaction -> {
+          // Retrieve the order info for the specified customer ID
+          List<Order> orders = Order.getByCustomerId(transaction, request.getCustomerId());
 
-      // Retrieve the order info for the specified customer ID
-      List<Order> orders = Order.getByCustomerId(transaction, request.getCustomerId());
+          // Get the customer name from the Customer service
+          String customerName = getCustomerName(transaction.getId(), request.getCustomerId());
 
-      GetOrdersResponse.Builder builder = GetOrdersResponse.newBuilder();
-      for (Order order : orders) {
-        // Make an order protobuf to return
-        sample.rpc.Order rpcOrder = getOrder(transaction, order);
-        builder.addOrder(rpcOrder);
-      }
+          GetOrdersResponse.Builder builder = GetOrdersResponse.newBuilder();
+          for (Order order : orders) {
+            // Make an order protobuf to return
+            sample.rpc.Order rpcOrder = getOrder(transaction, order, customerName);
+            builder.addOrder(rpcOrder);
+          }
 
-      // Commit the transaction (even when the transaction is read-only, we need to commit)
-      transaction.commit();
-
-      responseObserver.onNext(builder.build());
-      responseObserver.onCompleted();
-    } catch (StatusRuntimeException e) {
-      logger.error("Getting orders failed", e);
-      abortTransaction(transaction);
-      responseObserver.onError(e);
-    } catch (Exception e) {
-      String message = "Getting orders failed";
-      logger.error(message, e);
-      abortTransaction(transaction);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
-    }
+          return builder.build();
+        }, responseObserver
+    );
   }
 
-  private sample.rpc.Order getOrder(DistributedTransaction transaction, Order order)
+  private sample.rpc.Order getOrder(TwoPhaseCommitTransaction transaction, Order order,
+      String customerName)
       throws CrudException {
-    // Get the customer name from Customer service
-    String customerName = getCustomerName(order.customerId);
-
     sample.rpc.Order.Builder orderBuilder =
         sample.rpc.Order.newBuilder()
             .setOrderId(order.id)
@@ -332,10 +263,12 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
     return orderBuilder.setTotal(total).build();
   }
 
-  private String getCustomerName(int customerId) {
+  private String getCustomerName(String transactionId, int customerId) {
     GetCustomerInfoResponse customerInfo =
         customerServiceStub.getCustomerInfo(
-            GetCustomerInfoRequest.newBuilder().setCustomerId(customerId).build());
+            GetCustomerInfoRequest.newBuilder()
+                .setTransactionId(transactionId)
+                .setCustomerId(customerId).build());
     return customerInfo.getName();
   }
 
@@ -347,6 +280,64 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
       transaction.abort();
     } catch (AbortException e) {
       logger.warn("Abort failed", e);
+    }
+  }
+
+  private <T> void execOperationsAsCoordinator(String funcName,
+      TransactionFunction<TwoPhaseCommitTransaction, T> operations,
+      StreamObserver<T> responseObserver) {
+    TwoPhaseCommitTransaction transaction = null;
+    try {
+      // Start a two-phase commit interface transaction
+      transaction = twoPhaseCommitTransactionManager.start();
+
+      // Execute operations
+      T result = operations.apply(transaction);
+
+      // Prepare the transaction
+      transaction.prepare();
+      callPrepareEndpoint(transaction.getId());
+
+      // Validate the transaction. Depending on the concurrency control protocol, you need to call
+      // validate(). Currently, you need to call it when you use the Consensus Commit transaction
+      // manager and EXTRA_READ serializable strategy in SERIALIZABLE isolation level. In other
+      // cases, validate() does nothing.
+      transaction.validate();
+      callValidateEndpoint(transaction.getId());
+
+      // Commit the transaction. If any of services succeed in committing the transaction, you can
+      // consider the transaction as committed.
+      boolean committed = false;
+      Exception exception = null;
+      try {
+        transaction.commit();
+        committed = true;
+      } catch (TransactionException e) {
+        exception = e;
+      }
+      try {
+        callCommitEndpoint(transaction.getId());
+        committed = true;
+      } catch (StatusRuntimeException e) {
+        exception = e;
+      }
+      if (!committed) {
+        throw exception;
+      }
+
+      // Return the response
+      responseObserver.onNext(result);
+      responseObserver.onCompleted();
+    } catch (StatusRuntimeException e) {
+      logger.error("{} failed", funcName, e);
+      rollbackTransaction(transaction);
+      responseObserver.onError(e);
+    } catch (Exception e) {
+      String message = funcName + " failed";
+      logger.error(message, e);
+      rollbackTransaction(transaction);
+      responseObserver.onError(
+          Status.INTERNAL.withDescription(message).withCause(e).asRuntimeException());
     }
   }
 

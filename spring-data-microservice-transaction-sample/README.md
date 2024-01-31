@@ -112,44 +112,45 @@ The Entity Relationship Diagram for the schema is as follows:
 
 ![ERD](images/ERD.png)
 
-### Transactions
-
-The following five transactions are implemented in this sample application:
-
-1. Getting customer information. It is a transaction in the Customer Service
-2. Placing an order (checks if the cost of the order is below the credit limit, then records order history and updates the `credit_total` if the check passes). It is a transaction that spans the Order Service and the Customer Service.
-3. Getting order information by order ID. It is a transaction in the Order Service
-4. Getting order information by customer ID. It is a transaction in the Order Service
-5. Repayment (reduces the amount in the `credit_total`). It is a transaction in the Customer Service.
-
-### Service Endpoints
+### Service endpoints
 
 The endpoints defined in the services are as follows:
 
-Customer Service:
+- Customer Service
+  - `getCustomerInfo`
+  - `payment`
+  - `prepare`
+  - `validate`
+  - `commit`
+  - `rollback`
+  - `repayment`
 
-- getCustomerInfo
-- payment
-- prepare
-- validate
-- commit
-- rollback
-- repayment
+- Order Service
+  - `placeOrder`
+  - `getOrder`
+  - `getOrders`
 
-Order Service:
+### What you can do in this sample application
 
-- placeOrder
-- getOrder
-- getOrders
+The sample application supports the following types of transactions:
 
-The `getCustomerInfo` endpoint of the Customer Service is for transaction #1 (Getting customer information).
+- Get customer information through the `getCustomerInfo` endpoint of the Customer Service.
+- Place an order by using a line of credit through the `placeOrder` endpoint of the Order Service and the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
+  - Checks if the cost of the order is below the customer's credit limit.
+  - If the check passes, records the order history and updates the amount the customer has spent.
+- Get order information by order ID through the `getOrder` endpoint of the Order Service and the `getCustomerInfo`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
+- Get order information by customer ID through the `getOrders` endpoint of the Order Service and the `getCustomerInfo`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
+- Make a payment through the `repayment` endpoint of the Customer Service.
+  - Reduces the amount the customer has spent.
 
-And the `placeOrder` endpoint of the Order Service and the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service are for transaction #2 (Placing an order) that spans the Order Service and the Customer Service.
-The Order Service starts the transaction with the `placeOrder` endpoint, which calls the `payment`, `prepare`, `validate`, `commit`, and `rollback` endpoints of the Customer Service.
+{% capture notice--info %}
+**Note**
 
-The `getOrder` of the Order Service is for transaction #3, and The `getOrders` of the Order Service is for transaction #4.
+The `getCustomerInfo` endpoint works as a participant service endpoint when receiving a transaction ID from the coordinator.
 
-And the `repayment` endpoint of the Customer Service is for transaction #5.
+{% endcapture %}
+
+<div class="notice--info">{{ notice--info | markdownify }}</div>
 
 ## Configuration
 
@@ -371,46 +372,42 @@ To stop Cassandra, MySQL and the Microservices, run the following command:
 $ docker-compose down
 ```
 
-## How the microservice transaction is achieved
+## Reference - How the microservice transaction is achieved
 
-So far, you have run the sample application, but you haven't seen how it is implemented.
-Let's look at the code to see how the transaction that spans the services is implemented.
+The transactions for placing an order, getting a single order, and getting the history of orders achieve the microservice transaction. This section focuses on how the transactions that span the Customer Service and the Order Service are implemented by placing an order as an example.
 
-Transaction #2 (Placing an order) achieves the microservice transaction, so we focus on this transaction here.
-
-The sequence diagram of transaction #2 is as follows:
+The following sequence diagram shows the transaction for placing an order:
 
 ![Sequence Diagram](images/sequence_diagram.png)
 
-### 1. Start a two-phase commit transaction
+### 1. Transaction with a two-phase commit interface is started
 
-When a client sends `Place an order` request to the Order Service, [OrderService.placeOrder()](order-service/src/main/java/sample/order/OrderService.java#L97) is called, and the microservice transaction starts.
+When a client sends a request to place an order to the Order Service, `OrderService.placeOrder()` is called, and the microservice transaction starts.
 
-At first, the Order Service starts a two-phase commit transaction by calling the repository class's [executeTwoPcTransaction()](order-service/src/main/java/sample/order/OrderService.java#L100-L102):
+At first, the Order Service starts a transaction with a two-phase commit interface with `ScalarDbTwoPcRepository.executeTwoPcTransaction()` as follows. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java).
 
 ```java
-execAndReturnResponse(responseObserver, "Placing an order", () -> {
-  // Start a two-phase commit transaction
-  TwoPcResult<String> result = orderRepository.executeTwoPcTransaction(txId -> {
+// Start a two-phase commit interface transaction
+TwoPcResult<String> result = orderRepository.executeTwoPcTransaction(txId -> {
+  ...
+}, ...);
 ```
 
-The following `Execute CRUD operations`, `Two-phase Commit` and `Error handling` are automatically performed inside the API.
+The actions in [CRUD operations are executed](#2-crud-operations-are-executed), [Transaction is committed by using the two-phase commit protocol](#3-transaction-is-committed-by-using-the-two-phase-commit-protocol), and [Error handling](#error-handling) are automatically performed by the API.
 
-### 2. Execute CRUD operations
+### 2. CRUD operations are executed
 
-After the transaction is started, the CRUD operations are executed by `executeTwoPcTransaction()`.
-
-The Order Service puts the order information to the `order_service.orders` table also the detailed information to `order_service.statements` (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L106-L128)):
+After the transaction with a two-phase commit interface starts, CRUD operations are executed by `ScalarDbTwoPcRepository.executeTwoPcTransaction()`. The Order Service puts the order information in the `order_service.orders` table and the detailed information in the `order_service.statements` table as follows. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java).
 
 ```java
-// Put the order info into the orders table
+// Put the order info into the `orders` table
 orderRepository.insert(order);
 
 AtomicInteger amount = new AtomicInteger();
 for (ItemOrder itemOrder : request.getItemOrderList()) {
   int itemId = itemOrder.getItemId();
   int count = itemOrder.getCount();
-  // Retrieve the item info from the items table
+  // Retrieve the item info from the `items` table
   Optional<Item> itemOpt = itemRepository.findById(itemId);
   if (!itemOpt.isPresent()) {
     String message = "Item not found: " + itemId;
@@ -421,36 +418,31 @@ for (ItemOrder itemOrder : request.getItemOrderList()) {
   Item item = itemOpt.get();
 
   int cost = item.price * count;
-  // Put the order statement into the statements table
+  // Put the order statement into the `statements` table
   statementRepository.insert(new Statement(itemId, orderId, count));
   // Calculate the total amount
   amount.addAndGet(cost);
 }
 ```
 
-And, the Order Service calls the `payment` gRPC endpoint of the Customer Service along with the transaction ID (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L131)).
-
-This endpoint first joins the transaction with [join()](customer-service/src/main/java/sample/customer/CustomerService.java#L183):
+Then, the Order Service calls the `payment` gRPC endpoint of the Customer Service along with the transaction ID. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java).
 
 ```java
-if (isJoin) {
-  // Join the transaction
-  customerRepository.join(txId);
-} else {
-  // Resume the transaction
-  customerRepository.resume(txId);
-}
+customerServiceStub.payment(
+  PaymentRequest.newBuilder()
+    .setTransactionId(transactionId)
+    .setCustomerId(customerId)
+    .setAmount(amount)
+    .build());
 ```
 
-`join()` is called via [execTwoPcOperation()](customer-service/src/main/java/sample/customer/CustomerService.java#L99):
+The `payment` endpoint of the Customer Service first joins the transaction with `ScalarDbTwoPcRepository.joinTransactionOnParticipant()` as follows. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
-public void payment(PaymentRequest request, StreamObserver<Empty> responseObserver) {
-  execTwoPcOperation(request.getTransactionId(), true, responseObserver, "Payment", () -> {
+customerRepository.joinTransactionOnParticipant(request.getTransactionId(), ...);
 ```
 
-It then gets the customer information, and checks if the customer's credit total exceeds the credit limit after the payment.
-And if the check is okay, it updates the customer's credit total (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L100-L114)):
+The endpoint then gets the customer information and checks if the customer's credit total exceeds the credit limit after the payment. If the credit total does not exceed the credit limit, the endpoint updates the customer's credit total. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
 Customer customer = getCustomer(responseObserver, request.getCustomerId());
@@ -465,84 +457,76 @@ if (updatedCreditTotal > customer.creditLimit) {
   throw new ScalarDbNonTransientException(message);
 }
 
-// Reduce credit_total for the customer
+// Reduce `credit_total` for the customer
 customerRepository.update(customer.withCreditTotal(updatedCreditTotal));
 ```
 
-### 3. Two-phase Commit
+### 3. Transaction is committed by using the two-phase commit protocol
 
-Once the Order Service receives a response that the payment succeeded, the Order Service tries to commit the transaction.
+After the Order Service receives the update that the payment succeeded, the Order Service tries to commit the transaction.
 
-`executeTwoPcTransaction()` API, called on the Order Service, automatically performs preparations, validations and commits of both the local Order Service and the remote Customer Serivice. These steps are executed sequentially after the above CRUD operations successfully finish. The implementations to invoke `prepare`, `validate` and `commit` gRPC endpoints of the Customer Service need to be passed as parameters to the API (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L134-L141)):
+The `ScalarDbTwoPcRepository.executeTwoPcTransaction()` API, which called on the Order Service, automatically performs preparations, validations, and commits of both the local Order Service and the remote Customer Service. These steps are executed sequentially after the above CRUD operations successfully finish. The implementations to invoke `prepare`, `validate`, and `commit` gRPC endpoints of the Customer Service need to be passed as parameters to the API. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java).
 
 ```java
-Collections.singletonList(
-  RemotePrepareCommitPhaseOperations.createSerializable(
-    this::callPrepareEndpoint,
-    this::callValidateEndpoint,
-    this::callCommitEndpoint,
-    this::callRollbackEndpoint
+TwoPcResult<PlaceOrderResponse> result = orderRepository.executeTwoPcTransaction(txId ->{
+    ...
+  },
+
+  Collections.singletonList(
+    RemotePrepareCommitPhaseOperations.createSerializable(
+      this::callPrepareEndpoint,
+      this::callValidateEndpoint,
+      this::callCommitEndpoint,
+      this::callRollbackEndpoint
+    )
   )
-)
+);
 ```
 
 ![Sequence Diagram of High Level 2PC API](images/seq-diagram-high-level-2pc-api.png)
 
-In the `prepare` endpoint of the Customer Service, it resumes and prepares the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L122-L126)):
+In the `prepare` endpoint of the Customer Service, the endpoint resumes and prepares the transaction by using `ScalarDbTwoPcRepository.prepareTransactionOnParticipant()`. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
-execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Payment", () -> {
-  // Prepare the transaction
-  customerRepository.prepare();
-});
+customerRepository.prepareTransactionOnParticipant(request.getTransactionId());
 ```
 
-The transaction is resumed in `execTwoPcOperation()` as shown above.
-
-
-In the `validate` endpoint of the Customer Service, the microservice resumes and validates the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L131-L135)):
+In the `validate` endpoint of the Customer Service, the endpoint resumes and validates the transaction by using `ScalarDbTwoPcRepository.validateTransactionOnParticipant()`. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
-execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Validate", () -> {
-  // Validate the transaction
-  customerRepository.validate();
-  return Empty.getDefaultInstance();
-});
+customerRepository.validateTransactionOnParticipant(request.getTransactionId());
 ```
 
-In the `commit` endpoint of the Customer Service, the microservice resumes and commits the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L140-L144)):
+In the `commit` endpoint of the Customer Service, the endpoint resumes and commits the transaction by using `ScalarDbTwoPcRepository.commitTransactionOnParticipant()`. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
-execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Commit", () -> {
-  // Commit the transaction
-  customerRepository.commit();
-  return Empty.getDefaultInstance();
-});
+customerRepository.commitTransactionOnParticipant(request.getTransactionId());
 ```
 
 ### Error handling
 
-If an error occurs during the transaction, the transaction will be automatically rolled back by using `executeTwoPcTransaction()`. The implementation to invoke the `rollback` gRPC endpoint of the Customer Service also needs to be passed as a parameter to the API with other ones (the code is [here](order-service/src/main/java/sample/order/OrderService.java#L134-L141)):
+If an error happens while executing a transaction, `ScalarDbTwoPcRepository.executeTwoPcTransaction()` will automatically roll back the transaction in both the local Order Service and the remote Customer Service. The implementation to invoke the `rollback` gRPC endpoint of the Customer Service also needs to be passed as a parameter to the API with other ones. For reference, see [`OrderService.java`](order-service/src/main/java/sample/order/OrderService.java).
 
 ```java
-Collections.singletonList(
-  RemotePrepareCommitPhaseOperations.createSerializable(
-    this::callPrepareEndpoint,
-    this::callValidateEndpoint,
-    this::callCommitEndpoint,
-    this::callRollbackEndpoint
+TwoPcResult<PlaceOrderResponse> result = orderRepository.executeTwoPcTransaction(txId ->{
+    ...
+  },
+
+  Collections.singletonList(
+    RemotePrepareCommitPhaseOperations.createSerializable(
+      this::callPrepareEndpoint,
+      this::callValidateEndpoint,
+      this::callCommitEndpoint,
+      this::callRollbackEndpoint
+    )
   )
-)
+);
 ```
 
-In the `rollback` endpoint of the Customer Service, the microservice resumes and rolls back the transaction (the code is [here](customer-service/src/main/java/sample/customer/CustomerService.java#L149-L153)):
+In the `rollback` endpoint of the Customer Service, the endpoint resumes and rolls back the transaction. For reference, see [`CustomerService.java`](customer-service/src/main/java/sample/customer/CustomerService.java).
 
 ```java
-execTwoPcOperation(request.getTransactionId(), false, responseObserver, "Rollback", () -> {
-  // Rollback the transaction
-  customerRepository.rollback();
-  return Empty.getDefaultInstance();
-});
+customerRepository.rollbackTransactionOnParticipant(request.getTransactionId());
 ```
 
 For details about how to handle exceptions in ScalarDB, see [Handle exceptions](https://github.com/scalar-labs/scalardb/blob/master/docs/two-phase-commit-transactions.md#handle-exceptions).
