@@ -33,6 +33,12 @@ services:
       - POSTGRES_DB=test
     networks:
       - scalar-network
+    healthcheck:
+      test: ["CMD", "psql", "-U", "postgres", "-c", "select 1"]
+      interval: 1s
+      timeout: 1s
+      retries: 10
+      start_period: 1s
 
   backend-cassandra:
     image: cassandra:3.11
@@ -45,6 +51,12 @@ services:
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
     networks:
       - scalar-network
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "exit"]
+      interval: 1s
+      timeout: 1s
+      retries: 10
+      start_period: 5s
 
   backend-dynamodb:
     image: amazon/dynamodb-local:1.21.0
