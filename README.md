@@ -1,3 +1,9 @@
+> [!CAUTION]
+> 
+> The docs in the `docs` folder have been moved to the centralized ScalarDB documentation repository, [docs-internal-scalardb](https://github.com/scalar-labs/docs-internal-scalardb). Please update this documentation in that repository instead.
+> 
+> To view the ScalarDB documentation, visit [ScalarDB Documentation](https://scalardb.scalar-labs.com/docs/).
+
 # ScalarDB Samples
 
 This repository contains sample applications for [ScalarDB](https://github.com/scalar-labs/scalardb):

@@ -1,3 +1,9 @@
+> [!CAUTION]
+> 
+> This documentation has been moved to the centralized ScalarDB documentation repository, [docs-internal-scalardb](https://github.com/scalar-labs/docs-internal-scalardb). Please update this documentation in that repository instead.
+> 
+> To view the ScalarDB documentation, visit [ScalarDB Documentation](https://scalardb.scalar-labs.com/docs/).
+
 # Run Analytical Queries on Sample Data by Using ScalarDB Analytics with PostgreSQL
 
 This tutorial describes how to run analytical queries on sample data by using ScalarDB Analytics with PostgreSQL.
