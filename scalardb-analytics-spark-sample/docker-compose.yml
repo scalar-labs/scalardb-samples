@@ -1,6 +1,6 @@
 version: "3"
 services:
-  spark:
+  spark-shell:
     build:
       context: ./docker
       dockerfile: Dockerfile.spark
