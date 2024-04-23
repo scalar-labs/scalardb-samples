@@ -1,3 +1,9 @@
+> [!CAUTION]
+> 
+> This doc has been moved to the centralized ScalarDB documentation repository, [docs-internal-scalardb](https://github.com/scalar-labs/docs-internal-scalardb). Please update this documentation in that repository instead.
+> 
+> To view the ScalarDB documentation, visit [ScalarDB Documentation](https://scalardb.scalar-labs.com/docs/).
+
 # Create a Sample Application That Supports Microservice Transactions
 
 This tutorial describes how to create a sample application that supports microservice transactions in ScalarDB.
