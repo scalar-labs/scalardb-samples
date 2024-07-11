@@ -3,9 +3,9 @@ subprojects {
     project.version = '1.0'
 
     ext {
-        grpcVersion = '1.53.0'
-        protocVersion = '3.23.1'
-        scalarDbVersion = '3.9.1'
+        grpcVersion = '1.65.0'
+        protocVersion = '3.24.4'
+        scalarDbVersion = '3.13.0'
         picoCliVersion = '4.7.1'
         protobufJavaFormatVersion = '1.4'
         slf4jVersion = '2.0.7'
@@ -15,12 +15,5 @@ subprojects {
 
     repositories {
         mavenCentral()
-        maven {
-            url = uri("https://maven.pkg.github.com/scalar-labs/scalardb-sql")
-            credentials {
-                username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
-                password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
-            }
-        }
     }
 }

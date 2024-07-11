@@ -9,6 +9,12 @@ services:
       - "3306:3306"
     networks:
       - sample-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pmysql"]
+      interval: 30s
+      timeout: 10s
+      retries: 6
+      start_period: 30s
   cassandra:
     image: cassandra:3.11
     container_name: "cassandra-1"
@@ -16,12 +22,47 @@ services:
       - "9042:9042"
     networks:
       - sample-network
+    healthcheck:
+      test: ["CMD-SHELL", "[ $$(nodetool statusgossip) = running ]"]
+      interval: 30s
+      timeout: 10s
+      retries: 6
+      start_period: 30s
+  scalardb-cluster-node-for-customer-service:
+    container_name: "scalardb-cluster-node-for-customer-service"
+    image: "ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.13.0"
+    ports:
+      - 60053:60053
+      - 9080:9080
+    networks:
+      - sample-network
+    volumes:
+      - ./scalardb-cluster-node-for-customer-service.properties:/scalardb-cluster/node/scalardb-cluster-node.properties
+    depends_on:
+      mysql:
+        condition: service_healthy
+      cassandra:
+        condition: service_healthy
+  scalardb-cluster-node-for-order-service:
+    container_name: "scalardb-cluster-node-for-order-service"
+    image: "ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.13.0"
+    ports:
+      - 60054:60053
+      - 9081:9080
+    volumes:
+      - ./scalardb-cluster-node-for-order-service.properties:/scalardb-cluster/node/scalardb-cluster-node.properties
+    networks:
+      - sample-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      cassandra:
+        condition: service_healthy
   customer-service:
     image: sample-customer-service:1.0
     container_name: "customer-service-1"
     depends_on:
-      - mysql
-      - cassandra
+      - scalardb-cluster-node-for-customer-service
     entrypoint: /bin/bash
     command: ./bin/customer-service
     restart: "always"
@@ -33,7 +74,7 @@ services:
     image: sample-order-service:1.0
     container_name: "order-service-1"
     depends_on:
-      - cassandra
+      - scalardb-cluster-node-for-order-service
     entrypoint: /bin/bash
     command: ./bin/order-service
     restart: "always"

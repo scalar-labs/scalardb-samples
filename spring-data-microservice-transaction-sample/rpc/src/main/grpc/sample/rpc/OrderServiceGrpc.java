@@ -8,14 +8,14 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
  * </pre>
  */
 @javax.annotation.Generated(
-    value = "by gRPC proto compiler (version 1.53.0)",
+    value = "by gRPC proto compiler (version 1.65.0)",
     comments = "Source: sample.proto")
 @io.grpc.stub.annotations.GrpcGenerated
 public final class OrderServiceGrpc {
 
   private OrderServiceGrpc() {}
 
-  public static final String SERVICE_NAME = "rpc.OrderService";
+  public static final java.lang.String SERVICE_NAME = "rpc.OrderService";
 
   // Static method descriptors that strictly reflect the proto.
   private static volatile io.grpc.MethodDescriptor<sample.rpc.PlaceOrderRequest,
@@ -160,14 +160,14 @@ public final class OrderServiceGrpc {
    * for Order Service
    * </pre>
    */
-  public static abstract class OrderServiceImplBase implements io.grpc.BindableService {
+  public interface AsyncService {
 
     /**
      * <pre>
      * Place an order. It's a transaction that spans OrderService and CustomerService
      * </pre>
      */
-    public void placeOrder(sample.rpc.PlaceOrderRequest request,
+    default void placeOrder(sample.rpc.PlaceOrderRequest request,
         io.grpc.stub.StreamObserver<sample.rpc.PlaceOrderResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getPlaceOrderMethod(), responseObserver);
     }
@@ -177,7 +177,7 @@ public final class OrderServiceGrpc {
      * Get Order information by order ID
      * </pre>
      */
-    public void getOrder(sample.rpc.GetOrderRequest request,
+    default void getOrder(sample.rpc.GetOrderRequest request,
         io.grpc.stub.StreamObserver<sample.rpc.GetOrderResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetOrderMethod(), responseObserver);
     }
@@ -187,44 +187,34 @@ public final class OrderServiceGrpc {
      * Get Order information by customer ID
      * </pre>
      */
-    public void getOrders(sample.rpc.GetOrdersRequest request,
+    default void getOrders(sample.rpc.GetOrdersRequest request,
         io.grpc.stub.StreamObserver<sample.rpc.GetOrdersResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetOrdersMethod(), responseObserver);
-    }
-
-    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
-      return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
-          .addMethod(
-            getPlaceOrderMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                sample.rpc.PlaceOrderRequest,
-                sample.rpc.PlaceOrderResponse>(
-                  this, METHODID_PLACE_ORDER)))
-          .addMethod(
-            getGetOrderMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                sample.rpc.GetOrderRequest,
-                sample.rpc.GetOrderResponse>(
-                  this, METHODID_GET_ORDER)))
-          .addMethod(
-            getGetOrdersMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                sample.rpc.GetOrdersRequest,
-                sample.rpc.GetOrdersResponse>(
-                  this, METHODID_GET_ORDERS)))
-          .build();
     }
   }
 
   /**
+   * Base class for the server implementation of the service OrderService.
    * <pre>
    * for Order Service
    * </pre>
    */
-  public static final class OrderServiceStub extends io.grpc.stub.AbstractAsyncStub<OrderServiceStub> {
+  public static abstract class OrderServiceImplBase
+      implements io.grpc.BindableService, AsyncService {
+
+    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
+      return OrderServiceGrpc.bindService(this);
+    }
+  }
+
+  /**
+   * A stub to allow clients to do asynchronous rpc calls to service OrderService.
+   * <pre>
+   * for Order Service
+   * </pre>
+   */
+  public static final class OrderServiceStub
+      extends io.grpc.stub.AbstractAsyncStub<OrderServiceStub> {
     private OrderServiceStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
@@ -271,11 +261,13 @@ public final class OrderServiceGrpc {
   }
 
   /**
+   * A stub to allow clients to do synchronous rpc calls to service OrderService.
    * <pre>
    * for Order Service
    * </pre>
    */
-  public static final class OrderServiceBlockingStub extends io.grpc.stub.AbstractBlockingStub<OrderServiceBlockingStub> {
+  public static final class OrderServiceBlockingStub
+      extends io.grpc.stub.AbstractBlockingStub<OrderServiceBlockingStub> {
     private OrderServiceBlockingStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
@@ -319,11 +311,13 @@ public final class OrderServiceGrpc {
   }
 
   /**
+   * A stub to allow clients to do ListenableFuture-style rpc calls to service OrderService.
    * <pre>
    * for Order Service
    * </pre>
    */
-  public static final class OrderServiceFutureStub extends io.grpc.stub.AbstractFutureStub<OrderServiceFutureStub> {
+  public static final class OrderServiceFutureStub
+      extends io.grpc.stub.AbstractFutureStub<OrderServiceFutureStub> {
     private OrderServiceFutureStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
@@ -378,10 +372,10 @@ public final class OrderServiceGrpc {
       io.grpc.stub.ServerCalls.ServerStreamingMethod<Req, Resp>,
       io.grpc.stub.ServerCalls.ClientStreamingMethod<Req, Resp>,
       io.grpc.stub.ServerCalls.BidiStreamingMethod<Req, Resp> {
-    private final OrderServiceImplBase serviceImpl;
+    private final AsyncService serviceImpl;
     private final int methodId;
 
-    MethodHandlers(OrderServiceImplBase serviceImpl, int methodId) {
+    MethodHandlers(AsyncService serviceImpl, int methodId) {
       this.serviceImpl = serviceImpl;
       this.methodId = methodId;
     }
@@ -418,6 +412,32 @@ public final class OrderServiceGrpc {
     }
   }
 
+  public static final io.grpc.ServerServiceDefinition bindService(AsyncService service) {
+    return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
+        .addMethod(
+          getPlaceOrderMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              sample.rpc.PlaceOrderRequest,
+              sample.rpc.PlaceOrderResponse>(
+                service, METHODID_PLACE_ORDER)))
+        .addMethod(
+          getGetOrderMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              sample.rpc.GetOrderRequest,
+              sample.rpc.GetOrderResponse>(
+                service, METHODID_GET_ORDER)))
+        .addMethod(
+          getGetOrdersMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              sample.rpc.GetOrdersRequest,
+              sample.rpc.GetOrdersResponse>(
+                service, METHODID_GET_ORDERS)))
+        .build();
+  }
+
   private static abstract class OrderServiceBaseDescriptorSupplier
       implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {
     OrderServiceBaseDescriptorSupplier() {}
@@ -441,9 +461,9 @@ public final class OrderServiceGrpc {
   private static final class OrderServiceMethodDescriptorSupplier
       extends OrderServiceBaseDescriptorSupplier
       implements io.grpc.protobuf.ProtoMethodDescriptorSupplier {
-    private final String methodName;
+    private final java.lang.String methodName;
 
-    OrderServiceMethodDescriptorSupplier(String methodName) {
+    OrderServiceMethodDescriptorSupplier(java.lang.String methodName) {
       this.methodName = methodName;
     }
 
