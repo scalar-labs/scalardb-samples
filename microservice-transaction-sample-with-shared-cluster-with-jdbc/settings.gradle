@@ -1,0 +1,5 @@
+rootProject.name = 'microservice-transaction-sample-with-shared-cluster-with-jdbc'
+include 'customer-service'
+include 'order-service'
+include 'rpc'
+include 'client'
