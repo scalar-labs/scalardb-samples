@@ -8,14 +8,14 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
  * </pre>
  */
 @javax.annotation.Generated(
-    value = "by gRPC proto compiler (version 1.53.0)",
+    value = "by gRPC proto compiler (version 1.65.0)",
     comments = "Source: sample.proto")
 @io.grpc.stub.annotations.GrpcGenerated
 public final class CustomerServiceGrpc {
 
   private CustomerServiceGrpc() {}
 
-  public static final String SERVICE_NAME = "rpc.CustomerService";
+  public static final java.lang.String SERVICE_NAME = "rpc.CustomerService";
 
   // Static method descriptors that strictly reflect the proto.
   private static volatile io.grpc.MethodDescriptor<sample.rpc.GetCustomerInfoRequest,
@@ -284,14 +284,14 @@ public final class CustomerServiceGrpc {
    * for Customer Service
    * </pre>
    */
-  public static abstract class CustomerServiceImplBase implements io.grpc.BindableService {
+  public interface AsyncService {
 
     /**
      * <pre>
      * Get customer information
      * </pre>
      */
-    public void getCustomerInfo(sample.rpc.GetCustomerInfoRequest request,
+    default void getCustomerInfo(sample.rpc.GetCustomerInfoRequest request,
         io.grpc.stub.StreamObserver<sample.rpc.GetCustomerInfoResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetCustomerInfoMethod(), responseObserver);
     }
@@ -301,7 +301,7 @@ public final class CustomerServiceGrpc {
      * Credit card repayment
      * </pre>
      */
-    public void repayment(sample.rpc.RepaymentRequest request,
+    default void repayment(sample.rpc.RepaymentRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getRepaymentMethod(), responseObserver);
     }
@@ -311,7 +311,7 @@ public final class CustomerServiceGrpc {
      * Credit card payment
      * </pre>
      */
-    public void payment(sample.rpc.PaymentRequest request,
+    default void payment(sample.rpc.PaymentRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getPaymentMethod(), responseObserver);
     }
@@ -321,7 +321,7 @@ public final class CustomerServiceGrpc {
      * Prepare the transaction
      * </pre>
      */
-    public void prepare(sample.rpc.PrepareRequest request,
+    default void prepare(sample.rpc.PrepareRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getPrepareMethod(), responseObserver);
     }
@@ -331,7 +331,7 @@ public final class CustomerServiceGrpc {
      * Validate the transaction
      * </pre>
      */
-    public void validate(sample.rpc.ValidateRequest request,
+    default void validate(sample.rpc.ValidateRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getValidateMethod(), responseObserver);
     }
@@ -341,7 +341,7 @@ public final class CustomerServiceGrpc {
      * Commit the transaction
      * </pre>
      */
-    public void commit(sample.rpc.CommitRequest request,
+    default void commit(sample.rpc.CommitRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getCommitMethod(), responseObserver);
     }
@@ -351,72 +351,34 @@ public final class CustomerServiceGrpc {
      * Rollback the transaction
      * </pre>
      */
-    public void rollback(sample.rpc.RollbackRequest request,
+    default void rollback(sample.rpc.RollbackRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getRollbackMethod(), responseObserver);
-    }
-
-    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
-      return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
-          .addMethod(
-            getGetCustomerInfoMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                sample.rpc.GetCustomerInfoRequest,
-                sample.rpc.GetCustomerInfoResponse>(
-                  this, METHODID_GET_CUSTOMER_INFO)))
-          .addMethod(
-            getRepaymentMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                sample.rpc.RepaymentRequest,
-                com.google.protobuf.Empty>(
-                  this, METHODID_REPAYMENT)))
-          .addMethod(
-            getPaymentMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                sample.rpc.PaymentRequest,
-                com.google.protobuf.Empty>(
-                  this, METHODID_PAYMENT)))
-          .addMethod(
-            getPrepareMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                sample.rpc.PrepareRequest,
-                com.google.protobuf.Empty>(
-                  this, METHODID_PREPARE)))
-          .addMethod(
-            getValidateMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                sample.rpc.ValidateRequest,
-                com.google.protobuf.Empty>(
-                  this, METHODID_VALIDATE)))
-          .addMethod(
-            getCommitMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                sample.rpc.CommitRequest,
-                com.google.protobuf.Empty>(
-                  this, METHODID_COMMIT)))
-          .addMethod(
-            getRollbackMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                sample.rpc.RollbackRequest,
-                com.google.protobuf.Empty>(
-                  this, METHODID_ROLLBACK)))
-          .build();
     }
   }
 
   /**
+   * Base class for the server implementation of the service CustomerService.
    * <pre>
    * for Customer Service
    * </pre>
    */
-  public static final class CustomerServiceStub extends io.grpc.stub.AbstractAsyncStub<CustomerServiceStub> {
+  public static abstract class CustomerServiceImplBase
+      implements io.grpc.BindableService, AsyncService {
+
+    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
+      return CustomerServiceGrpc.bindService(this);
+    }
+  }
+
+  /**
+   * A stub to allow clients to do asynchronous rpc calls to service CustomerService.
+   * <pre>
+   * for Customer Service
+   * </pre>
+   */
+  public static final class CustomerServiceStub
+      extends io.grpc.stub.AbstractAsyncStub<CustomerServiceStub> {
     private CustomerServiceStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
@@ -507,11 +469,13 @@ public final class CustomerServiceGrpc {
   }
 
   /**
+   * A stub to allow clients to do synchronous rpc calls to service CustomerService.
    * <pre>
    * for Customer Service
    * </pre>
    */
-  public static final class CustomerServiceBlockingStub extends io.grpc.stub.AbstractBlockingStub<CustomerServiceBlockingStub> {
+  public static final class CustomerServiceBlockingStub
+      extends io.grpc.stub.AbstractBlockingStub<CustomerServiceBlockingStub> {
     private CustomerServiceBlockingStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
@@ -595,11 +559,13 @@ public final class CustomerServiceGrpc {
   }
 
   /**
+   * A stub to allow clients to do ListenableFuture-style rpc calls to service CustomerService.
    * <pre>
    * for Customer Service
    * </pre>
    */
-  public static final class CustomerServiceFutureStub extends io.grpc.stub.AbstractFutureStub<CustomerServiceFutureStub> {
+  public static final class CustomerServiceFutureStub
+      extends io.grpc.stub.AbstractFutureStub<CustomerServiceFutureStub> {
     private CustomerServiceFutureStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
@@ -702,10 +668,10 @@ public final class CustomerServiceGrpc {
       io.grpc.stub.ServerCalls.ServerStreamingMethod<Req, Resp>,
       io.grpc.stub.ServerCalls.ClientStreamingMethod<Req, Resp>,
       io.grpc.stub.ServerCalls.BidiStreamingMethod<Req, Resp> {
-    private final CustomerServiceImplBase serviceImpl;
+    private final AsyncService serviceImpl;
     private final int methodId;
 
-    MethodHandlers(CustomerServiceImplBase serviceImpl, int methodId) {
+    MethodHandlers(AsyncService serviceImpl, int methodId) {
       this.serviceImpl = serviceImpl;
       this.methodId = methodId;
     }
@@ -758,6 +724,60 @@ public final class CustomerServiceGrpc {
     }
   }
 
+  public static final io.grpc.ServerServiceDefinition bindService(AsyncService service) {
+    return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
+        .addMethod(
+          getGetCustomerInfoMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              sample.rpc.GetCustomerInfoRequest,
+              sample.rpc.GetCustomerInfoResponse>(
+                service, METHODID_GET_CUSTOMER_INFO)))
+        .addMethod(
+          getRepaymentMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              sample.rpc.RepaymentRequest,
+              com.google.protobuf.Empty>(
+                service, METHODID_REPAYMENT)))
+        .addMethod(
+          getPaymentMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              sample.rpc.PaymentRequest,
+              com.google.protobuf.Empty>(
+                service, METHODID_PAYMENT)))
+        .addMethod(
+          getPrepareMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              sample.rpc.PrepareRequest,
+              com.google.protobuf.Empty>(
+                service, METHODID_PREPARE)))
+        .addMethod(
+          getValidateMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              sample.rpc.ValidateRequest,
+              com.google.protobuf.Empty>(
+                service, METHODID_VALIDATE)))
+        .addMethod(
+          getCommitMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              sample.rpc.CommitRequest,
+              com.google.protobuf.Empty>(
+                service, METHODID_COMMIT)))
+        .addMethod(
+          getRollbackMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              sample.rpc.RollbackRequest,
+              com.google.protobuf.Empty>(
+                service, METHODID_ROLLBACK)))
+        .build();
+  }
+
   private static abstract class CustomerServiceBaseDescriptorSupplier
       implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {
     CustomerServiceBaseDescriptorSupplier() {}
@@ -781,9 +801,9 @@ public final class CustomerServiceGrpc {
   private static final class CustomerServiceMethodDescriptorSupplier
       extends CustomerServiceBaseDescriptorSupplier
       implements io.grpc.protobuf.ProtoMethodDescriptorSupplier {
-    private final String methodName;
+    private final java.lang.String methodName;
 
-    CustomerServiceMethodDescriptorSupplier(String methodName) {
+    CustomerServiceMethodDescriptorSupplier(java.lang.String methodName) {
       this.methodName = methodName;
     }
 
