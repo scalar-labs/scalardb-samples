@@ -23,7 +23,7 @@ public final class Utils {
     try {
       channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
-      System.err.println("failed to shutdown the channel");
+      System.err.println("failed to shut down the channel");
     }
   }
 

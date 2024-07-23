@@ -14,7 +14,7 @@ public class RepaymentCommand implements Callable<Integer> {
   @Parameters(index = "0", paramLabel = "CUSTOMER_ID", description = "customer ID")
   private int customerId;
 
-  @Parameters(index = "1", paramLabel = "AMOUNT", description = "amount of the money for repayment")
+  @Parameters(index = "1", paramLabel = "AMOUNT", description = "repayment amount")
   private int amount;
 
   @Override

@@ -385,11 +385,11 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
 
   @Override
   public void close() {
-    // Shutdown the gRPC channel to Customer service
+    // Shut down the gRPC channel to Customer service
     try {
       channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
-      logger.warn("Failed to shutdown the channel", e);
+      logger.warn("Failed to shut down the channel", e);
     }
   }
 }

@@ -165,9 +165,9 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
 
           int updatedCreditTotal = result.get().creditTotal - request.getAmount();
 
-          // Check if over repayment or not
+          // Check if over-repayment or not
           if (updatedCreditTotal < 0) {
-            throw Status.FAILED_PRECONDITION.withDescription("Over repayment").asRuntimeException();
+            throw Status.FAILED_PRECONDITION.withDescription("Over-repayment").asRuntimeException();
           }
 
           // Reduce credit_total for the customer
