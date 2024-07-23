@@ -1,5 +1,25 @@
 version: "3.5"
 services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+    container_name: "mysql-1"
+    ports:
+      - "3306:3306"
+  postgres:
+    image: postgres:12-alpine
+    container_name: "postgres-1"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5432:5432
+  dynamodb:
+    image: amazon/dynamodb-local:1.17.0
+    container_name: "dynamodb-1"
+    ports:
+      - 8000:8000
   cassandra:
     image: cassandra:3.11
     container_name: "cassandra-1"
