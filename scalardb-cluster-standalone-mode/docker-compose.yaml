@@ -1,28 +1,52 @@
 version: "3.5"
 services:
-
-  postgresql:
-    container_name: "postgresql"
-    image: "postgres:15"
-    ports:
-      - 5432:5432
+  mysql:
+    image: mysql:8.1
+    container_name: "mysql-1"
     environment:
-      - POSTGRES_PASSWORD=postgres
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready || exit 1"]
-      interval: 1s
-      timeout: 10s
-      retries: 60
-      start_period: 30s
-
-  scalardb-cluster-standalone:
-    container_name: "scalardb-cluser-node"
-    image: "ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.13.0"
+      MYSQL_ROOT_PASSWORD: mysql
     ports:
-      - 60053:60053
-      - 9080:9080
+      - "3306:3306"
+  postgres:
+    image: postgres:15
+    container_name: "postgres-1"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+  oracle:
+    image: container-registry.oracle.com/database/free:23.4.0.0
+    container_name: "oracle-1"
+    environment:
+      ORACLE_PWD: Oracle
+    ports:
+      - "1521:1521"
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: "sqlserver-1"
+    environment:
+      MSSQL_PID: "Express"
+      SA_PASSWORD: "SqlServer22"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+  dynamodb:
+    image: amazon/dynamodb-local:2.5.2
+    container_name: "dynamodb-1"
+    ports:
+      - "8000:8000"
+  cassandra:
+    image: cassandra:3.11
+    container_name: "cassandra-1"
+    ports:
+      - "9042:9042"
+
+  scalardb-cluster-node:
+    image: ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.13.0
+    container_name: "scalardb-cluser-node"
+    ports:
+      - "60053:60053"
+      - "9080:9080"
     volumes:
       - ./scalardb-cluster-node.properties:/scalardb-cluster/node/scalardb-cluster-node.properties
-    depends_on:
-      postgresql:
-        condition: service_healthy
