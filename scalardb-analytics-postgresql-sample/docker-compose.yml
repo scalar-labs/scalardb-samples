@@ -1,4 +1,3 @@
-version: "3"
 services:
   analytics:
     image: ghcr.io/scalar-labs/scalardb-analytics-postgresql:3.10.3
