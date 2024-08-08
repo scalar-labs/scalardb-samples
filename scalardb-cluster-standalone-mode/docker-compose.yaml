@@ -46,6 +46,7 @@ services:
     container_name: "scalardb-cluser-node"
     ports:
       - "60053:60053"
+      - "8080:8080"
       - "9080:9080"
     volumes:
       - ./scalardb-cluster-node.properties:/scalardb-cluster/node/scalardb-cluster-node.properties
