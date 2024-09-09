@@ -2,7 +2,6 @@ plugins {
     id 'java'
     id 'java-library-distribution'
     id 'application'
-    id 'com.palantir.docker' version '0.25.0'
 }
 
 dependencies {
@@ -20,9 +19,21 @@ application {
     mainClassName = 'sample.order.OrderServiceServer'
 }
 
-docker {
-    name "sample-order-service:${project.version}"
-    files tasks.distTar.outputs, 'order-service.properties'
+task copyFilesToDockerBuildContextDir(type: Copy) {
+    description 'Copy files to a temporary folder to build the Docker image'
+    dependsOn distTar
+    from('src/main/resources/application.properties')
+    from('order-service.properties')
+    from('Dockerfile')
+    from(tasks.distTar.archiveFile)
+    into('build/docker')
+}
+
+task docker(type: Exec) {
+    description 'Build Order Service Docker image'
+    dependsOn copyFilesToDockerBuildContextDir
+    workingDir 'build/docker'
+    commandLine 'docker', 'build', "--tag=sample-order-service:${project.version}", "."
 }
 
 distTar {
