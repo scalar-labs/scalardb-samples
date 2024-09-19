@@ -2,7 +2,6 @@ plugins {
     id 'java'
     id 'java-library-distribution'
     id 'application'
-    id 'com.palantir.docker' version '0.25.0'
 }
 
 dependencies {
@@ -18,9 +17,21 @@ application {
     mainClassName = 'sample.customer.CustomerServiceServer'
 }
 
-docker {
-    name "sample-customer-service:${project.version}"
-    files tasks.distTar.outputs, 'customer-service.properties'
+task copyFilesToDockerBuildContextDir(type: Copy) {
+    description 'Copy files to a temporary folder to build the Docker image'
+    dependsOn distTar
+    from('src/main/resources/log4j2.properties')
+    from('customer-service.properties')
+    from('Dockerfile')
+    from(tasks.distTar.archiveFile)
+    into('build/docker')
+}
+
+task docker(type: Exec) {
+    description 'Build Customer Service Docker image'
+    dependsOn copyFilesToDockerBuildContextDir
+    workingDir 'build/docker'
+    commandLine 'docker', 'build', "--tag=sample-customer-service:${project.version}", "."
 }
 
 distTar {
