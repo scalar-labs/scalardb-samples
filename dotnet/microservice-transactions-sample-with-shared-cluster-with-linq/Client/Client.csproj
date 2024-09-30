@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>12</LangVersion>
+        <RootNamespace>MicroserviceTransactionsSample.Client</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Grpc.Net.Client" Version="2.66.0"/>
+        <PackageReference Include="Grpc.Net.ClientFactory" Version="2.66.0"/>
+        <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Remove="Commands\"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Rpc\Rpc.csproj"/>
+    </ItemGroup>
+</Project>

@@ -1,0 +1,8 @@
+{
+  "ScalarDbOptions": {
+    "Address": "http://localhost:60053",
+    "AuthEnabled": true,
+    "Username": "admin",
+    "Password": "admin"
+  }
+}
