@@ -101,7 +101,7 @@ public class CustomerService : CustomerServiceBase
                    // and check if over-repayment or not
                    customer.CreditTotal -= request.Amount;
                    if (customer.CreditTotal < 0)
-                       throw new FailedPreconditionException($"Over repayment ({customer.CreditTotal})");
+                       throw new FailedPreconditionException($"Over-repayment ({customer.CreditTotal})");
 
                    // Save changes to the customer
                    await _db.Customers.UpdateAsync(customer);

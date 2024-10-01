@@ -8,7 +8,7 @@ namespace MicroserviceTransactionsSample.Client.Commands;
 public static class GetOrdersCommand
 {
     private const string Name = "GetOrders";
-    private const string Description = "Get orders information by customer ID";
+    private const string Description = "Get information about orders by customer ID";
 
     private const string ArgName = "customer_id";
     private const string ArgDescription = "customer ID";

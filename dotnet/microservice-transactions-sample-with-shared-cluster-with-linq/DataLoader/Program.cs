@@ -12,7 +12,7 @@ class Program
     static async Task Main(string[] args)
     {
         var configOption = new Option<string>("--config", "Path to the config file") { IsRequired = true };
-        var resetDataOptions = new Option<bool>("--reset-data", "Recreate tables and other data");
+        var resetDataOptions = new Option<bool>("--reset-data", "Re-create tables and other data");
         var logLevelOption = new Option<LogLevel>(name: "--log-level",
                                                   description: "Minimum LogLevel",
                                                   getDefaultValue: () => LogLevel.Information);
