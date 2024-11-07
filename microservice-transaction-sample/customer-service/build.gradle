@@ -14,7 +14,7 @@ dependencies {
 }
 
 application {
-    mainClassName = 'sample.customer.CustomerServiceServer'
+    mainClass = 'sample.customer.CustomerServiceServer'
 }
 
 task copyFilesToDockerBuildContextDir(type: Copy) {
@@ -47,7 +47,12 @@ installDist {
     duplicatesStrategy DuplicatesStrategy.EXCLUDE
 }
 
-archivesBaseName = "sample-customer-service"
+base {
+    archivesName = "sample-customer-service"
+}
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
