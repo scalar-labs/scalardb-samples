@@ -1,6 +1,6 @@
 package sample.order.model;
 
-import com.scalar.db.api.Put;
+import com.scalar.db.api.Insert;
 import com.scalar.db.api.Scan;
 import com.scalar.db.api.TransactionCrudOperable;
 import com.scalar.db.exception.transaction.CrudException;
@@ -28,8 +28,8 @@ public class Statement {
 
   public static void put(TransactionCrudOperable transaction, String orderId, int itemId, int count)
       throws CrudException {
-    transaction.put(
-        Put.newBuilder()
+    transaction.insert(
+        Insert.newBuilder()
             .namespace(NAMESPACE)
             .table(TABLE)
             .partitionKey(Key.ofText(COL_ORDER_ID, orderId))
