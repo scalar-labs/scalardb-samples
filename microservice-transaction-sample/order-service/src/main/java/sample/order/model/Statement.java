@@ -26,7 +26,7 @@ public class Statement {
     this.count = count;
   }
 
-  public static void put(TransactionCrudOperable transaction, String orderId, int itemId, int count)
+  public static void insert(TransactionCrudOperable transaction, String orderId, int itemId, int count)
       throws CrudException {
     transaction.insert(
         Insert.newBuilder()

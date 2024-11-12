@@ -28,7 +28,7 @@ public class Customer {
     this.creditTotal = creditTotal;
   }
 
-  public static void put(
+  public static void insert(
       TransactionCrudOperable transaction, int id, String name, int creditLimit, int creditTotal)
       throws CrudException {
     transaction.insert(

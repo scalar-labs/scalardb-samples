@@ -25,7 +25,7 @@ public class Item {
     this.price = price;
   }
 
-  public static void put(TransactionCrudOperable transaction, int id, String name, int price)
+  public static void insert(TransactionCrudOperable transaction, int id, String name, int price)
       throws CrudException {
     transaction.insert(
         Insert.newBuilder()

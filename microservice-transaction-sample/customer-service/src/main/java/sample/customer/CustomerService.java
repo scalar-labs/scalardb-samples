@@ -74,7 +74,7 @@ public class CustomerService extends CustomerServiceGrpc.CustomerServiceImplBase
       throws CrudException {
     Optional<Customer> customer = Customer.get(transaction, id);
     if (!customer.isPresent()) {
-      Customer.put(transaction, id, name, creditLimit, creditTotal);
+      Customer.insert(transaction, id, name, creditLimit, creditTotal);
     }
   }
 

@@ -30,7 +30,7 @@ public class Order {
     this.timestamp = timestamp;
   }
 
-  public static void put(
+  public static void insert(
       TransactionCrudOperable transaction, String id, int customerId, long timestamp)
       throws CrudException {
     transaction.insert(
