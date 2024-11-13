@@ -35,8 +35,8 @@ task copyGeneratedProtoToSrc(type: Copy) {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
-// Task deleteBuildMainJava deletes the generated .java files in build directory
-task deleteBuildMainJava(type: Delete) {
+// Task deleteGeneratedProto deletes the generated .java files in build directory
+task deleteGeneratedProto(type: Delete) {
     dependsOn copyGeneratedProtoToSrc
     delete fileTree(dir: "$buildDir/generated/source/proto/main/java/sample/rpc")
 }
@@ -47,9 +47,9 @@ processResources {
     dependsOn generateProto
 }
 
-// Task deleteBuildMainJava needs to depend on deleteBuildMainJava to avoid duplicate class error
+// Task deleteGeneratedProto needs to depend on deleteGeneratedProto to avoid duplicate class error
 tasks.named("compileJava").configure {
-    dependsOn deleteBuildMainJava
+    dependsOn deleteGeneratedProto
 }
 
 java {
