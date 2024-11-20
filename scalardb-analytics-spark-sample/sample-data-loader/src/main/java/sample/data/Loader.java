@@ -2,6 +2,7 @@ package sample.data;
 
 import com.scalar.db.api.DistributedTransaction;
 import com.scalar.db.api.DistributedTransactionManager;
+import com.scalar.db.api.Mutation;
 import com.scalar.db.api.Put;
 import com.scalar.db.exception.transaction.TransactionException;
 import com.scalar.db.io.Key;
@@ -14,28 +15,17 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
 public class Loader implements AutoCloseable {
-  private static final String CUSTOMER_DATA = "/data/customer.csv";
   private static final String ORDERS_DATA = "/data/orders.csv";
   private static final String LINEITEM_DATA = "/data/lineitem.csv";
   private static final String CONFIG_FILE_PATH = "/etc/scalardb.properties";
   private static final String SCHEMA_FILE_PATH = "/etc/schema.json";
-
-  private static final String[] CUSTOMER_COLUMNS = {
-    "c_custkey",
-    "c_name",
-    "c_address",
-    "c_nationkey",
-    "c_phone",
-    "c_acctbal",
-    "c_mktsegment",
-    "c_comment"
-  };
 
   private static final String[] ORDERS_COLUMNS = {
     "o_orderkey",
@@ -82,8 +72,6 @@ public class Loader implements AutoCloseable {
   public void load() throws TransactionException, IOException, SchemaLoaderException {
     loadSchema();
 
-    loadData(this.manager, CUSTOMER_DATA, CUSTOMER_COLUMNS, this::buildPutCustomer);
-
     loadData(this.manager, ORDERS_DATA, ORDERS_COLUMNS, this::buildPutOrders);
 
     loadData(this.manager, LINEITEM_DATA, LINEITEM_COLUMNS, this::buildPutLineitem);
@@ -101,25 +89,9 @@ public class Loader implements AutoCloseable {
     SchemaLoader.load(configFilePath, schemaFilePath, options, createCoordinatorTables);
   }
 
-  private Put buildPutCustomer(CSVRecord record) {
-    return Put.newBuilder()
-        .namespace("dynamons")
-        .table("customer")
-        .partitionKey(Key.ofInt("c_custkey", intCol(record, "c_custkey")))
-        .textValue("c_name", stringCol(record, "c_name"))
-        .textValue("c_address", stringCol(record, "c_address"))
-        .intValue("c_nationkey", intCol(record, "c_nationkey"))
-        .textValue("c_phone", stringCol(record, "c_phone"))
-        .doubleValue("c_acctbal", doubleCol(record, "c_acctbal"))
-        .textValue("c_mktsegment", stringCol(record, "c_mktsegment"))
-        .textValue("c_comment", stringCol(record, "c_comment"))
-        .enableImplicitPreRead()
-        .build();
-  }
-
   private Put buildPutOrders(CSVRecord record) {
     return Put.newBuilder()
-        .namespace("postgresns")
+        .namespace("mysqlns")
         .table("orders")
         .partitionKey(Key.ofInt("o_orderkey", intCol(record, "o_orderkey")))
         .intValue("o_custkey", intCol(record, "o_custkey"))
@@ -175,7 +147,8 @@ public class Loader implements AutoCloseable {
       transaction = manager.start();
       for (CSVRecord record : records) {
         Put put = putFunction.apply(record);
-        transaction.put(put);
+        List<Mutation> mutations = List.of(put);
+        transaction.mutate(mutations);
       }
       transaction.commit();
     } catch (TransactionException e) {

@@ -1,25 +1,7 @@
 {
-  "dynamons.customer": {
+  "mysqlns.orders": {
     "transaction": true,
-    "partition-key": [
-      "c_custkey"
-    ],
-    "columns": {
-      "c_custkey": "INT",
-      "c_name": "TEXT",
-      "c_address": "TEXT",
-      "c_nationkey": "INT",
-      "c_phone": "TEXT",
-      "c_acctbal": "DOUBLE",
-      "c_mktsegment": "TEXT",
-      "c_comment": "TEXT"
-    }
-  },
-  "postgresns.orders": {
-    "transaction": true,
-    "partition-key": [
-      "o_orderkey"
-    ],
+    "partition-key": ["o_orderkey"],
     "columns": {
       "o_orderkey": "INT",
       "o_custkey": "INT",
@@ -34,10 +16,7 @@
   },
   "cassandrans.lineitem": {
     "transaction": true,
-    "partition-key": [
-      "l_orderkey",
-      "l_linenumber"
-    ],
+    "partition-key": ["l_orderkey", "l_linenumber"],
     "columns": {
       "l_orderkey": "INT",
       "l_partkey": "INT",
