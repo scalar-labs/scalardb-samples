@@ -13,7 +13,6 @@ dependencies {
     implementation("com.scalar-labs:scalardb-schema-loader:3.14.0")
     implementation("org.apache.commons:commons-csv:1.10.0")
 
-
     implementation("io.netty:netty-transport-native-epoll:4.1.99.Final:linux-x86_64")
     implementation("io.netty:netty-transport-native-epoll:4.1.99.Final:linux-aarch_64")
     implementation("io.netty:netty-transport-native-kqueue:4.1.99.Final:osx-x86_64")
