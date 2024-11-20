@@ -1,8 +1,9 @@
 package sample.customer.model;
 
 import com.scalar.db.api.Get;
-import com.scalar.db.api.Put;
+import com.scalar.db.api.Insert;
 import com.scalar.db.api.TransactionCrudOperable;
+import com.scalar.db.api.Update;
 import com.scalar.db.exception.transaction.CrudException;
 import com.scalar.db.io.Key;
 import java.util.Optional;
@@ -27,11 +28,11 @@ public class Customer {
     this.creditTotal = creditTotal;
   }
 
-  public static void put(
+  public static void insert(
       TransactionCrudOperable transaction, int id, String name, int creditLimit, int creditTotal)
       throws CrudException {
-    transaction.put(
-        Put.newBuilder()
+    transaction.insert(
+        Insert.newBuilder()
             .namespace(NAMESPACE)
             .table(TABLE)
             .partitionKey(Key.ofInt(COL_CUSTOMER_ID, id))
@@ -43,8 +44,8 @@ public class Customer {
 
   public static void updateCreditTotal(TransactionCrudOperable transaction, int id, int creditTotal)
       throws CrudException {
-    transaction.put(
-        Put.newBuilder()
+    transaction.update(
+        Update.newBuilder()
             .namespace(NAMESPACE)
             .table(TABLE)
             .partitionKey(Key.ofInt(COL_CUSTOMER_ID, id))

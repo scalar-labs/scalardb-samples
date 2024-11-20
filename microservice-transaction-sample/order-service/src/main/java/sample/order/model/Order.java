@@ -1,7 +1,7 @@
 package sample.order.model;
 
 import com.scalar.db.api.Get;
-import com.scalar.db.api.Put;
+import com.scalar.db.api.Insert;
 import com.scalar.db.api.Result;
 import com.scalar.db.api.Scan;
 import com.scalar.db.api.Scan.Ordering;
@@ -30,11 +30,11 @@ public class Order {
     this.timestamp = timestamp;
   }
 
-  public static void put(
+  public static void insert(
       TransactionCrudOperable transaction, String id, int customerId, long timestamp)
       throws CrudException {
-    transaction.put(
-        Put.newBuilder()
+    transaction.insert(
+        Insert.newBuilder()
             .namespace(NAMESPACE)
             .table(TABLE)
             .partitionKey(Key.ofInt(COL_CUSTOMER_ID, customerId))

@@ -14,7 +14,7 @@ dependencies {
 }
 
 application {
-    mainClassName = 'sample.order.OrderServiceServer'
+    mainClass = 'sample.order.OrderServiceServer'
 }
 
 task copyFilesToDockerBuildContextDir(type: Copy) {
@@ -47,7 +47,12 @@ installDist {
     duplicatesStrategy DuplicatesStrategy.EXCLUDE
 }
 
-archivesBaseName = "sample-order-service"
+base {
+    archivesName = "sample-order-service"
+}
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}

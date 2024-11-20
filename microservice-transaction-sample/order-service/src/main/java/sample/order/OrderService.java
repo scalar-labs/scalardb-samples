@@ -94,7 +94,7 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
       DistributedTransaction transaction, int id, String name, int price) throws CrudException {
     Optional<Item> item = Item.get(transaction, id);
     if (!item.isPresent()) {
-      Item.put(transaction, id, name, price);
+      Item.insert(transaction, id, name, price);
     }
   }
 
@@ -106,13 +106,13 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
         transaction -> {
           String orderId = UUID.randomUUID().toString();
 
-          // Put the order info into the orders table
-          Order.put(transaction, orderId, request.getCustomerId(), System.currentTimeMillis());
+          // Insert the order info into the orders table
+          Order.insert(transaction, orderId, request.getCustomerId(), System.currentTimeMillis());
 
           int amount = 0;
           for (ItemOrder itemOrder : request.getItemOrderList()) {
-            // Put the order statement into the statements table
-            Statement.put(transaction, orderId, itemOrder.getItemId(), itemOrder.getCount());
+            // Insert the order statement into the statements table
+            Statement.insert(transaction, orderId, itemOrder.getItemId(), itemOrder.getCount());
 
             // Retrieve the item info from the items table
             Optional<Item> item = Item.get(transaction, itemOrder.getItemId());

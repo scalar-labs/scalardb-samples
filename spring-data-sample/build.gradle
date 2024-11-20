@@ -24,10 +24,15 @@ dependencies {
 }
 
 application {
-    mainClassName = 'sample.SampleApp'
+    mainClass = 'sample.SampleApp'
 }
 
-archivesBaseName = "sample"
+base {
+    archivesName = "sample"
+}
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}

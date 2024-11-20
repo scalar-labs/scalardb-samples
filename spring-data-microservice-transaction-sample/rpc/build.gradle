@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'java-library-distribution'
-    id 'com.google.protobuf' version '0.9.1'
+    id 'com.google.protobuf' version '0.9.4'
 }
 
 dependencies {
@@ -20,10 +20,26 @@ protobuf {
     generateProtoTasks {
         all()*.plugins { grpc {} }
     }
-    generatedFilesBaseDir = "$projectDir/src"
 }
 
-archivesBaseName = "sample-rpc"
+base {
+    archivesName = "sample-rpc"
+}
+
+// Task copyGeneratedProtoToSrc copies the generated .java files into src directory
+task copyGeneratedProtoToSrc(type: Copy) {
+    description 'Copies generated Protocol Buffer classes to src/main/java/sample/rpc'
+    dependsOn generateProto
+    from "$buildDir/generated/source/proto/main/java/sample/rpc"
+    into "$projectDir/src/main/java/sample/rpc"
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+// Task deleteGeneratedProto deletes the generated .java files in build directory
+task deleteGeneratedProto(type: Delete) {
+    dependsOn copyGeneratedProtoToSrc
+    delete fileTree(dir: "$buildDir/generated/source/proto/main/java/sample/rpc")
+}
 
 // The processResources task needs to depend on the generateProto task because it uses the output
 // of the the generateProto task
@@ -31,5 +47,13 @@ processResources {
     dependsOn generateProto
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+// Task deleteGeneratedProto needs to depend on deleteGeneratedProto to avoid duplicate class error
+tasks.named("compileJava").configure {
+    dependsOn deleteGeneratedProto
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}

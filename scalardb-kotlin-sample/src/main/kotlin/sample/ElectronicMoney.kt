@@ -2,7 +2,8 @@ package sample
 
 import com.scalar.db.api.DistributedTransactionManager
 import com.scalar.db.api.Get
-import com.scalar.db.api.Put
+import com.scalar.db.api.Update
+import com.scalar.db.api.Upsert
 import com.scalar.db.exception.transaction.TransactionException
 import com.scalar.db.io.Key
 import com.scalar.db.service.TransactionFactory
@@ -43,13 +44,13 @@ class ElectronicMoney(scalarDBProperties: String) {
             }
 
             // Update the balance
-            val put = Put.newBuilder()
+            val upsert = Upsert.newBuilder()
                 .namespace(NAMESPACE)
                 .table(TABLENAME)
                 .partitionKey(Key.ofText(ID, id))
                 .intValue(BALANCE, balance)
                 .build()
-            tx.put(put)
+            tx.upsert(upsert)
 
             // Commit the transaction (records are automatically recovered in case of failure)
             tx.commit()
@@ -86,20 +87,20 @@ class ElectronicMoney(scalarDBProperties: String) {
             }
 
             // Update the balances
-            val fromPut = Put.newBuilder()
+            val fromUpdate = Update.newBuilder()
                 .namespace(NAMESPACE)
                 .table(TABLENAME)
                 .partitionKey(Key.ofText(ID, fromId))
                 .intValue(BALANCE, newFromBalance)
                 .build()
-            val toPut = Put.newBuilder()
+            val toUpdate = Update.newBuilder()
                 .namespace(NAMESPACE)
                 .table(TABLENAME)
                 .partitionKey(Key.ofText(ID, toId))
                 .intValue(BALANCE, newToBalance)
                 .build()
-            tx.put(fromPut)
-            tx.put(toPut)
+            tx.update(fromUpdate)
+            tx.update(toUpdate)
 
             // Commit the transaction (records are automatically recovered in case of failure)
             tx.commit()

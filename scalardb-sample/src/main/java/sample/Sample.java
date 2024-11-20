@@ -3,9 +3,10 @@ package sample;
 import com.scalar.db.api.DistributedTransaction;
 import com.scalar.db.api.DistributedTransactionManager;
 import com.scalar.db.api.Get;
-import com.scalar.db.api.Put;
+import com.scalar.db.api.Insert;
 import com.scalar.db.api.Result;
 import com.scalar.db.api.Scan;
+import com.scalar.db.api.Update;
 import com.scalar.db.exception.transaction.TransactionException;
 import com.scalar.db.io.Key;
 import com.scalar.db.service.TransactionFactory;
@@ -62,8 +63,8 @@ public class Sample implements AutoCloseable {
                 .partitionKey(Key.ofInt("customer_id", customerId))
                 .build());
     if (!customer.isPresent()) {
-      transaction.put(
-          Put.newBuilder()
+      transaction.insert(
+          Insert.newBuilder()
               .namespace("sample")
               .table("customers")
               .partitionKey(Key.ofInt("customer_id", customerId))
@@ -85,8 +86,8 @@ public class Sample implements AutoCloseable {
                 .partitionKey(Key.ofInt("item_id", itemId))
                 .build());
     if (!item.isPresent()) {
-      transaction.put(
-          Put.newBuilder()
+      transaction.insert(
+          Insert.newBuilder()
               .namespace("sample")
               .table("items")
               .partitionKey(Key.ofInt("item_id", itemId))
@@ -146,9 +147,9 @@ public class Sample implements AutoCloseable {
       // Start a transaction
       transaction = manager.start();
 
-      // Put the order info into the orders table
-      transaction.put(
-          Put.newBuilder()
+      // Insert the order info into the orders table
+      transaction.insert(
+          Insert.newBuilder()
               .namespace("sample")
               .table("orders")
               .partitionKey(Key.ofInt("customer_id", customerId))
@@ -161,9 +162,9 @@ public class Sample implements AutoCloseable {
         int itemId = itemIds[i];
         int count = itemCounts[i];
 
-        // Put the order statement into the statements table
-        transaction.put(
-            Put.newBuilder()
+        // Insert the order statement into the statements table
+        transaction.insert(
+            Insert.newBuilder()
                 .namespace("sample")
                 .table("statements")
                 .partitionKey(Key.ofText("order_id", orderId))
@@ -205,8 +206,8 @@ public class Sample implements AutoCloseable {
       }
 
       // Update credit_total for the customer
-      transaction.put(
-          Put.newBuilder()
+      transaction.update(
+          Update.newBuilder()
               .namespace("sample")
               .table("customers")
               .partitionKey(Key.ofInt("customer_id", customerId))
@@ -388,8 +389,8 @@ public class Sample implements AutoCloseable {
       }
 
       // Reduce credit_total for the customer
-      transaction.put(
-          Put.newBuilder()
+      transaction.update(
+          Update.newBuilder()
               .namespace("sample")
               .table("customers")
               .partitionKey(Key.ofInt("customer_id", customerId))

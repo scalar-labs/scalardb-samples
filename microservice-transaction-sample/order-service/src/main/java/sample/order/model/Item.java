@@ -1,7 +1,7 @@
 package sample.order.model;
 
 import com.scalar.db.api.Get;
-import com.scalar.db.api.Put;
+import com.scalar.db.api.Insert;
 import com.scalar.db.api.TransactionCrudOperable;
 import com.scalar.db.exception.transaction.CrudException;
 import com.scalar.db.io.Key;
@@ -25,10 +25,10 @@ public class Item {
     this.price = price;
   }
 
-  public static void put(TransactionCrudOperable transaction, int id, String name, int price)
+  public static void insert(TransactionCrudOperable transaction, int id, String name, int price)
       throws CrudException {
-    transaction.put(
-        Put.newBuilder()
+    transaction.insert(
+        Insert.newBuilder()
             .namespace(NAMESPACE)
             .table(TABLE)
             .partitionKey(Key.ofInt(COL_ITEM_ID, id))
