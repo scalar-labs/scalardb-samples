@@ -1,79 +1,24 @@
 services:
-  spark-shell:
+  spark-sql:
     build:
       context: ./docker
       dockerfile: Dockerfile.spark
     volumes:
       - ./scalardb.properties:/etc/scalardb.properties
-      - ./cert.pem:/etc/cert.pem
-      - .scala_history_jline3:/root/.scala_history_jline3
+      - ./spark-defaults.conf:/opt/spark/conf/spark-defaults.conf
+      - .scala_history:/root/.scala_history
     networks:
       - scalar-network
     profiles:
       - dev
     depends_on:
-      - backend-postgres
-      - backend-cassandra
-      - backend-dynamodb
+      - scalardb-cassandra
+      - scalardb-mysql
+      - postgres
     command:
-      - "/opt/spark/bin/spark-shell"
+      - "/opt/spark/bin/spark-sql"
       - "--packages"
-      - "com.scalar-labs:scalardb-analytics-spark-3.5_2.12:3.12.0"
-
-  backend-postgres:
-    image: postgres:15.1
-    ports:
-      - "5432"
-    volumes:
-      - backend-postgres-data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=test
-    networks:
-      - scalar-network
-    healthcheck:
-      test: ["CMD", "psql", "-U", "postgres", "-c", "select 1"]
-      interval: 1s
-      timeout: 1s
-      retries: 10
-      start_period: 1s
-
-  backend-cassandra:
-    image: cassandra:3.11
-    ports:
-      - "9042"
-    volumes:
-      - backend-cassandra-data:/var/lib/cassandra
-    environment:
-      - CASSANDRA_DC=dc1
-      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
-    networks:
-      - scalar-network
-    healthcheck:
-      test: ["CMD", "cqlsh", "-e", "exit"]
-      interval: 1s
-      timeout: 1s
-      retries: 10
-      start_period: 5s
-
-  backend-dynamodb:
-    image: amazon/dynamodb-local:1.21.0
-    ports:
-      - "8000"
-    command:
-      [
-        "-jar",
-        "DynamoDBLocal.jar",
-        "-sharedDb",
-        "-dbPath",
-        "/home/dynamodblocal",
-        "-optimizeDbBeforeStartup",
-      ]
-    volumes:
-      - backend-dynamodb-data:/home/dynamodblocal
-    networks:
-      - scalar-network
+      - "com.scalar-labs:scalardb-analytics-spark-all-3.5_2.12:3.14.0"
 
   sample-data-loader:
     build:
@@ -89,16 +34,73 @@ services:
     profiles:
       - dev
     depends_on:
-      - backend-postgres
-      - backend-cassandra
-      - backend-dynamodb
+      - scalardb-cassandra
+      - scalardb-mysql
+      - postgres
     command: ["java", "-jar", "/app.jar"]
+
+  scalardb-cassandra:
+    image: cassandra:3.11
+    ports:
+      - 9042
+    volumes:
+      - scalardb-cassandra-data:/var/lib/cassandra
+    environment:
+      - CASSANDRA_DC=dc1
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+    networks:
+      - scalar-network
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "exit"]
+      interval: 1s
+      timeout: 1s
+      retries: 10
+      start_period: 10s
+
+  scalardb-mysql:
+    image: mysql:8.0
+    ports:
+      - 3306
+    volumes:
+      - scalardb-mysql-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=mysql
+      - MYSQL_DATABASE=sampledb
+    networks:
+      - scalar-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root"]
+      interval: 1s
+      timeout: 1s
+      retries: 10
+      start_period: 5s
+
+  postgres:
+    image: postgres:15.1
+    ports:
+      - 5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./data/customer.csv:/opt/customer.csv
+      - ./sql/postgres_copy.sql:/docker-entrypoint-initdb.d/postgres_copy.sql
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=sampledb
+    networks:
+      - scalar-network
+    healthcheck:
+      test: ["CMD", "psql", "-U", "postgres", "-c", "select 1"]
+      interval: 1s
+      timeout: 1s
+      retries: 10
+      start_period: 5s
 
 volumes:
   analytics-data: {}
-  backend-postgres-data: {}
-  backend-cassandra-data: {}
-  backend-dynamodb-data: {}
+  scalardb-cassandra-data: {}
+  scalardb-mysql-data: {}
+  postgres-data: {}
 
 networks:
   scalar-network: {}
