@@ -43,7 +43,7 @@ services:
 
   scalardb-cluster-node:
     image: ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.13.0
-    container_name: "scalardb-cluser-node"
+    container_name: "scalardb-cluster-node"
     ports:
       - "60053:60053"
       - "8080:8080"
