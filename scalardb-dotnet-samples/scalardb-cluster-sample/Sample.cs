@@ -29,39 +29,39 @@ public class Sample: IDisposable
     public async Task CreateTables()
     {
         using var admin = _factory.GetTransactionAdmin();
-        
-        var customersTableMetadata
-            = new TableMetadataBuilder()
-              .AddPartitionKey("customer_id", DataType.Int)
-              .AddColumn("name", DataType.Text)
-              .AddColumn("credit_limit", DataType.Int)
-              .AddColumn("credit_total", DataType.Int)
-              .Build();
 
-        var ordersTableMetadata
-            = new TableMetadataBuilder()
-              .AddSecondaryIndex("order_id", DataType.Text)
-              .AddPartitionKey("customer_id", DataType.Int)
-              .AddClusteringKey("timestamp", DataType.Bigint)
-              .Build();
-        
-        var statementsTableMetadata
-            = new TableMetadataBuilder()
+        var customersTableMetadata =
+            new TableMetadataBuilder()
+                .AddPartitionKey("customer_id", DataType.Int)
+                .AddColumn("name", DataType.Text)
+                .AddColumn("credit_limit", DataType.Int)
+                .AddColumn("credit_total", DataType.Int)
+                .Build();
+
+        var ordersTableMetadata =
+            new TableMetadataBuilder()
+                .AddSecondaryIndex("order_id", DataType.Text)
+                .AddPartitionKey("customer_id", DataType.Int)
+                .AddClusteringKey("timestamp", DataType.Bigint)
+                .Build();
+
+        var statementsTableMetadata =
+            new TableMetadataBuilder()
                 .AddPartitionKey("order_id", DataType.Text)
                 .AddClusteringKey("item_id", DataType.Int)
                 .AddColumn("count", DataType.Int)
                 .Build();
-        
-        var itemsTableMetadata
-            = new TableMetadataBuilder()
+
+        var itemsTableMetadata =
+            new TableMetadataBuilder()
                 .AddPartitionKey("item_id", DataType.Int)
                 .AddColumn("name", DataType.Text)
                 .AddColumn("price", DataType.Int)
                 .Build();
-        
+
         await admin.CreateCoordinatorTablesAsync(true);
         await admin.CreateNamespaceAsync("sample", true);
-        
+
         await admin.CreateTableAsync("sample", "customers", customersTableMetadata, true);
         await admin.CreateTableAsync("sample", "orders", ordersTableMetadata, true);
         await admin.CreateTableAsync("sample", "statements", statementsTableMetadata, true);

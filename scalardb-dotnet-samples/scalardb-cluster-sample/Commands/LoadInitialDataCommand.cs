@@ -22,6 +22,7 @@ public static class LoadInitialDataCommand
                 try
                 {
                     await sample.LoadInitialData();
+                    return;
                 }
                 catch (IllegalArgumentException)
                 {
