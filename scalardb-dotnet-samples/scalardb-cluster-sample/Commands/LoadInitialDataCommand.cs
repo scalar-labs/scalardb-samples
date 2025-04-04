@@ -17,7 +17,7 @@ public static class LoadInitialDataCommand
             using var sample = new Sample();
             await sample.CreateTables();
 
-            TransactionException? lastException = null;
+            IllegalArgumentException? lastException = null;
             var attempts = 10;
             while (attempts-- > 0)
             {
