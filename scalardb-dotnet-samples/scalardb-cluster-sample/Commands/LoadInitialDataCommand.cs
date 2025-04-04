@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.Diagnostics;
 using ScalarDB.Client.Exceptions;
 
 namespace ScalarDbClusterSample.Commands;
@@ -16,6 +17,7 @@ public static class LoadInitialDataCommand
             using var sample = new Sample();
             await sample.CreateTables();
 
+            TransactionException? lastException = null;
             var attempts = 10;
             while (attempts-- > 0)
             {
@@ -24,17 +26,20 @@ public static class LoadInitialDataCommand
                     await sample.LoadInitialData();
                     return;
                 }
-                catch (IllegalArgumentException)
+                catch (IllegalArgumentException ex)
                 {
                     // there's can be a lag until ScalarDB Cluster recognize namespaces and tables created
                     // in some databases like Cassandra, so if this command was called for the first time
                     // the first attempts can fail with 'The namespace does not exist' error
-                    
+                    lastException = ex;
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }
+
+            Debug.Assert(lastException != null);
+            throw lastException;
         });
-        
+
         return loadInitialDataCommand;
     }
 }
