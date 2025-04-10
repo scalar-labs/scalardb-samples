@@ -1,0 +1,20 @@
+﻿FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+
+WORKDIR /src
+COPY Rpc/Rpc.csproj Rpc/
+COPY Common/Common.csproj Common/
+COPY CustomerService/CustomerService.csproj CustomerService/
+
+WORKDIR /src/CustomerService
+RUN dotnet restore
+
+COPY Rpc ../Rpc
+COPY Common ../Common
+COPY CustomerService .
+RUN dotnet publish -c Release -o /publish --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+COPY --from=build-env /publish .
+EXPOSE 10010
+ENTRYPOINT ["dotnet", "CustomerService.dll"]
