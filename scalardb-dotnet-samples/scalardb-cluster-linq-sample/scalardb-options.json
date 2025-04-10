@@ -1,0 +1,5 @@
+{
+    "ScalarDbOptions": {
+        "Address": "http://localhost:60053"
+    }
+}
