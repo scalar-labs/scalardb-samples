@@ -1,48 +1,79 @@
 services:
-  spark-sql:
-    build:
-      context: ./docker
-      dockerfile: Dockerfile.spark
+  # ===========================================
+  # ScalarDB Analytics Services
+  # ===========================================
+
+  # Catalog database for Analytics Server metadata
+  analytics-catalog-postgres:
+    image: postgres:17
+    expose:
+      - 5432
     volumes:
-      - ./scalardb.properties:/etc/scalardb.properties
-      - ./spark-defaults.conf:/opt/spark/conf/spark-defaults.conf
-      - .scala_history:/root/.scala_history
+      - analytics-catalog-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=analytics
+      - POSTGRES_PASSWORD=analytics
+      - POSTGRES_DB=catalogdb
+    networks:
+      - scalar-network
+    healthcheck:
+      test:
+        ["CMD", "psql", "-U", "analytics", "-d", "catalogdb", "-c", "select 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  # ScalarDB Analytics Server
+  scalardb-analytics-server:
+    image: ghcr.io/scalar-labs/scalardb-analytics-server-without-licensing:3.16.2
+    platform: linux/amd64
+    expose:
+      - 11051 # Catalog service port
+      - 11052 # Metering service port
+    volumes:
+      - ./config/analytics-server.properties:/scalardb-analytics-server/server.properties:ro
+      - ./config/scalardb.properties:/etc/scalardb.properties:ro
+    networks:
+      - scalar-network
+    depends_on:
+      - analytics-catalog-postgres
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/grpc_health_probe", "-addr=:11051"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  # ScalarDB Analytics CLI
+  scalardb-analytics-cli:
+    image: ghcr.io/scalar-labs/scalardb-analytics-cli:3.16.2
+    volumes:
+      - ./config/analytics-cli-config.properties:/config/client.properties:ro
+      - ./config/data-sources:/config/data-sources:ro
     networks:
       - scalar-network
     profiles:
       - dev
-    depends_on:
-      - scalardb-cassandra
-      - scalardb-mysql
-      - postgres
-    command:
-      - "/opt/spark/bin/spark-sql"
-      - "--packages"
-      - "com.scalar-labs:scalardb-analytics-spark-all-3.5_2.12:3.14.0"
+    entrypoint:
+      [
+        "java",
+        "-jar",
+        "/scalardb-analytics-cli/scalardb-analytics-cli.jar",
+        "-c",
+        "/config/client.properties",
+      ]
+    command: ["--help"] # Default command, will be overridden when running specific commands
 
-  sample-data-loader:
-    build:
-      context: sample-data-loader
-      dockerfile: Dockerfile
-    volumes:
-      - ./scalardb.properties:/etc/scalardb.properties
-      - ./schema.json:/etc/schema.json
-      - ./data:/data
-    working_dir: /sample-data-loader
-    networks:
-      - scalar-network
-    profiles:
-      - dev
-    depends_on:
-      - scalardb-cassandra
-      - scalardb-mysql
-      - postgres
-    command: ["java", "-jar", "/app.jar"]
+  # ===========================================
+  # Data Storage Services (Sample Data)
+  # ===========================================
 
+  # ScalarDB managed storage - Cassandra
   scalardb-cassandra:
     image: cassandra:3.11
-    ports:
-      - 9042
+    expose:
+      - 9042 # CQL native transport
     volumes:
       - scalardb-cassandra-data:/var/lib/cassandra
     environment:
@@ -52,14 +83,15 @@ services:
       - scalar-network
     healthcheck:
       test: ["CMD", "cqlsh", "-e", "exit"]
-      interval: 1s
-      timeout: 1s
+      interval: 5s
+      timeout: 3s
       retries: 10
-      start_period: 10s
+      start_period: 5s
 
+  # ScalarDB managed storage - MySQL
   scalardb-mysql:
-    image: mysql:8.0
-    ports:
+    image: mysql:9
+    expose:
       - 3306
     volumes:
       - scalardb-mysql-data:/var/lib/mysql
@@ -70,14 +102,15 @@ services:
       - scalar-network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root"]
-      interval: 1s
-      timeout: 1s
+      interval: 5s
+      timeout: 3s
       retries: 10
       start_period: 5s
 
+  # Direct access storage - PostgreSQL (for federated queries)
   postgres:
-    image: postgres:15.1
-    ports:
+    image: postgres:17
+    expose:
       - 5432
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -91,16 +124,65 @@ services:
       - scalar-network
     healthcheck:
       test: ["CMD", "psql", "-U", "postgres", "-c", "select 1"]
-      interval: 1s
-      timeout: 1s
+      interval: 5s
+      timeout: 3s
       retries: 10
       start_period: 5s
 
+  # ===========================================
+  # Data Loading Services
+  # ===========================================
+
+  # Sample data loader for initial data setup
+  sample-data-loader:
+    build:
+      context: sample-data-loader
+      dockerfile: Dockerfile
+    volumes:
+      - ./config/scalardb.properties:/etc/scalardb.properties
+      - ./schema.json:/etc/schema.json
+      - ./data:/data
+    networks:
+      - scalar-network
+    profiles:
+      - dev
+    depends_on:
+      - scalardb-cassandra
+      - scalardb-mysql
+      - postgres
+    command: ["/app/bin/sample-data-loader"]
+
+  # ===========================================
+  # Query Execution Services
+  # ===========================================
+
+  # Spark SQL interactive shell
+  spark-sql:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.spark
+    volumes:
+      - ./config/scalardb.properties:/etc/scalardb.properties
+      - ./config/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf
+      - .scala_history:/root/.scala_history
+      - spark-ivy-cache:/root/.ivy2
+      - spark-m2-cache:/root/.m2
+    networks:
+      - scalar-network
+    profiles:
+      - dev
+    depends_on:
+      - scalardb-analytics-server
+    command:
+      - "/opt/spark/bin/spark-sql"
+
 volumes:
-  analytics-data: {}
   scalardb-cassandra-data: {}
   scalardb-mysql-data: {}
   postgres-data: {}
+  analytics-catalog-data: {}
+  spark-ivy-cache: {}
+  spark-m2-cache: {}
 
 networks:
   scalar-network: {}

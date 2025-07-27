@@ -1,6 +1,5 @@
 plugins {
     application
-    id("com.gradleup.shadow") version "8.3.5"
     id("com.diffplug.spotless") version "6.24.0"
 }
 
@@ -9,8 +8,8 @@ repositories {
 }
 
 dependencies {
-    implementation("com.scalar-labs:scalardb:3.14.0")
-    implementation("com.scalar-labs:scalardb-schema-loader:3.14.0")
+    implementation("com.scalar-labs:scalardb:3.16.1")
+    implementation("com.scalar-labs:scalardb-schema-loader:3.16.1")
     implementation("org.apache.commons:commons-csv:1.10.0")
 
     implementation("io.netty:netty-transport-native-epoll:4.1.99.Final:linux-x86_64")
