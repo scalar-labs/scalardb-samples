@@ -5,22 +5,18 @@
 ### 1. Start services
 
 ```bash
-docker compose up -d
+docker compose up -d --wait
 ```
 
-### 2. Load sample data
+This command will start all services and automatically load sample data on the first run.
 
-```bash
-docker compose run --rm sample-data-loader
-```
-
-### 3. Create catalog
+### 2. Create catalog
 
 ```bash
 docker compose run --rm scalardb-analytics-cli catalog create --catalog sample_catalog
 ```
 
-### 4. Register data sources
+### 3. Register data sources
 
 ```bash
 # Register ScalarDB data source
@@ -30,7 +26,7 @@ docker compose run --rm scalardb-analytics-cli data-source register --data-sourc
 docker compose run --rm scalardb-analytics-cli data-source register --data-source-json /config/data-sources/postgres.json
 ```
 
-### 5. Run Spark SQL
+### 4. Run Spark SQL
 
 ```bash
 docker compose run --rm spark-sql
