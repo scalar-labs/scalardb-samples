@@ -32,7 +32,7 @@ services:
       - 11051 # Catalog service port
       - 11052 # Metering service port
     volumes:
-      - ./config/analytics-server.properties:/scalardb-analytics-server/server.properties:ro
+      - ./config/scalardb-analytics-server.properties:/scalardb-analytics-server/server.properties:ro
       - ./config/scalardb.properties:/etc/scalardb.properties:ro
     networks:
       - scalar-network
@@ -49,7 +49,7 @@ services:
   scalardb-analytics-cli:
     image: ghcr.io/scalar-labs/scalardb-analytics-cli:3.16.2
     volumes:
-      - ./config/analytics-cli-config.properties:/config/client.properties:ro
+      - ./config/scalardb-analytics-cli.properties:/config/client.properties:ro
       - ./config/data-sources:/config/data-sources:ro
     networks:
       - scalar-network
