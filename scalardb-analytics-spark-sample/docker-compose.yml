@@ -142,15 +142,23 @@ services:
       - ./config/scalardb.properties:/etc/scalardb.properties
       - ./schema.json:/etc/schema.json
       - ./data:/data
+      - sample-data-flags:/flags
     networks:
       - scalar-network
-    profiles:
-      - dev
     depends_on:
-      - scalardb-cassandra
-      - scalardb-mysql
-      - postgres
-    command: ["/app/bin/sample-data-loader"]
+      scalardb-cassandra:
+        condition: service_healthy
+      scalardb-mysql:
+        condition: service_healthy
+    entrypoint: |
+      sh -c '
+      if [ -f /flags/.data-loaded ]; then
+        echo "Sample data already loaded, skipping..."
+        exit 0
+      fi
+      echo "Loading sample data..."
+      /app/bin/sample-data-loader && touch /flags/.data-loaded
+      '
 
   # ===========================================
   # Query Execution Services
@@ -183,6 +191,7 @@ volumes:
   analytics-catalog-data: {}
   spark-ivy-cache: {}
   spark-m2-cache: {}
+  sample-data-flags: {}
 
 networks:
   scalar-network: {}
