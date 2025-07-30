@@ -1,4 +1,4 @@
-# ScalarDB Analytics Spark Sample
+# ScalarDB Analytics Sample
 
 ## Setup
 
