@@ -1,5 +1,4 @@
-create schema sample_ns;
-create table sample_ns.customer (
+create table customer (
     c_custkey int,
     c_name text,
     c_address text,
@@ -10,4 +9,4 @@ create table sample_ns.customer (
     c_comment text,
     PRIMARY KEY (c_custkey)
 );
-\copy sample_ns.customer from '/opt/customer.csv' delimiter ',' csv;
+\copy customer from '/opt/customer.csv' delimiter ',' csv;

@@ -1,0 +1,8 @@
+{
+  "catalog": "sample_catalog",
+  "name": "scalardb",
+  "type": "scalardb",
+  "provider": {
+    "configPath": "/etc/scalardb.properties"
+  }
+}

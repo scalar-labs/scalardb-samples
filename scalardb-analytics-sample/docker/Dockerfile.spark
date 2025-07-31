@@ -1,0 +1,28 @@
+FROM eclipse-temurin:17-jre-jammy
+
+ENV SPARK_VERSION=3.5.6 \
+    HADOOP_VERSION=3 \
+    SPARK_HOME=/opt/spark \
+    PATH="/opt/spark/bin:/opt/spark/sbin:${PATH}" \
+    SPARK_NO_DAEMONIZE=true
+
+WORKDIR /tmp
+
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        procps \
+        curl \
+        ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Download and verify Spark
+RUN curl -fsSL -o spark.tgz "https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" && \
+    curl -fsSL -o spark.tgz.sha512 "https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz.sha512" && \
+    sha512sum -c spark.tgz.sha512 && \
+    tar -xzf spark.tgz -C /opt && \
+    mv "/opt/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}" "${SPARK_HOME}" && \
+    rm -rf spark.tgz spark.tgz.sha512
+
+WORKDIR /opt/spark
