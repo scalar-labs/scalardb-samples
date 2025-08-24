@@ -1,0 +1,177 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "sample.rpc";
+option java_outer_classname = "Sample";
+
+package rpc;
+
+// Order Service.
+service OrderService {
+  // Places an order. It's for a global transaction that spans OrderService and CustomerService.
+  rpc PlaceOrder(PlaceOrderRequest) returns (PlaceOrderResponse) {
+  }
+
+  // Retrieves order information by order ID.
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse) {
+  }
+
+  // Retrieves order information by customer ID.
+  rpc GetOrders(GetOrdersRequest) returns (GetOrdersResponse) {
+  }
+}
+
+// An item to order.
+message ItemOrder {
+  // The item ID of the item to order.
+  int32 item_id = 1;
+
+  // The number of items to order.
+  int32 count = 2;
+}
+
+// Request message for OrderService.PlaceOrder.
+message PlaceOrderRequest {
+  // The customer ID of the customer who places the order.
+  int32 customer_id = 1;
+
+  // The items to order.
+  repeated ItemOrder item_order = 2;
+}
+
+// Response message for OrderService.PlaceOrder.
+message PlaceOrderResponse {
+  string order_id = 1;
+}
+
+// An order information.
+message Order {
+  // The order ID.
+  string order_id = 1;
+
+  // The timestamp when the order is placed.
+  int64 timestamp = 2;
+
+  // The customer ID of the customer who places the order.
+  int32 customer_id = 3;
+
+  // The name of the customer.
+  string customer_name = 4;
+
+  // The statements of the order.
+  repeated Statement statement = 5;
+
+  // The total price of the order.
+  int32 total = 6;
+}
+
+// A statement of an order.
+message Statement {
+  // The item ID of the item to order.
+  int32 item_id = 1;
+
+  // The name of the item to order.
+  string item_name = 2;
+
+  // The price of the item to order.
+  int32 price = 3;
+
+  // The number of items to order.
+  int32 count = 4;
+
+  // The total price of the item to order.
+  int32 total = 5;
+}
+
+// Request message for OrderService.GetOrder.
+message GetOrderRequest {
+  // The order ID.
+  string order_id = 1;
+}
+
+// Response message for OrderService.GetOrder.
+message GetOrderResponse {
+  // The order information.
+  Order order = 1;
+}
+
+// Request message for OrderService.GetOrders.
+message GetOrdersRequest {
+  // The customer ID of the customer.
+  int32 customer_id = 1;
+}
+
+// Response message for OrderService.GetOrders.
+message GetOrdersResponse {
+  // The order information.
+  repeated Order order = 1;
+}
+
+// Customer Service.
+service CustomerService {
+  // Get customer information. This function processing operations can be used in both a normal
+  // transaction and a global transaction.
+  rpc GetCustomerInfo(GetCustomerInfoRequest) returns (GetCustomerInfoResponse) {
+  }
+
+  // Credit card payment. It's for a global transaction that spans OrderService and CustomerService.
+  rpc Payment(PaymentRequest) returns (PaymentResponse) {
+  }
+
+  // Credit card repayment.
+  rpc Repayment(RepaymentRequest) returns (RepaymentResponse) {
+  }
+}
+
+// Request message for CustomerService.GetCustomerInfo.
+message GetCustomerInfoRequest {
+  // The global transaction ID.
+  optional string transaction_id = 1;
+
+  // The customer ID of the customer.
+  int32 customer_id = 2;
+}
+
+// Response message for CustomerService.GetCustomerInfo.
+message GetCustomerInfoResponse {
+  // The ID of the customer.
+  int32 id = 1;
+
+  // The name of the customer.
+  string name = 2;
+
+  // The credit limit of the customer.
+  int32 credit_limit = 3;
+
+  // The total credit of the customer.
+  int32 credit_total = 4;
+}
+
+// Request message for CustomerService.Payment.
+message PaymentRequest {
+  // The global transaction ID.
+  string transaction_id = 1;
+
+  // The customer ID of the customer.
+  int32 customer_id = 2;
+
+  // The amount of the payment.
+  int32 amount = 3;
+}
+
+// Response message for CustomerService.Payment.
+message PaymentResponse {
+}
+
+// Request message for CustomerService.Repayment.
+message RepaymentRequest {
+  // The customer ID of the customer.
+  int32 customer_id = 1;
+
+  // The amount of the repayment.
+  int32 amount = 2;
+}
+
+// Response message for CustomerService.Repayment.
+message RepaymentResponse {
+}
