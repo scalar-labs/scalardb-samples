@@ -1,0 +1,70 @@
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+    container_name: "mysql-1"
+    restart: always
+    ports:
+      - "3306:3306"
+    networks:
+      - sample-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pmysql"]
+      interval: 30s
+      timeout: 10s
+      retries: 6
+      start_period: 30s
+  cassandra:
+    image: cassandra:3.11
+    container_name: "cassandra-1"
+    restart: always
+    ports:
+      - "9042:9042"
+    networks:
+      - sample-network
+    healthcheck:
+      test: ["CMD-SHELL", "[ $$(nodetool statusgossip) = running ]"]
+      interval: 30s
+      timeout: 10s
+      retries: 6
+      start_period: 30s
+  scalardb-cluster-node:
+    image: ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.16.1
+    container_name: "scalardb-cluster-node-1"
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+      cassandra:
+        condition: service_healthy
+    ports:
+      - "60053:60053"
+      - "9080:9080"
+    volumes:
+      - ./scalardb-cluster-node.properties:/scalardb-cluster/node/scalardb-cluster-node.properties
+    networks:
+      - sample-network
+  customer-service:
+    image: sample-customer-service:1.0
+    container_name: "customer-service-1"
+    entrypoint: /bin/bash
+    command: ./bin/customer-service --config database.properties
+    restart: always
+    ports:
+      - "10010:10010"
+    networks:
+      - sample-network
+  order-service:
+    image: sample-order-service:1.0
+    container_name: "order-service-1"
+    entrypoint: /bin/bash
+    command: ./bin/order-service --config database.properties
+    restart: always
+    ports:
+      - "10020:10020"
+    networks:
+      - sample-network
+networks:
+  sample-network:
+    name: sample-network
