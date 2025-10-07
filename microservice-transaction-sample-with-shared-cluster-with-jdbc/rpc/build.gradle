@@ -20,7 +20,6 @@ protobuf {
     generateProtoTasks {
         all()*.plugins { grpc {} }
     }
-    generatedFilesBaseDir = "$projectDir/src"
 }
 
 archivesBaseName = "sample-rpc"

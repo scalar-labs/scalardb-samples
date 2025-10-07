@@ -24,7 +24,7 @@ public class Order {
       throws SQLException {
     try (PreparedStatement preparedStatement =
         connection.prepareStatement(
-            "INSERT INTO order_service.orders (customer_id, order_id, timestamp) VALUES (?, ?, ?)")) {
+            "INSERT INTO order_service.orders (customer_id, order_id, \"timestamp\") VALUES (?, ?, ?)")) {
       preparedStatement.setInt(1, customerId);
       preparedStatement.setString(2, id);
       preparedStatement.setLong(3, timestamp);

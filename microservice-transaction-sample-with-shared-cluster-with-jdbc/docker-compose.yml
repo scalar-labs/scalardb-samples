@@ -1,4 +1,3 @@
-version: "3.5"
 services:
   mysql:
     image: mysql:8.0
@@ -31,7 +30,7 @@ services:
       retries: 6
       start_period: 30s
   scalardb-cluster-node:
-    image: ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.13.0
+    image: ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.16.1
     container_name: "scalardb-cluster-node-1"
     restart: always
     depends_on:
