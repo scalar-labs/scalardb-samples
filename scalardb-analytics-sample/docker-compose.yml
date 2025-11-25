@@ -26,14 +26,13 @@ services:
 
   # ScalarDB Analytics Server
   scalardb-analytics-server:
-    image: ghcr.io/scalar-labs/scalardb-analytics-server-without-licensing:3.16.2
+    image: ghcr.io/scalar-labs/scalardb-analytics-server-without-licensing:3.17.0
     platform: linux/amd64
     expose:
       - 11051 # Catalog service port
       - 11052 # Metering service port
     volumes:
       - ./config/scalardb-analytics-server.properties:/scalardb-analytics-server/server.properties:ro
-      - ./config/scalardb.properties:/etc/scalardb.properties:ro
     networks:
       - scalar-network
     depends_on:
@@ -47,10 +46,11 @@ services:
 
   # ScalarDB Analytics CLI
   scalardb-analytics-cli:
-    image: ghcr.io/scalar-labs/scalardb-analytics-cli:3.16.2
+    image: ghcr.io/scalar-labs/scalardb-analytics-cli:3.17.0
     volumes:
       - ./config/scalardb-analytics-cli.properties:/config/client.properties:ro
       - ./config/data-sources:/config/data-sources:ro
+      - ./config/scalardb.properties:/etc/scalardb.properties
     networks:
       - scalar-network
     profiles:
@@ -170,7 +170,6 @@ services:
       context: ./docker
       dockerfile: Dockerfile.spark
     volumes:
-      - ./config/scalardb.properties:/etc/scalardb.properties
       - ./config/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf
       - .scala_history:/root/.scala_history
       - spark-ivy-cache:/root/.ivy2

@@ -1,12 +1,8 @@
 {
-  "catalog": "sample_catalog",
-  "name": "postgres",
-  "type": "postgres",
-  "provider": {
-    "host": "postgres",
-    "port": 5432,
-    "username": "postgres",
-    "password": "postgres",
-    "database": "sampledb"
-  }
+  "type": "postgresql",
+  "host": "postgres",
+  "port": 5432,
+  "username": "postgres",
+  "password": "postgres",
+  "database": "sampledb"
 }
