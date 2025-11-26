@@ -20,10 +20,16 @@ docker compose run --rm scalardb-analytics-cli catalog create --catalog sample_c
 
 ```bash
 # Register ScalarDB data source
-docker compose run --rm scalardb-analytics-cli data-source register --data-source-json /config/data-sources/scalardb.json
+docker compose run --rm scalardb-analytics-cli data-source register \
+  --catalog sample_catalog \
+  --data-source scalardb \
+  --provider-file /config/data-sources/scalardb.json
 
 # Register PostgreSQL data source
-docker compose run --rm scalardb-analytics-cli data-source register --data-source-json /config/data-sources/postgres.json
+docker compose run --rm scalardb-analytics-cli data-source register \
+  --catalog sample_catalog \
+  --data-source postgres \
+  --provider-file /config/data-sources/postgres.json
 ```
 
 ### 4. Run Spark SQL

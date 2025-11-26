@@ -18,11 +18,12 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Download and verify Spark
-RUN curl -fsSL -o spark.tgz "https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" && \
-    curl -fsSL -o spark.tgz.sha512 "https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz.sha512" && \
-    sha512sum -c spark.tgz.sha512 && \
-    tar -xzf spark.tgz -C /opt && \
+RUN SPARK_ARCHIVE="spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" && \
+    curl -fsSL -o "${SPARK_ARCHIVE}" "https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}" && \
+    curl -fsSL -o "${SPARK_ARCHIVE}.sha512" "https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.sha512" && \
+    sha512sum -c "${SPARK_ARCHIVE}.sha512" && \
+    tar -xzf "${SPARK_ARCHIVE}" -C /opt && \
     mv "/opt/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}" "${SPARK_HOME}" && \
-    rm -rf spark.tgz spark.tgz.sha512
+    rm -rf "${SPARK_ARCHIVE}" "${SPARK_ARCHIVE}.sha512"
 
 WORKDIR /opt/spark
