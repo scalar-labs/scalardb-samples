@@ -51,6 +51,20 @@ services:
     ports:
       - "50000:50000"
     privileged: true
+  blobstorage:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: "blobstorage-1"
+    ports:
+      - "10000:10000"
+    environment:
+      AZURITE_ACCOUNTS: "test:test"
+  blobstorage-container-creator:
+    image: mcr.microsoft.com/azure-cli
+    container_name: "blobstorage-container-creator"
+    depends_on:
+      - blobstorage
+    command: >
+      /bin/sh -c "az storage container create --name 'test-container' --connection-string 'DefaultEndpointsProtocol=http;AccountName=test;AccountKey=test;BlobEndpoint=http://blobstorage:10000/test;'"
 
   scalardb-cluster-node:
     image: ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.16.0
