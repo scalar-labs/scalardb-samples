@@ -1,6 +1,6 @@
 FROM eclipse-temurin:17-jre-jammy
 
-ENV SPARK_VERSION=3.5.6 \
+ENV SPARK_VERSION=3.5.7 \
     HADOOP_VERSION=3 \
     SPARK_HOME=/opt/spark \
     PATH="/opt/spark/bin:/opt/spark/sbin:${PATH}" \
