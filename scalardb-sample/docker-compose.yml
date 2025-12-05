@@ -51,3 +51,12 @@ services:
     ports:
       - "50000:50000"
     privileged: true
+  alloydb:
+    image: google/alloydbomni:16
+    container_name: "alloydb-1"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--icu-locale=en-US-u-va-posix"
