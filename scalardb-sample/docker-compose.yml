@@ -55,7 +55,7 @@ services:
     image: google/alloydbomni:16
     container_name: "alloydb-1"
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
