@@ -124,7 +124,7 @@ public class Sample {
         // Put the order info into the orders table
         try (PreparedStatement preparedStatement =
             connection.prepareStatement(
-                "INSERT INTO sample.orders (customer_id, order_id, timestamp) VALUES (?, ?, ?)")) {
+                "INSERT INTO sample.orders (customer_id, order_id, \"timestamp\") VALUES (?, ?, ?)")) {
           preparedStatement.setInt(1, customerId);
           preparedStatement.setString(2, orderId);
           preparedStatement.setLong(3, System.currentTimeMillis());
