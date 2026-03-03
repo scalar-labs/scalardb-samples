@@ -13,9 +13,9 @@ CREATE NAMESPACE IF NOT EXISTS "order";
 
 CREATE TABLE IF NOT EXISTS "order".orders (
   customer_id INT,
-  timestamp BIGINT,
+  "timestamp" BIGINT,
   order_id TEXT,
-  PRIMARY KEY (customer_id, timestamp)
+  PRIMARY KEY (customer_id, "timestamp")
 );
 
 CREATE INDEX IF NOT EXISTS ON "order".orders (order_id);
