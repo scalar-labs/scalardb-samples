@@ -1,0 +1,69 @@
+﻿services:
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+    container_name: "mysql-1"
+    restart: always
+    ports:
+      - "3306:3306"
+    networks:
+      - sample-network
+  
+  cassandra:
+    image: cassandra:3.11
+    container_name: "cassandra-1"
+    restart: always
+    ports:
+      - "9042:9042"
+    networks:
+      - sample-network
+  
+  scalardb-cluster-node:
+    image: ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.13.0
+    container_name: "scalardb-cluster-node-1"
+    restart: always
+    depends_on:
+      - mysql
+      - cassandra
+    ports:
+      - "60053:60053"
+      - "9080:9080"
+    volumes:
+      - ./scalardb-cluster-node.properties:/scalardb-cluster/node/scalardb-cluster-node.properties
+    networks:
+      - sample-network
+  
+  customer-service:
+    build:
+      context: .
+      dockerfile: Dockerfile-CustomerService
+    container_name: "customer-service-1"
+    entrypoint: ["dotnet", "CustomerService.dll"]
+    environment:
+      - ScalarDbOptions__Address=http://scalardb-cluster-node:60053
+    restart: "always"
+    ports:
+      - "10010:10010"
+    networks:
+      - sample-network
+  
+  order-service:
+    build:
+      context: .
+      dockerfile: Dockerfile-OrderService
+    container_name: "order-service-1"
+    entrypoint: ["dotnet", "OrderService.dll"]
+    environment:
+      - ScalarDbOptions__Address=http://scalardb-cluster-node:60053
+      - CUSTOMER_SERVICE_URL=http://customer-service:10010
+    restart: "always"
+    ports:
+      - "10020:10020"
+    networks:
+      - sample-network
+
+networks:
+  sample-network:
+    name: sample-network
