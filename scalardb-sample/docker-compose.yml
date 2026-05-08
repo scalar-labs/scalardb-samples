@@ -83,7 +83,7 @@ services:
     entrypoint: [ "/bin/sh", "-c" ]
     command:
       - |
-        ENDPOINT=dns:///spanner:15000
+        ENDPOINT=dns:///spanner-1:15000
         if /google/spanner/bin/spanner databases describe test-db --deployment-endpoint $$ENDPOINT >/dev/null 2>&1; then
           echo "test-db already exists"
         else
