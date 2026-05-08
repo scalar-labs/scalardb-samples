@@ -66,7 +66,6 @@ services:
       - blobstorage
     command: >
       /bin/sh -c "az storage container create --name 'test-container' --connection-string 'DefaultEndpointsProtocol=http;AccountName=test;AccountKey=test;BlobEndpoint=http://blobstorage-1:10000/test;'"
-
   alloydb:
     image: google/alloydbomni:16
     container_name: "alloydb-1"
@@ -76,9 +75,38 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_INITDB_ARGS: "--icu-locale=en-US-u-va-posix"
+  spanner:
+    image: us-docker.pkg.dev/spanner-omni/images/spanner-omni:2026.r1-beta
+    container_name: "spanner-1"
+    command: start-single-server
+    ports:
+      - "15000:15000"
+    healthcheck:
+      test: [ "CMD", "/google/spanner/bin/spanner", "databases", "list" ]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 3s
+  # Creates the `test-db` database in Spanner
+  spanner-init:
+    image: us-docker.pkg.dev/spanner-omni/images/spanner-omni:2026.r1-beta
+    container_name: "spanner-1-init"
+    depends_on:
+      spanner:
+        condition: service_healthy
+    restart: "no"
+    entrypoint: [ "/bin/sh", "-c" ]
+    command:
+      - |
+        ENDPOINT=dns:///spanner:15000
+        if /google/spanner/bin/spanner databases describe test-db --deployment-endpoint $$ENDPOINT >/dev/null 2>&1; then
+          echo "test-db already exists"
+        else
+          /google/spanner/bin/spanner databases create test-db --database-dialect POSTGRESQL --deployment-endpoint $$ENDPOINT
+        fi
 
   scalardb-cluster-node:
-    image: ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.17.0
+    image: ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.18.0
     container_name: "scalardb-cluster-node"
     ports:
       - "60053:60053"
