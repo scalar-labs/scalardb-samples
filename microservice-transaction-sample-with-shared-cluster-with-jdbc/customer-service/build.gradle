@@ -18,20 +18,18 @@ application {
     mainClassName = 'sample.customer.CustomerServiceServer'
 }
 
-task copyFilesToDockerBuildContextDir(type: Copy) {
+tasks.register('copyFilesToDockerBuildContextDir', Copy) {
     description 'Copy files to a temporary folder to build the Docker image'
-    dependsOn distTar
-    from('src/main/resources/log4j2.properties')
     from('customer-service.properties')
     from('Dockerfile')
-    from(tasks.distTar.archiveFile)
-    into('build/docker')
+    from(tasks.named('distTar'))
+    into(layout.buildDirectory.dir('docker'))
 }
 
-task docker(type: Exec) {
+tasks.register('docker', Exec) {
     description 'Build Customer Service Docker image'
-    dependsOn copyFilesToDockerBuildContextDir
-    workingDir 'build/docker'
+    dependsOn tasks.named('copyFilesToDockerBuildContextDir')
+    workingDir layout.buildDirectory.dir('docker')
     commandLine 'docker', 'build', "--tag=sample-customer-service:${project.version}", "."
 }
 
