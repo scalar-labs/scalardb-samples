@@ -4,7 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>MicroserviceTransactionsSample.OrderService</RootNamespace>
+        <RootNamespace>MicroserviceTransactionsSample.CustomerService</RootNamespace>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' "/>
@@ -12,7 +12,7 @@
 
     <ItemGroup>
         <PackageReference Include="Grpc.AspNetCore" Version="2.66.0"/>
-        <PackageReference Include="ScalarDB.Client" Version="3.13.0"/>
+        <PackageReference Include="ScalarDB.Client" Version="3.17.0"/>
     </ItemGroup>
 
     <ItemGroup>

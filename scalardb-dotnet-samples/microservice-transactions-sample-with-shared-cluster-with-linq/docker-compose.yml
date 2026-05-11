@@ -21,7 +21,7 @@
       - sample-network
   
   scalardb-cluster-node:
-    image: ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.13.0
+    image: ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.17.3
     container_name: "scalardb-cluster-node-1"
     restart: always
     depends_on:
