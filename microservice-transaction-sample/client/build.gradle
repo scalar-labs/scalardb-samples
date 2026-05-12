@@ -14,7 +14,7 @@ application {
 }
 
 base {
-    archivesName = "sample-order-service"
+    archivesName = "sample-client"
 }
 
 java {
