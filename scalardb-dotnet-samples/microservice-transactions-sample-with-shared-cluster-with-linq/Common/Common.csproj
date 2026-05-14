@@ -8,7 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="ScalarDB.Client" Version="3.13.0"/>
+        <PackageReference Include="ScalarDB.Client" Version="3.17.0"/>
+        <PackageReference Include="System.Text.Json" Version="8.0.6"/>
     </ItemGroup>
 
 </Project>
