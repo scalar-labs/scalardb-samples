@@ -2,7 +2,6 @@ plugins {
     id 'java'
     id 'java-library-distribution'
     id 'application'
-    id 'com.palantir.docker' version '0.25.0'
 }
 
 dependencies {
@@ -16,12 +15,22 @@ dependencies {
 }
 
 application {
-    mainClassName = 'sample.customer.CustomerServiceServer'
+    mainClass = 'sample.customer.CustomerServiceServer'
 }
 
-docker {
-    name "sample-customer-service:${project.version}"
-    files tasks.distTar.outputs, 'customer-service.properties'
+tasks.register('copyFilesToDockerBuildContextDir', Copy) {
+    description 'Copy files to a temporary folder to build the Docker image'
+    from('customer-service.properties')
+    from('Dockerfile')
+    from(tasks.named('distTar'))
+    into(layout.buildDirectory.dir('docker'))
+}
+
+tasks.register('docker', Exec) {
+    description 'Build Customer Service Docker image'
+    dependsOn tasks.named('copyFilesToDockerBuildContextDir')
+    workingDir layout.buildDirectory.dir('docker')
+    commandLine 'docker', 'build', "--tag=sample-customer-service:${project.version}", "."
 }
 
 distTar {
@@ -37,7 +46,12 @@ installDist {
     duplicatesStrategy DuplicatesStrategy.EXCLUDE
 }
 
-archivesBaseName = "sample-customer-service"
+base {
+    archivesName = "sample-customer-service"
+}
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}

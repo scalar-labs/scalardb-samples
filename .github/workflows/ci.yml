@@ -10,10 +10,12 @@ on:
 jobs:
   build-with-various-java-versions:
     strategy:
+      fail-fast: false
       matrix:
         version: [8, 11, 17, 21]
         project:
             - 'microservice-transaction-sample'
+            - 'microservice-transaction-sample-with-shared-cluster-with-jdbc'
             - 'multi-storage-transaction-sample'
             - 'scalardb-kotlin-sample'
             - 'scalardb-sample'
