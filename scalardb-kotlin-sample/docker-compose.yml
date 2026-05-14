@@ -51,3 +51,41 @@ services:
     ports:
       - "50000:50000"
     privileged: true
+  alloydb:
+    image: google/alloydbomni:16
+    container_name: "alloydb-1"
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--icu-locale=en-US-u-va-posix"
+  spanner:
+    image: us-docker.pkg.dev/spanner-omni/images/spanner-omni:2026.r1-beta
+    container_name: "spanner-1"
+    command: start-single-server
+    ports:
+      - "15000:15000"
+    healthcheck:
+      test: [ "CMD", "/google/spanner/bin/spanner", "databases", "list" ]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 3s
+  # Creates the `test-db` database in Spanner
+  spanner-init:
+    image: us-docker.pkg.dev/spanner-omni/images/spanner-omni:2026.r1-beta
+    container_name: "spanner-1-init"
+    depends_on:
+      spanner:
+        condition: service_healthy
+    restart: "no"
+    entrypoint: [ "/bin/sh", "-c" ]
+    command:
+      - |
+        ENDPOINT=dns:///spanner-1:15000
+        if /google/spanner/bin/spanner databases describe test-db --deployment-endpoint $$ENDPOINT >/dev/null 2>&1; then
+          echo "test-db already exists"
+        else
+          /google/spanner/bin/spanner databases create test-db --database-dialect POSTGRESQL --deployment-endpoint $$ENDPOINT
+        fi
