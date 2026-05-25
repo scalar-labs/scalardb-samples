@@ -70,7 +70,7 @@ services:
     image: google/alloydbomni:16
     container_name: "alloydb-1"
     ports:
-      - "5433:5432"
+      - "5432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -110,13 +110,13 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: mariadb
     ports:
-      - "3307:3306"
+      - "3306:3306"
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
   yugabyte:
     image: yugabytedb/yugabyte:2025.2.2.2-b11
     container_name: "yugabyte-1"
     ports:
-      - "5434:5433"
+      - "5433:5433"
     environment:
       YSQL_USER: yugabyte
       YSQL_PASSWORD: yugabyte
