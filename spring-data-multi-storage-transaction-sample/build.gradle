@@ -12,8 +12,8 @@ repositories {
 }
 
 dependencies {
-    implementation "com.scalar-labs:scalardb-sql-spring-data:3.13.0"
-    implementation "com.scalar-labs:scalardb-cluster-java-client-sdk:3.13.0"
+    implementation "com.scalar-labs:scalardb-sql-spring-data:3.19.1"
+    implementation "com.scalar-labs:scalardb-cluster-java-client-sdk:3.19.1"
     // This includes dependencies to `spring-boot-starter` and `picocli`
     implementation "info.picocli:picocli-spring-boot-starter:4.7.1"
     // For retry

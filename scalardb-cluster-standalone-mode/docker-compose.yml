@@ -123,7 +123,7 @@ services:
     command: bin/yugabyted start --background=false
 
   scalardb-cluster-node:
-    image: ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.18.0
+    image: ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.19.1
     container_name: "scalardb-cluster-node"
     ports:
       - "60053:60053"
