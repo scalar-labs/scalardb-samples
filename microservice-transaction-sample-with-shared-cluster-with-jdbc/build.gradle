@@ -3,7 +3,7 @@ subprojects {
     project.version = '1.0'
 
     ext {
-        scalarDbVersion = '3.16.1'
+        scalarDbVersion = '3.19.1'
         grpcVersion = '1.75.0'
         protobufVersion = '3.25.8'
         picoCliVersion = '4.7.7'

@@ -29,7 +29,7 @@ services:
       start_period: 30s
   scalardb-cluster-node-for-customer-service:
     container_name: "scalardb-cluster-node-for-customer-service"
-    image: "ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.13.0"
+    image: "ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.19.1"
     ports:
       - 60053:60053
       - 9080:9080
@@ -44,7 +44,7 @@ services:
         condition: service_healthy
   scalardb-cluster-node-for-order-service:
     container_name: "scalardb-cluster-node-for-order-service"
-    image: "ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.13.0"
+    image: "ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.19.1"
     ports:
       - 60054:60053
       - 9081:9080
