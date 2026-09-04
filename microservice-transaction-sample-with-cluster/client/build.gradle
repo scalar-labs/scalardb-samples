@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+dependencies {
+    implementation project(':rpc')
+    implementation "info.picocli:picocli:${picoCliVersion}"
+    implementation "com.google.protobuf:protobuf-java-util:${protobufVersion}"
+}
+
+application {
+    mainClass = 'sample.client.Client'
+}
+
+base {
+    archivesName = "sample-client"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}

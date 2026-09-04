@@ -1,0 +1,174 @@
+# Separated Clusters pattern: each service owns a ScalarDB Cluster, and a Transaction Coordinator
+# drives two-phase commit across them.
+#
+# The physical stores are the same MySQL and Cassandra as in the Shared Cluster pattern, so that
+# the difference between the two patterns is the ScalarDB topology and not the databases. The one
+# addition is PostgreSQL, which the Transaction Coordinator uses for its own Coordinator tables.
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: "mstx-mysql-1"
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - mstx-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pmysql"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
+
+  cassandra:
+    image: cassandra:3.11
+    container_name: "mstx-cassandra-1"
+    ports:
+      - "9042:9042"
+    networks:
+      - mstx-network
+    healthcheck:
+      # `nodetool statusgossip` reports running before the CQL native transport accepts
+      # connections, so a node that depends on it can still fail to connect. Probe CQL itself.
+      test: ["CMD-SHELL", "cqlsh -e 'describe keyspaces' >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 18
+      start_period: 60s
+
+  # Storage for the Coordinator tables. In the Shared Cluster pattern those tables live in
+  # Cassandra alongside the order data; here they get a store of their own.
+  #
+  # Every ScalarDB component in this pattern reaches it: the Transaction Coordinator writes
+  # transaction states, and both participant clusters read them for lazy recovery.
+  postgres:
+    image: postgres:15
+    container_name: "mstx-postgres-1"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    # The default max_connections of 100 is not enough once three ScalarDB components share this
+    # database. The pools are capped in the properties files as well.
+    command: ["postgres", "-c", "max_connections=300"]
+    ports:
+      - "5432:5432"
+    networks:
+      - mstx-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  customer-cluster:
+    image: ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.19.1
+    container_name: "mstx-customer-cluster-1"
+    ports:
+      - "60053:60053"
+      - "9080:9080"
+    volumes:
+      - ./customer-cluster.properties:/scalardb-cluster/node/scalardb-cluster-node.properties
+    networks:
+      - mstx-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=localhost:60053"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # The second cluster node remaps its published ports: both nodes listen on 60053 and 9080 inside
+  # their own containers.
+  order-cluster:
+    image: ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.19.1
+    container_name: "mstx-order-cluster-1"
+    ports:
+      - "60054:60053"
+      - "9081:9080"
+    volumes:
+      - ./order-cluster.properties:/scalardb-cluster/node/scalardb-cluster-node.properties
+    networks:
+      - mstx-network
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=localhost:60053"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # Requires no license key: it is not a licensed component. It does open its Coordinator storage
+  # at startup and exits if that fails, hence the healthy-PostgreSQL dependency.
+  transaction-coordinator:
+    image: ghcr.io/scalar-labs/scalardb-transaction-coordinator-node:3.19.1
+    container_name: "mstx-transaction-coordinator-1"
+    ports:
+      - "60055:60055"
+      - "9082:9080"
+    volumes:
+      - ./transaction-coordinator.properties:/scalardb-cluster/transaction-coordinator/scalardb-transaction-coordinator-node.properties
+    networks:
+      - mstx-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      customer-cluster:
+        condition: service_healthy
+      order-cluster:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=localhost:60055"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  customer-service:
+    image: sample-mstx-customer-service:1.0
+    container_name: "mstx-customer-service-1"
+    # The same image as the Shared Cluster pattern uses. Only the mounted file differs.
+    volumes:
+      - ./customer-service.properties:/customer-service/database.properties
+    command: ["--config", "database.properties"]
+    ports:
+      - "10010:10010"
+    networks:
+      - mstx-network
+    restart: always
+    depends_on:
+      customer-cluster:
+        condition: service_healthy
+      transaction-coordinator:
+        condition: service_healthy
+
+  order-service:
+    image: sample-mstx-order-service:1.0
+    container_name: "mstx-order-service-1"
+    volumes:
+      - ./order-service.properties:/order-service/database.properties
+    command: ["--config", "database.properties"]
+    ports:
+      - "10020:10020"
+    networks:
+      - mstx-network
+    restart: always
+    depends_on:
+      order-cluster:
+        condition: service_healthy
+      transaction-coordinator:
+        condition: service_healthy
+
+networks:
+  mstx-network:
+    name: mstx-network

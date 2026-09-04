@@ -1,0 +1,114 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: "mstx-mysql-1"
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - mstx-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pmysql"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
+
+  cassandra:
+    image: cassandra:3.11
+    container_name: "mstx-cassandra-1"
+    ports:
+      - "9042:9042"
+    networks:
+      - mstx-network
+    healthcheck:
+      # `nodetool statusgossip` reports running before the CQL native transport accepts
+      # connections, so a node that depends on it can still fail to connect. Probe CQL itself.
+      test: ["CMD-SHELL", "cqlsh -e 'describe keyspaces' >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 18
+      start_period: 60s
+
+  # Storage for the Coordinator tables. The Separated Clusters pattern gives them a store of
+  # their own because several ScalarDB components have to reach them; keeping them here too means
+  # each namespace lives in the same database in both patterns, so the topology is the only thing
+  # that changes.
+  postgres:
+    image: postgres:15
+    container_name: "mstx-postgres-1"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - mstx-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  # One cluster node holds both services' namespaces and the Coordinator tables.
+  scalardb-cluster-node:
+    image: ghcr.io/scalar-labs/scalardb-cluster-node-byol-premium:3.19.1
+    container_name: "mstx-scalardb-cluster-node-1"
+    ports:
+      - "60053:60053"
+      - "9080:9080"
+    volumes:
+      - ./scalardb-cluster-node.properties:/scalardb-cluster/node/scalardb-cluster-node.properties
+    networks:
+      - mstx-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      cassandra:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=localhost:60053"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  customer-service:
+    image: sample-mstx-customer-service:1.0
+    container_name: "mstx-customer-service-1"
+    # The image carries no configuration. Mounting it here is what lets the same image run
+    # against both deployment patterns.
+    volumes:
+      - ./customer-service.properties:/customer-service/database.properties
+    command: ["--config", "database.properties"]
+    ports:
+      - "10010:10010"
+    networks:
+      - mstx-network
+    restart: always
+    depends_on:
+      scalardb-cluster-node:
+        condition: service_healthy
+
+  order-service:
+    image: sample-mstx-order-service:1.0
+    container_name: "mstx-order-service-1"
+    volumes:
+      - ./order-service.properties:/order-service/database.properties
+    command: ["--config", "database.properties"]
+    ports:
+      - "10020:10020"
+    networks:
+      - mstx-network
+    restart: always
+    depends_on:
+      scalardb-cluster-node:
+        condition: service_healthy
+
+networks:
+  mstx-network:
+    name: mstx-network

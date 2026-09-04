@@ -1,0 +1,5 @@
+rootProject.name = 'microservice-transaction-sample-with-cluster'
+include 'rpc'
+include 'customer-service'
+include 'order-service'
+include 'client'

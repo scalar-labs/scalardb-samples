@@ -1,0 +1,57 @@
+plugins {
+    id 'java'
+    id 'java-library-distribution'
+    id 'application'
+}
+
+dependencies {
+    implementation project(':rpc')
+    implementation "com.scalar-labs:scalardb-cluster-java-client-sdk:${scalarDbVersion}"
+    implementation "info.picocli:picocli:${picoCliVersion}"
+    implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+    implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    implementation "org.apache.logging.log4j:log4j-slf4j2-impl:${log4jVersion}"
+}
+
+application {
+    mainClass = 'sample.customer.CustomerServiceServer'
+}
+
+// The configuration file is not copied into the image. It is mounted at run time by
+// docker-compose, so that a single image can run against both deployment patterns.
+tasks.register('copyFilesToDockerBuildContextDir', Copy) {
+    description 'Copy files to a temporary folder to build the Docker image'
+    from('Dockerfile')
+    from(tasks.named('distTar'))
+    into(layout.buildDirectory.dir('docker'))
+}
+
+tasks.register('docker', Exec) {
+    description 'Build Customer Service Docker image'
+    dependsOn tasks.named('copyFilesToDockerBuildContextDir')
+    workingDir layout.buildDirectory.dir('docker')
+    commandLine 'docker', 'build', "--tag=sample-mstx-customer-service:${project.version}", "."
+}
+
+distTar {
+    archiveFileName = "${project.name}.tar"
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+}
+
+distZip {
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+}
+
+installDist {
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+}
+
+base {
+    archivesName = "sample-mstx-customer-service"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
