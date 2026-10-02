@@ -26,7 +26,7 @@ services:
 
   # ScalarDB Analytics Server
   scalardb-analytics-server:
-    image: ghcr.io/scalar-labs/scalardb-analytics-server-without-licensing:3.17.0
+    image: ghcr.io/scalar-labs/scalardb-analytics-server-without-licensing:3.19.0
     platform: linux/amd64
     expose:
       - 11051 # Catalog service port
@@ -46,7 +46,7 @@ services:
 
   # ScalarDB Analytics CLI
   scalardb-analytics-cli:
-    image: ghcr.io/scalar-labs/scalardb-analytics-cli:3.17.0
+    image: ghcr.io/scalar-labs/scalardb-analytics-cli:3.19.0
     volumes:
       - ./config/scalardb-analytics-cli.properties:/config/client.properties:ro
       - ./config/data-sources:/config/data-sources:ro
