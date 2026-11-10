@@ -1,4 +1,6 @@
-FROM eclipse-temurin:17-jre-jammy
+# You can see sha256 hash in the following page:
+# - https://hub.docker.com/_/eclipse-temurin/tags
+FROM eclipse-temurin:17.0.21_9-jre-resolute@sha256:d532593b4d17f9455bcc74b4b45046fd0f9799db3b50b3486091e3e33ad99a26
 
 ENV SPARK_VERSION=3.5.9 \
     HADOOP_VERSION=3 \
@@ -8,22 +10,28 @@ ENV SPARK_VERSION=3.5.9 \
 
 WORKDIR /tmp
 
-# Install dependencies
-RUN apt-get update && \
+# Upgrade the OS packages and install dependencies
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update && \
+    apt-get upgrade -y --no-install-recommends && \
     apt-get install -y --no-install-recommends \
         procps \
         curl \
         ca-certificates && \
+    apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Download and verify Spark
+# Download and verify Spark. The expected checksum is pinned here instead of being downloaded
+# together with the archive, so that a replaced archive cannot pass the verification.
+# You can confirm the checksum value in the ".sha512" file of the archive in:
+# - https://dlcdn.apache.org/spark/
+ARG SPARK_SHA512=66097faf48b12f8673dc13256a44d731c27c86a5831cd8ca930c6fd9dd9bdf31d40593095e959461351d55da1a8e3ad5ed95e0b4b51bea87ca3989ab002ea8ce
 RUN SPARK_ARCHIVE="spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" && \
     curl -fsSL -o "${SPARK_ARCHIVE}" "https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}" && \
-    curl -fsSL -o "${SPARK_ARCHIVE}.sha512" "https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.sha512" && \
-    sha512sum -c "${SPARK_ARCHIVE}.sha512" && \
+    echo "${SPARK_SHA512}  ${SPARK_ARCHIVE}" | sha512sum -c - && \
     tar -xzf "${SPARK_ARCHIVE}" -C /opt && \
     mv "/opt/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}" "${SPARK_HOME}" && \
-    rm -rf "${SPARK_ARCHIVE}" "${SPARK_ARCHIVE}.sha512"
+    rm -rf "${SPARK_ARCHIVE}"
 
 WORKDIR /opt/spark
