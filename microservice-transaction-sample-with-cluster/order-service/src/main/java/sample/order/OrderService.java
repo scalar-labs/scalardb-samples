@@ -209,11 +209,11 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
    * Runs a microservice transaction: begin, do this service's own work on a branch, end that
    * branch, let the other services do their work in the same transaction, then commit.
    *
-   * <p>Note the two phases. All of this service's CRUD happens before the branch is ended, so the
-   * branch is released before the remote call. Keeping the branch open across the remote call would
-   * also be correct — the contract only requires that every branch is ended exactly once before the
-   * transaction is committed or rolled back — but ending it as soon as this service is done is the
-   * idiom the API is designed around.
+   * <p>Note the two phases. All of this service's CRUD happens before the branch is ended, and the
+   * branch is ended before the remote call. Keeping the branch open across the remote call would
+   * also be correct — the contract only requires that every branch is ended before the transaction
+   * is committed — but ending it as soon as this service is done is the idiom the API is designed
+   * around.
    */
   private <I, T> void execTransaction(
       String funcName,
@@ -250,8 +250,8 @@ public class OrderService extends OrderServiceGrpc.OrderServiceImplBase implemen
         branch = globalTransactionManager.beginBranch(global.getId());
         I intermediate = branchOperations.apply(branch);
 
-        // Declare that this branch's work succeeded. Every branch must be ended exactly once,
-        // whatever its outcome.
+        // Declare that this branch's work succeeded. Every branch must be ended, whatever its
+        // outcome.
         branch.end(BranchTransaction.Status.SUCCESS);
         branch = null;
 
