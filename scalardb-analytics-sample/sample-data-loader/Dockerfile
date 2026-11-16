@@ -1,13 +1,13 @@
 # You can see sha256 hash in the following page:
 # - https://hub.docker.com/_/eclipse-temurin/tags
-FROM eclipse-temurin:17.0.21_9-jdk-resolute@sha256:b5e475b49399b918176adc274c95e02db1057f8d6dbc891dad17d29d811c5a5c AS builder
+FROM eclipse-temurin:21.0.13_9-jdk-resolute@sha256:490ee3b757ff32d7a6afdc57120babce54acb2e83a6ecf7d17d87c066cfe3929 AS builder
 
 COPY . /app
 WORKDIR /app
 
 RUN chmod +x gradlew && ./gradlew installDist
 
-FROM eclipse-temurin:17.0.21_9-jre-resolute@sha256:d532593b4d17f9455bcc74b4b45046fd0f9799db3b50b3486091e3e33ad99a26
+FROM eclipse-temurin:21.0.13_9-jre-resolute@sha256:556903b1f40c0a0ddc0bd05cf413436a3b2ce48c9ee19fc199434898fd3ea2b9
 
 RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get update \
