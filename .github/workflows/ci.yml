@@ -30,10 +30,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up JDK ${{ matrix.version }}
+    # The samples request Java 8 through the Gradle toolchain, and the runner image does not
+    # always include JDK 8, so install it explicitly. The last version in the list becomes the
+    # default JDK (`JAVA_HOME`), which is the one that runs Gradle.
+    - name: Set up JDK 8 (toolchain) and JDK ${{ matrix.version }}
       uses: actions/setup-java@v4
       with:
-        java-version: ${{ matrix.version }}
+        java-version: |
+          8
+          ${{ matrix.version }}
         distribution: 'temurin'
 
     - name: Setup Gradle
