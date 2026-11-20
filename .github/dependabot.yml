@@ -1,0 +1,30 @@
+version: 2
+updates:
+  # For Docker, update the base images pinned (by tag and digest) in the Dockerfiles of the samples
+  # When a new Dockerfile is added, add its directory to the "directories" list below
+  # Major version updates of the Java base image are ignored because each sample targets a specific Java version,
+  # so upgrading the Java runtime is a manual decision; the other base image updates are grouped into a single PR
+  - package-ecosystem: "docker"
+    groups:
+      container images on branch main:
+        patterns:
+          - "*"
+    directories:
+      - "/microservice-transaction-sample/customer-service"
+      - "/microservice-transaction-sample/order-service"
+      - "/microservice-transaction-sample-with-cluster/customer-service"
+      - "/microservice-transaction-sample-with-cluster/order-service"
+      - "/microservice-transaction-sample-with-shared-cluster-with-jdbc/customer-service"
+      - "/microservice-transaction-sample-with-shared-cluster-with-jdbc/order-service"
+      - "/scalardb-analytics-sample/docker"
+      - "/scalardb-analytics-sample/sample-data-loader"
+      - "/spring-data-microservice-transaction-sample/customer-service"
+      - "/spring-data-microservice-transaction-sample/order-service"
+    ignore:
+      - dependency-name: "eclipse-temurin"
+        update-types: [ "version-update:semver-major" ]
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "01:00"
+      timezone: "Asia/Tokyo"
